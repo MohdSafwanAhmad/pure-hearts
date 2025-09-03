@@ -43,14 +43,18 @@ export default function PureHeartsLandingPage() {
                   Home
                 </a>
                 <a href="#features" className="text-muted-foreground hover:text-foreground">
-                  How It Works
+                  Donation
                 </a>
                 <a href="#projects" className="text-muted-foreground hover:text-foreground">
-                  Projects
+                  Quick Donation
                 </a>
                 <a href="#methods" className="text-muted-foreground hover:text-foreground">
-                  Donate
+                  Campaign
                 </a>
+                <a href="#methods" className="text-muted-foreground hover:text-foreground">
+                  More
+                </a>
+
               </div>
             </div>
             <div className="flex items-center gap-4">
