@@ -33,8 +33,8 @@ const moreLinks = [
   { href: "/how-it-works", label: "How It Works" },
   { href: "/impact", label: "Impact" },
   { href: "/ledger", label: "Transparency Ledger" },
-  { href: "/contact", label: "Contact" },
-  { href: "/signin", label: "Sign In" },
+  { href: "/contact us", label: "Contact" },
+  { href: "/login", label: "Sign In" },
 ]
 
 export default function Navbar() {
