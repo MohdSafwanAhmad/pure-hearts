@@ -28,7 +28,7 @@ export default function PureHeartsLandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="border-b bg-card">
+      {/* <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4">
           <nav className="flex items-center justify-between">
             <div className="flex items-center gap-8">
@@ -63,7 +63,7 @@ export default function PureHeartsLandingPage() {
             </div>
           </nav>
         </div>
-      </header>
+      </header> */}
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary/10 to-background py-20">
@@ -199,7 +199,7 @@ export default function PureHeartsLandingPage() {
       <section id="projects" className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Projects You Can Support</h2>
+            <h2 className="text-3xl font-bold mb-4">Featured Campaigns</h2>
             <p className="text-muted-foreground">Choose a cause or let our matching engine allocate your Zakat wisely.</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
