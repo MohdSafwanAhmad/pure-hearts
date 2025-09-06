@@ -26,16 +26,17 @@ const mainLinks = [
   { href: "/", label: "Home" },
   { href: "/donation", label: "Donation" },
   { href: "/campaigns", label: "Campaign" },
-]
+] as const
 
 const moreLinks = [
-  { href: "/about", label: "About" },
-  { href: "/how-it-works", label: "How It Works" },
-  { href: "/impact", label: "Impact" },
-  { href: "/ledger", label: "Transparency Ledger" },
-  { href: "/contact us", label: "Contact" },
-  { href: "/login", label: "Sign In" },
-]
+  { href: "/profile-card", label: "Profile Card" },
+  { href: "/saved-cases", label: "Saved Cases" },
+  { href: "/my-gifts", label: "My Gifts" },
+  { href: "/contact-us", label: "Contact Us" },
+  { href: "/about-app", label: "About App" },
+  { href: "/settings", label: "Settings" },
+  { href: "/login", label: "Login" },
+] as const
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -56,20 +57,25 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-6 ml-6">
             <NavigationMenu>
               <NavigationMenuList>
-                {mainLinks.map((l) => (
-                  <NavigationMenuItem key={l.href}>
-                    <Link href={l.href} legacyBehavior passHref>
-                      <NavigationMenuLink
-                        className={cn(
-                          "group inline-flex select-none items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring",
-                          pathname === l.href && "bg-accent text-accent-foreground"
-                        )}
-                      >
-                        {l.label}
+                {mainLinks.map((l) => {
+                  const active = pathname === l.href
+                  return (
+                    <NavigationMenuItem key={l.href}>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          href={l.href}
+                          className={cn(
+                            "group inline-flex select-none items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring",
+                            active && "bg-accent text-accent-foreground"
+                          )}
+                        >
+                          {l.label}
+                        </Link>
                       </NavigationMenuLink>
-                    </Link>
-                  </NavigationMenuItem>
-                ))}
+                    </NavigationMenuItem>
+                  )
+                })}
+
                 <NavigationMenuItem>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -79,13 +85,19 @@ export default function Navbar() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-56">
-                      {moreLinks.map((m) => (
-                        <DropdownMenuItem key={m.href} asChild>
-                          <Link href={m.href} className="w-full">
-                            {m.label}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
+                      {moreLinks.map((m) => {
+                        const active = pathname === m.href
+                        return (
+                          <DropdownMenuItem key={m.href} asChild>
+                            <Link
+                              href={m.href}
+                              className={cn("w-full", active && "font-semibold")}
+                            >
+                              {m.label}
+                            </Link>
+                          </DropdownMenuItem>
+                        )
+                      })}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </NavigationMenuItem>
@@ -102,7 +114,7 @@ export default function Navbar() {
         {/* Right side: CTAs (desktop) */}
         <div className="hidden md:flex items-center gap-3">
           <Button asChild variant="outline">
-            <Link href="/signin">Sign In</Link>
+            <Link href="/login">Sign In</Link>
           </Button>
           <Button asChild>
             <Link href="/quick-donation">Quick Donation</Link>
@@ -144,7 +156,9 @@ function SearchBox({ className }: { className?: string }) {
         value={q}
         onChange={(e) => setQ(e.target.value)}
       />
-      <button type="submit" className="sr-only">Search</button>
+      <button type="submit" className="sr-only">
+        Search
+      </button>
     </form>
   )
 }
@@ -176,7 +190,9 @@ function MobileMenu() {
           <LinkItem href="/donation" label="Donation" />
           <LinkItem href="/quick-donation" label="Quick Donation" variant="primary" />
           <LinkItem href="/campaigns" label="Campaign" />
-          <div className="px-2 pt-3 text-xs font-medium uppercase text-muted-foreground">More</div>
+          <div className="px-2 pt-3 text-xs font-medium uppercase text-muted-foreground">
+            More
+          </div>
           <Separator className="mb-2" />
           {moreLinks.map((m) => (
             <LinkItem key={m.href} href={m.href} label={m.label} />
@@ -196,6 +212,9 @@ function LinkItem({
   label: string
   variant?: "ghost" | "outline" | "primary"
 }) {
+  const pathname = usePathname()
+  const active = pathname === href
+
   const base =
     "block rounded-md px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
   const styles =
@@ -206,7 +225,7 @@ function LinkItem({
       : "hover:bg-accent hover:text-accent-foreground"
 
   return (
-    <Link href={href} className={cn(base, styles)}>
+    <Link href={href} className={cn(base, styles, active && "bg-accent text-accent-foreground")}>
       {label}
     </Link>
   )
