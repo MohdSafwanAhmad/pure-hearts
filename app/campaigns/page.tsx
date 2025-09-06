@@ -9,7 +9,7 @@ export default function CampaignsPage() {
     <main className="container py-8">
       <h1 className="text-3xl font-bold">Campaigns</h1>
       <p className="mt-4 text-muted-foreground">
-        This is the Campaigns page skeleton.
+        Campaigns page
       </p>
     </main>
   );
