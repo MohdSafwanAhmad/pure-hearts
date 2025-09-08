@@ -3,36 +3,29 @@ import { login, verifyOtp } from "@/app/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 import { Label } from "@/components/ui/label"
-import { cn } from "@/lib/utils"
+import Image from "next/image"
 import Link from "next/link"
 import { useActionState, useState } from "react"
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+export function LoginForm() {
   const [otpValue, setOtpValue] = useState("");
   
-  const [loginState, loginAction, isLoginPending] = useActionState(login, {
-    errors: {},
-  });
+  const [loginState, loginAction, isLoginPending] = useActionState(login, undefined);
 
-    const [verifyState, verifyAction, isVerifyPending] = useActionState(verifyOtp, {
-    errors: {},
-  });
+    const [verifyState, verifyAction, isVerifyPending] = useActionState(verifyOtp, undefined);
 
     if (loginState?.success && loginState?.step === "verify") {
     return (
-      <div className={cn("flex flex-col gap-6", className)} {...props}>
+      <div className="flex flex-col gap-6">
         <Card className="overflow-hidden p-0">
           <CardContent className="p-6 md:p-8">
             <form action={verifyAction} className="flex flex-col gap-6">
               <div className="flex flex-col items-center text-center">
                 <h1 className="text-2xl font-bold">Check your email</h1>
                 <p className="text-muted-foreground text-balance">
-                  We sent a login code to {loginState.email}
+                  We sent a login code to {loginState.formData?.email}
                 </p>
               </div>
 
@@ -44,7 +37,7 @@ export function LoginForm({
                 </div>
               )}
 
-              <input type="hidden" name="email" value={loginState.email} />
+              <input type="hidden" name="email" value={loginState?.formData?.email} />
               <input type="hidden" name="token" value={otpValue} />
               
               <div className="grid gap-3">
@@ -100,7 +93,7 @@ export function LoginForm({
 
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className="flex flex-col gap-6">
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
           <form action={loginAction} className="p-6 md:p-8">
@@ -112,11 +105,11 @@ export function LoginForm({
                 </p>
               </div>
               
-              {loginState?.errors?._form && (
+              {loginState?.errors && (
                 <div className="text-sm text-red-500">
                   {typeof loginState.errors._form === 'string' 
                     ? loginState.errors._form 
-                    : loginState.errors._form.map((error, i) => (
+                    : loginState.errors._form?.map((error, i) => (
                         <p key={i}>{error}</p>
                       ))
                   }
@@ -150,10 +143,12 @@ export function LoginForm({
             </div>
           </form>
           <div className="bg-muted relative hidden md:block">
-            <img
+            <Image
               src="/login-image.webp"
               alt="Image"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+              width={400}
+              height={400}
             />
           </div>
         </CardContent>

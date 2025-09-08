@@ -30,8 +30,40 @@ const verifyOtpSchema = z.object({
         .max(6, "The code must be 6 characters"),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function login(prevState: any, formData: FormData) {
+// Define the return types of the actions
+type LoginResult = {
+    success: boolean;
+    step?: "verify";
+    formData?: z.infer<typeof loginAuthSchema>;
+    message?: string;
+    errors: Partial<Record<keyof z.infer<typeof loginAuthSchema>, string[]>> & {
+        _form?: string[];
+    };
+};
+
+type VerifyOtpResult = {
+    errors: Partial<Record<keyof z.infer<typeof verifyOtpSchema>, string[]>> & {
+        _form?: string[];
+    };
+};
+
+type SignupResult = {
+    success?: boolean;
+    step?: "verify";
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+    message?: string;
+    errors:
+        & Partial<Record<keyof z.infer<typeof signupAuthSchema>, string[]>>
+        & {
+            _form?: string[];
+        };
+};
+export async function login(
+    prevState: unknown,
+    formData: FormData,
+): Promise<LoginResult> {
     const supabase = await createServerSupabaseClient();
 
     const result = loginAuthSchema.safeParse({
@@ -40,6 +72,7 @@ export async function login(prevState: any, formData: FormData) {
 
     if (!result.success) {
         return {
+            success: false,
             errors: result.error.flatten().fieldErrors,
         };
     }
@@ -53,8 +86,9 @@ export async function login(prevState: any, formData: FormData) {
 
     if (error) {
         return {
+            success: false,
             errors: {
-                _form: [error.message],
+                _form: ["Oops! Something went wrong. Please try again."],
             },
         };
     }
@@ -62,14 +96,16 @@ export async function login(prevState: any, formData: FormData) {
     return {
         success: true,
         step: "verify",
-        email: result.data.email,
+        formData: { email: result.data.email },
         message: "Check your email for the login code!",
         errors: {},
     };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function signup(prevState: any, formData: FormData) {
+export async function signup(
+    prevState: unknown,
+    formData: FormData,
+): Promise<SignupResult> {
     const supabase = await createServerSupabaseClient();
 
     const result = signupAuthSchema.safeParse({
@@ -97,7 +133,7 @@ export async function signup(prevState: any, formData: FormData) {
     if (error) {
         return {
             errors: {
-                _form: [error.message],
+                _form: ["Oops! Something went wrong. Please try again."],
             },
         };
     }
@@ -113,8 +149,10 @@ export async function signup(prevState: any, formData: FormData) {
     };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function verifyOtp(prevState: any, formData: FormData) {
+export async function verifyOtp(
+    prevState: unknown,
+    formData: FormData,
+): Promise<VerifyOtpResult> {
     const supabase = await createServerSupabaseClient();
 
     const result = verifyOtpSchema.safeParse({
