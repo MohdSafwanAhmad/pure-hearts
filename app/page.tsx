@@ -1,27 +1,24 @@
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import {
-  Play,
-  Users,
-  BookOpen,
-  Award,
-  Star,
-  Download,
   Apple,
-  Smartphone,
-  Globe,
-  Clock,
-  Target,
-  TrendingUp,
-  ShieldCheck,
-  Wallet,
-  Repeat,
+  Building2,
   Coins,
+  Download,
+  Globe,
   HeartHandshake,
   Layers3,
+  Play,
+  Repeat,
+  ShieldCheck,
+  Smartphone,
   Sparkles,
-  Building2,
+  Star,
+  Target,
+  TrendingUp,
+  Users,
+  Wallet
 } from "lucide-react"
 
 export default function PureHeartsLandingPage() {
