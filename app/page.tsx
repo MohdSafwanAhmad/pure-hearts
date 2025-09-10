@@ -1,7 +1,8 @@
-import { Badge } from "@/components/ui/badge"
+{/*import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
+  
   Apple,
   Building2,
   Coins,
@@ -20,6 +21,7 @@ import {
   Users,
   Wallet
 } from "lucide-react"
+import footer from "@/components/footer"
 
 export default function PureHeartsLandingPage() {
   return (
@@ -63,7 +65,7 @@ export default function PureHeartsLandingPage() {
       </header> */}
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary/10 to-background py-20">
+     {/* <section className="bg-gradient-to-r from-primary/10 to-background py-20">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
@@ -111,7 +113,7 @@ export default function PureHeartsLandingPage() {
       </section>
 
       {/* Impact Quote */}
-      <section className="py-16 bg-muted/50">
+      {/*<section className="py-16 bg-muted/50">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold text-primary mb-4">
             “Give with confidence—track your impact from donation to delivery.”
@@ -121,7 +123,7 @@ export default function PureHeartsLandingPage() {
       </section>
 
       {/* Key Features */}
-      <section id="features" className="py-20">
+      {/*<section id="features" className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Why Pure Hearts</h2>
@@ -193,7 +195,7 @@ export default function PureHeartsLandingPage() {
       </section>
 
       {/* Programs / Projects */}
-      <section id="projects" className="py-20 bg-muted/30">
+      {/*<section id="projects" className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Featured Campaigns</h2>
@@ -279,7 +281,7 @@ export default function PureHeartsLandingPage() {
       </section>
 
       {/* How donations work (icon grid) */}
-      <section className="py-20">
+      {/*<section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">How Your Donation Flows</h2>
@@ -334,7 +336,7 @@ export default function PureHeartsLandingPage() {
       </section>
 
       {/* Testimonial / Story */}
-      <section className="py-20 bg-muted/30">
+      {/*<section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Impact Stories</h2>
@@ -362,7 +364,7 @@ export default function PureHeartsLandingPage() {
       </section>
 
       {/* Stats */}
-      <section className="py-20 bg-primary text-primary-foreground">
+      {/*<section className="py-20 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Pure Hearts Impact — 2025</h2>
@@ -405,7 +407,7 @@ export default function PureHeartsLandingPage() {
       </section>
 
       {/* App / PWA */}
-      <section id="methods" className="py-20">
+    {/*  <section id="methods" className="py-20">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
@@ -452,9 +454,10 @@ export default function PureHeartsLandingPage() {
           </div>
         </div>
       </section>
+       <footer /> 
 
       {/* Footer */}
-      <footer className="bg-primary text-primary-foreground py-16">
+   {/*  <footer className="bg-primary text-primary-foreground py-16">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="space-y-4">
@@ -497,9 +500,32 @@ export default function PureHeartsLandingPage() {
           </div>
           <div className="border-t border-white/20 mt-12 pt-8 text-center opacity-90">
             <p>&copy; 2025 Pure Hearts. All rights reserved.</p>
-          </div>
+          </div> 
         </div>
       </footer>
-    </div>
+      </div>
+  
+  
+  
+  )
+*/}
+
+
+import Hero from "@/components/hero"
+import FeatureCampaigns from "@/components/feature-campaigns"
+import DonationWorkflow from "@/components/donation-workflow"
+import HowItWorks from "@/components/how-it-works"
+import Footer from "@/components/footer"
+
+export default function PureHeartsLandingPage() {
+  return (
+    <>
+      
+      <Hero />
+      <FeatureCampaigns />
+      <DonationWorkflow />
+      <HowItWorks />
+      <Footer />
+    </>
   )
 }
