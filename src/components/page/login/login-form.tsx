@@ -1,22 +1,32 @@
-"use client"
-import { login, verifyOtp } from "@/app/actions/auth"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
-import { Label } from "@/components/ui/label"
-import Image from "next/image"
-import Link from "next/link"
-import { useActionState, useState } from "react"
+"use client";
+import { login, verifyOtp } from "@/src/actions/auth";
+import { Button } from "@/src/components/ui/button";
+import { Card, CardContent } from "@/src/components/ui/card";
+import { Input } from "@/src/components/ui/input";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/src/components/ui/input-otp";
+import { Label } from "@/src/components/ui/label";
+import Image from "next/image";
+import Link from "next/link";
+import { useActionState, useState } from "react";
 
 export function LoginForm() {
   const [otpValue, setOtpValue] = useState("");
-  
-  const [loginState, loginAction, isLoginPending] = useActionState(login, undefined);
 
-    const [verifyState, verifyAction, isVerifyPending] = useActionState(verifyOtp, undefined);
+  const [loginState, loginAction, isLoginPending] = useActionState(
+    login,
+    undefined
+  );
 
-    if (loginState?.success && loginState?.step === "verify") {
+  const [verifyState, verifyAction, isVerifyPending] = useActionState(
+    verifyOtp,
+    undefined
+  );
+
+  if (loginState?.success && loginState?.step === "verify") {
     return (
       <div className="flex flex-col gap-6">
         <Card className="overflow-hidden p-0">
@@ -37,9 +47,13 @@ export function LoginForm() {
                 </div>
               )}
 
-              <input type="hidden" name="email" value={loginState?.formData?.email} />
+              <input
+                type="hidden"
+                name="email"
+                value={loginState?.formData?.email}
+              />
               <input type="hidden" name="token" value={otpValue} />
-              
+
               <div className="grid gap-3">
                 <Label htmlFor="token">Login Code</Label>
                 <div className="flex justify-center">
@@ -59,22 +73,24 @@ export function LoginForm() {
                   </InputOTP>
                 </div>
                 {verifyState?.errors?.token && (
-                  <p className="text-sm text-red-500 text-center">{verifyState.errors.token[0]}</p>
+                  <p className="text-sm text-red-500 text-center">
+                    {verifyState.errors.token[0]}
+                  </p>
                 )}
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
+              <Button
+                type="submit"
+                className="w-full"
                 disabled={isVerifyPending || otpValue.length !== 6}
               >
                 {isVerifyPending ? "Verifying..." : "Verify Code"}
               </Button>
-              
+
               <div className="text-center text-sm">
                 Didn&apos;t receive the code?{" "}
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="underline underline-offset-4"
                   onClick={() => {
                     setOtpValue("");
@@ -91,7 +107,6 @@ export function LoginForm() {
     );
   }
 
-
   return (
     <div className="flex flex-col gap-6">
       <Card className="overflow-hidden p-0">
@@ -104,15 +119,14 @@ export function LoginForm() {
                   Login to your Pure Zakat account
                 </p>
               </div>
-              
+
               {loginState?.errors && (
                 <div className="text-sm text-red-500">
-                  {typeof loginState.errors._form === 'string' 
-                    ? loginState.errors._form 
+                  {typeof loginState.errors._form === "string"
+                    ? loginState.errors._form
                     : loginState.errors._form?.map((error, i) => (
                         <p key={i}>{error}</p>
-                      ))
-                  }
+                      ))}
                 </div>
               )}
 
@@ -126,14 +140,20 @@ export function LoginForm() {
                   required
                 />
                 {loginState?.errors?.email && (
-                  <p className="text-sm text-red-500">{loginState.errors.email[0]}</p>
+                  <p className="text-sm text-red-500">
+                    {loginState.errors.email[0]}
+                  </p>
                 )}
               </div>
-             
-              <Button type="submit" className="w-full" disabled={isLoginPending}>
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isLoginPending}
+              >
                 {isLoginPending ? "Sending code..." : "Login"}
               </Button>
-              
+
               <div className="text-center text-sm">
                 Don&apos;t have an account?{" "}
                 <Link href="/signup" className="underline underline-offset-4">
@@ -154,9 +174,10 @@ export function LoginForm() {
         </CardContent>
       </Card>
       <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        By clicking continue, you agree to our <Link href="#">Terms of Service</Link>{" "}
-        and <Link href="#">Privacy Policy</Link>.
+        By clicking continue, you agree to our{" "}
+        <Link href="#">Terms of Service</Link> and{" "}
+        <Link href="#">Privacy Policy</Link>.
       </div>
     </div>
-  )
+  );
 }

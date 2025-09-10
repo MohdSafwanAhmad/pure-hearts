@@ -1,29 +1,35 @@
 "use client";
-import { signup, verifyOtp } from "@/app/actions/auth"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { cn } from "@/lib/utils"
-import Link from "next/link"
-import { useActionState, useState } from "react"
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { signup, verifyOtp } from "@/src/actions/auth";
+import { Button } from "@/src/components/ui/button";
+import { Card, CardContent } from "@/src/components/ui/card";
+import { Input } from "@/src/components/ui/input";
+import { Label } from "@/src/components/ui/label";
+import { cn } from "@/src/lib/utils";
+import Link from "next/link";
+import { useActionState, useState } from "react";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/src/components/ui/input-otp";
 import Image from "next/image";
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-   const [otpValue, setOtpValue] = useState("");
+  const [otpValue, setOtpValue] = useState("");
 
   const [signupState, signupAction, isSignupPending] = useActionState(signup, {
     errors: {},
   });
-  
 
-  const [verifyState, verifyAction, isVerifyPending] = useActionState(verifyOtp, {
-    errors: {},
-  });
+  const [verifyState, verifyAction, isVerifyPending] = useActionState(
+    verifyOtp,
+    {
+      errors: {},
+    }
+  );
 
   // Show verification form if signup was successful
   if (signupState?.success && signupState?.step === "verify") {
@@ -49,7 +55,7 @@ export function SignupForm({
 
               <input type="hidden" name="email" value={signupState.email} />
               <input type="hidden" name="token" value={otpValue} />
-              
+
               <div className="grid gap-3">
                 <Label htmlFor="token">Verification Code</Label>
                 <div className="flex justify-center">
@@ -69,22 +75,24 @@ export function SignupForm({
                   </InputOTP>
                 </div>
                 {verifyState?.errors?.token && (
-                  <p className="text-sm text-red-500 text-center">{verifyState.errors.token[0]}</p>
+                  <p className="text-sm text-red-500 text-center">
+                    {verifyState.errors.token[0]}
+                  </p>
                 )}
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
+              <Button
+                type="submit"
+                className="w-full"
                 disabled={isVerifyPending || otpValue.length !== 6}
               >
                 {isVerifyPending ? "Verifying..." : "Verify Code"}
               </Button>
-              
+
               <div className="text-center text-sm">
                 Didn&apos;t receive the code?{" "}
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="underline underline-offset-4"
                   onClick={() => {
                     setOtpValue("");
@@ -100,8 +108,8 @@ export function SignupForm({
       </div>
     );
   }
-  
-   return (
+
+  return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
@@ -113,7 +121,7 @@ export function SignupForm({
                   Sign up for your Pure Zakat account
                 </p>
               </div>
-              
+
               {signupState?.errors?._form && (
                 <div className="text-sm text-red-500">
                   {signupState.errors._form.map((error, i) => (
@@ -132,10 +140,12 @@ export function SignupForm({
                   required
                 />
                 {signupState?.errors?.email && (
-                  <p className="text-sm text-red-500">{signupState.errors.email[0]}</p>
+                  <p className="text-sm text-red-500">
+                    {signupState.errors.email[0]}
+                  </p>
                 )}
               </div>
-              
+
               <div className="grid gap-3">
                 <Label htmlFor="first_name">First Name</Label>
                 <Input
@@ -146,10 +156,12 @@ export function SignupForm({
                   required
                 />
                 {signupState?.errors?.first_name && (
-                  <p className="text-sm text-red-500">{signupState.errors.first_name[0]}</p>
+                  <p className="text-sm text-red-500">
+                    {signupState.errors.first_name[0]}
+                  </p>
                 )}
               </div>
-              
+
               <div className="grid gap-3">
                 <Label htmlFor="last_name">Last Name</Label>
                 <Input
@@ -160,14 +172,20 @@ export function SignupForm({
                   required
                 />
                 {signupState?.errors?.last_name && (
-                  <p className="text-sm text-red-500">{signupState.errors.last_name[0]}</p>
+                  <p className="text-sm text-red-500">
+                    {signupState.errors.last_name[0]}
+                  </p>
                 )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={isSignupPending}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isSignupPending}
+              >
                 {isSignupPending ? "Sending code..." : "Sign up"}
               </Button>
-              
+
               <div className="text-center text-sm">
                 Already have an account?{" "}
                 <Link href="/login" className="underline underline-offset-4">
@@ -188,9 +206,10 @@ export function SignupForm({
         </CardContent>
       </Card>
       <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        By clicking continue, you agree to our <Link href="#">Terms of Service</Link>{" "}
-        and <Link href="#">Privacy Policy</Link>.
+        By clicking continue, you agree to our{" "}
+        <Link href="#">Terms of Service</Link> and{" "}
+        <Link href="#">Privacy Policy</Link>.
       </div>
     </div>
-  )
+  );
 }
