@@ -1,9 +1,8 @@
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
 import LogoutButton from "@/src/components/global/logout-button";
+import { getUser } from "@/src/lib/supabase/server";
 
 export default async function DashboardPage() {
-  const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase.auth.getUser();
+  const { data, error } = await getUser();
 
   if (error) {
     return (
