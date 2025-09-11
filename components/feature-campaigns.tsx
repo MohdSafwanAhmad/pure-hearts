@@ -4,14 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Star } from "lucide-react"
 
 const campaigns = [
-  { title: "Zakat Distribution", description: "Direct Zakat to verified recipients with full on-chain traceability.", image: "/project-zakat.jpg", rating: "4.9" },
-  { title: "Orphan Sponsorship", description: "Sustain education & essentials for orphans via monthly support.", image: "/project-orphans.jpg", rating: "4.9" },
-  { title: "Family Sponsorship", description: "Bridge urgent needs—rent, food, utilities—for vulnerable families.", image: "/project-family.jpg", rating: "4.8" },
-  { title: "Students Sponsorship", description: "Back tuition and learning tools for deserving students.", image: "/project-students.jpg", rating: "4.8" },
-  { title: "Furniture Bank", description: "Enable dignified living with essential furnishings for newcomers.", image: "/project-furniture.jpg", rating: "4.7" },
+  { title: "Zakat Distribution", description: "Direct Zakat to verified recipients with full on-chain traceability.", image: "/featured-campaign1.webp", rating: "4.9" },
+  { title: "Orphan Sponsorship", description: "Sustain education & essentials for orphans via monthly support.", image: "/orphan-donation.webp", rating: "4.9" },
+  { title: "Family Sponsorship", description: "Bridge urgent needs—rent, food, utilities—for vulnerable families.", image: "/family-donation.jpg", rating: "4.8" },
+  { title: "Students Sponsorship", description: "Back tuition and learning tools for deserving students.", image: "/student-donation.jpg", rating: "4.8" },
+/*  { title: "Furniture Bank", description: "Enable dignified living with essential furnishings for newcomers.", image: "/project-furniture.jpg", rating: "4.7" },
   { title: "Blockchain Transparency", description: "Explore the public ledger that powers our accountability.", image: "/project-blockchain.jpg", rating: "5.0" },
   { title: "Canadian Provinces", description: "Target aid across provinces with local partners.", image: "/project-canada.jpg", rating: "4.8" },
-  { title: "US States & International", description: "Scale impact across borders with vetted initiatives.", image: "/project-international.jpg", rating: "4.7" },
+  { title: "US States & International", description: "Scale impact across borders with vetted initiatives.", image: "/project-international.jpg", rating: "4.7" },*/
 ]
 
 export default function FeatureCampaigns() {
