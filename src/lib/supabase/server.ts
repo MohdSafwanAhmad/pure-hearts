@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-
+import { Database } from "@/src/types/database-types";
 /**
  * Creates a Supabase client for server-side use.
  * @returns A Supabase client instance.
@@ -8,7 +8,7 @@ import { cookies } from "next/headers";
 export async function createServerSupabaseClient() {
   const cookieStore = await cookies();
 
-  return createServerClient(
+  return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
@@ -32,7 +32,43 @@ export async function createServerSupabaseClient() {
   );
 }
 
-export async function getUser() {
+export async function getDonorProfile() {
   const supabase = await createServerSupabaseClient();
-  return supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return null;
+  }
+  const { data: profile } = await supabase
+    .from("donors")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  return {
+    ...profile,
+    email: user.email,
+  };
+}
+
+export async function getOrganizationProfile() {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return null;
+  }
+  const { data: profile } = await supabase
+    .from("organizations")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+  return {
+    ...profile,
+    email: user.email,
+    phoneNumber: user.phone,
+  };
 }
