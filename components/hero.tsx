@@ -33,11 +33,13 @@ export default function Hero() {
           <div className="relative">
             <div className="aspect-square bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl p-8 relative">
               <Image
-                src="/pure-hearts-hero.jpg"
+                src="/image1.jpg"
                 alt="Pure Hearts transparent donations"
                 fill
                 className="object-cover rounded-2xl"
-                sizes="(min-width: 1024px) 520px, 100vw"
+               /* sizes="(min-width: 1024px) 200px, 100vw"*/
+                sizes="300px"
+               priority
               />
             </div>
           </div>
