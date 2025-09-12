@@ -11,9 +11,13 @@ const signupAsOrganizationAuthSchema = z.object({
     .string()
     .min(2, "Organization name must be at least 2 characters long")
     .max(100, "Organization name must be less than 100 characters"),
-  legalStatus: z.enum(["NonProfit", "Charity", "NGO", "Other"], {
-    message: "Please select your organization's legal status",
-  }),
+  organizationPhone: z
+    .string()
+    .min(1, "Organization phone number is required")
+    .regex(
+      /^\+\d{11}$/,
+      "Please enter a valid phone number in format +15554443333"
+    ),
   country: z.string().min(1, "Country selection is required"),
   city: z
     .string()
@@ -35,8 +39,8 @@ const signupAsOrganizationAuthSchema = z.object({
     .string()
     .min(1, "Contact phone number is required")
     .regex(
-      /^(\+?1[-.\s]?)?(\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4})$/,
-      "Please enter a valid North American phone number (e.g., +1 416 555 0123 or 416-555-0123)"
+      /^\+\d{11}$/,
+      "Please enter a valid phone number in format +15554443333"
     ),
   missionStatement: z
     .string()
@@ -45,42 +49,41 @@ const signupAsOrganizationAuthSchema = z.object({
   projectAreas: z
     .array(z.string())
     .min(1, "Please select at least one area your organization works in"),
-  geographicServed: z
-    .array(z.string())
-    .min(
-      1,
-      "Please specify at least one geographic area your organization serves"
-    ),
   websiteUrl: z
     .string()
-    .min(1, "Organization website URL is required")
-    .url(
-      "Please enter a valid website URL (must start with http:// or https://)"
-    ),
+    .optional()
+    .refine((val) => !val || z.url().safeParse(val).success, {
+      message:
+        "Please enter a valid website URL (must start with http:// or https://)",
+    }),
   facebookUrl: z
     .string()
-    .min(1, "Facebook page URL is required")
-    .url(
-      "Please enter a valid Facebook URL (must start with http:// or https://)"
-    ),
+    .optional()
+    .refine((val) => !val || z.url().safeParse(val).success, {
+      message:
+        "Please enter a valid Facebook URL (must start with http:// or https://)",
+    }),
   twitterUrl: z
     .string()
-    .min(1, "Twitter profile URL is required")
-    .url(
-      "Please enter a valid Twitter URL (must start with http:// or https://)"
-    ),
+    .optional()
+    .refine((val) => !val || z.url().safeParse(val).success, {
+      message:
+        "Please enter a valid Twitter URL (must start with http:// or https://)",
+    }),
   instagramUrl: z
     .string()
-    .min(1, "Instagram profile URL is required")
-    .url(
-      "Please enter a valid Instagram URL (must start with http:// or https://)"
-    ),
+    .optional()
+    .refine((val) => !val || z.url().safeParse(val).success, {
+      message:
+        "Please enter a valid Instagram URL (must start with http:// or https://)",
+    }),
   linkedinUrl: z
     .string()
-    .min(1, "LinkedIn page URL is required")
-    .url(
-      "Please enter a valid LinkedIn URL (must start with http:// or https://)"
-    ),
+    .optional()
+    .refine((val) => !val || z.url().safeParse(val).success, {
+      message:
+        "Please enter a valid LinkedIn URL (must start with http:// or https://)",
+    }),
 });
 
 export async function signupAsOrganization(
@@ -95,26 +98,15 @@ export async function signupAsOrganization(
 }> {
   const supabase = await createServerSupabaseClient();
 
-  // Parse project areas and geographic areas from form data
+  // Parse project areas from form data
   const projectAreas = formData
     .getAll("projectAreas")
     .filter(Boolean) as string[];
-  const geographicServed = formData
-    .getAll("geographicServed")
-    .filter(Boolean) as string[];
-
-  // Build social media links object
-  const socialMediaLinks = {
-    facebook: (formData.get("facebookUrl") as string) || "",
-    twitter: (formData.get("twitterUrl") as string) || "",
-    instagram: (formData.get("instagramUrl") as string) || "",
-    linkedin: (formData.get("linkedinUrl") as string) || "",
-  };
 
   const result = signupAsOrganizationAuthSchema.safeParse({
     organizationEmail: formData.get("organizationEmail"),
     organizationName: formData.get("organizationName"),
-    legalStatus: formData.get("legalStatus"),
+    organizationPhone: formData.get("organizationPhone"),
     country: formData.get("country"),
     city: formData.get("city"),
     address: formData.get("address"),
@@ -124,12 +116,11 @@ export async function signupAsOrganization(
     contactPersonPhone: formData.get("contactPersonPhone"),
     missionStatement: formData.get("missionStatement"),
     projectAreas: projectAreas.length > 0 ? projectAreas : [],
-    geographicServed: geographicServed.length > 0 ? geographicServed : [],
-    websiteUrl: formData.get("websiteUrl"),
-    facebookUrl: formData.get("facebookUrl"),
-    twitterUrl: formData.get("twitterUrl"),
-    instagramUrl: formData.get("instagramUrl"),
-    linkedinUrl: formData.get("linkedinUrl"),
+    websiteUrl: formData.get("websiteUrl") || undefined,
+    facebookUrl: formData.get("facebookUrl") || undefined,
+    twitterUrl: formData.get("twitterUrl") || undefined,
+    instagramUrl: formData.get("instagramUrl") || undefined,
+    linkedinUrl: formData.get("linkedinUrl") || undefined,
   });
 
   if (!result.success) {
@@ -144,21 +135,21 @@ export async function signupAsOrganization(
       data: {
         user_type: "organization",
         organization_name: result.data.organizationName,
-        legal_status: result.data.legalStatus,
+        organization_phone: result.data.organizationPhone,
         country: result.data.country,
         city: result.data.city,
         address: result.data.address,
         state: result.data.state,
-        contact_person: {
-          name: result.data.contactPersonName,
-          email: result.data.contactPersonEmail,
-          phone: result.data.contactPersonPhone,
-        },
+        contact_person_name: result.data.contactPersonName,
+        contact_person_email: result.data.contactPersonEmail,
+        contact_person_phone: result.data.contactPersonPhone,
         mission_statement: result.data.missionStatement,
         project_areas: result.data.projectAreas,
-        geographic_served: result.data.geographicServed,
         website_url: result.data.websiteUrl,
-        social_media_links: socialMediaLinks,
+        facebook_url: result.data.facebookUrl,
+        twitter_url: result.data.twitterUrl,
+        instagram_url: result.data.instagramUrl,
+        linkedin_url: result.data.linkedinUrl,
       },
     },
   });

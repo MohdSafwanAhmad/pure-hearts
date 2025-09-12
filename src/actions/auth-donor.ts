@@ -102,6 +102,7 @@ export async function signupAsDonor(
     email: result.data.email,
     options: {
       data: {
+        user_type: "donor",
         first_name: result.data.first_name,
         last_name: result.data.last_name,
         donation_preferences: result.data.donation_preferences,
