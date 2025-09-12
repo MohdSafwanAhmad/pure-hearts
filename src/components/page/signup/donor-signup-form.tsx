@@ -1,17 +1,40 @@
 "use client";
-import { signup } from "@/src/actions/auth";
+import { signupAsDonor } from "@/src/actions/auth-donor";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
+import { Checkbox } from "@/src/components/ui/checkbox";
 import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
 import Image from "next/image";
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
-export function SignupForm() {
-  const [signupState, signupAction, isSignupPending] = useActionState(signup, {
-    errors: {},
-  });
+const donationOptions = [
+  { id: "education", label: "Education" },
+  { id: "health", label: "Health" },
+  { id: "relief", label: "Emergency Relief" },
+  { id: "poverty", label: "Poverty Alleviation" },
+  { id: "orphans", label: "Orphan Care" },
+  { id: "water", label: "Clean Water" },
+];
+
+export function DonorSignupForm() {
+  const [signupState, signupAction, isSignupPending] = useActionState(
+    signupAsDonor,
+    {
+      errors: {},
+    }
+  );
+
+  const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);
+
+  const handlePreferenceChange = (preference: string, checked: boolean) => {
+    if (checked) {
+      setSelectedPreferences((prev) => [...prev, preference]);
+    } else {
+      setSelectedPreferences((prev) => prev.filter((p) => p !== preference));
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -34,6 +57,46 @@ export function SignupForm() {
                 </div>
               )}
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-3">
+                  <Label htmlFor="first_name">First Name</Label>
+                  <Input
+                    id="first_name"
+                    name="first_name"
+                    type="text"
+                    placeholder="John"
+                    required
+                    className={
+                      signupState?.errors?.first_name ? "border-red-500" : ""
+                    }
+                  />
+                  {signupState?.errors?.first_name && (
+                    <p className="text-sm text-red-500">
+                      {signupState.errors.first_name[0]}
+                    </p>
+                  )}
+                </div>
+
+                <div className="grid gap-3">
+                  <Label htmlFor="last_name">Last Name</Label>
+                  <Input
+                    id="last_name"
+                    name="last_name"
+                    type="text"
+                    placeholder="Doe"
+                    required
+                    className={
+                      signupState?.errors?.last_name ? "border-red-500" : ""
+                    }
+                  />
+                  {signupState?.errors?.last_name && (
+                    <p className="text-sm text-red-500">
+                      {signupState.errors.last_name[0]}
+                    </p>
+                  )}
+                </div>
+              </div>
+
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -51,42 +114,45 @@ export function SignupForm() {
                 )}
               </div>
 
-              <div className="grid gap-3">
-                <Label htmlFor="first_name">First Name</Label>
-                <Input
-                  id="first_name"
-                  name="first_name"
-                  type="text"
-                  placeholder="John"
-                  required
-                  className={
-                    signupState?.errors?.first_name ? "border-red-500" : ""
-                  }
-                />
-                {signupState?.errors?.first_name && (
-                  <p className="text-sm text-red-500">
-                    {signupState.errors.first_name[0]}
-                  </p>
-                )}
-              </div>
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium">Donation Preferences</h3>
+                <p className="text-xs text-muted-foreground">
+                  Select causes you&apos;d like to support
+                </p>
 
-              <div className="grid gap-3">
-                <Label htmlFor="last_name">Last Name</Label>
-                <Input
-                  id="last_name"
-                  name="last_name"
-                  type="text"
-                  placeholder="Doe"
-                  required
-                  className={
-                    signupState?.errors?.last_name ? "border-red-500" : ""
-                  }
-                />
-                {signupState?.errors?.last_name && (
-                  <p className="text-sm text-red-500">
-                    {signupState.errors.last_name[0]}
-                  </p>
-                )}
+                <div className="grid grid-cols-2 gap-3">
+                  {donationOptions.map((option) => (
+                    <div
+                      key={option.id}
+                      className="flex items-center space-x-2"
+                    >
+                      <Checkbox
+                        id={option.id}
+                        checked={selectedPreferences.includes(option.id)}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange(option.id, checked as boolean)
+                        }
+                      />
+                      <Label htmlFor={option.id} className="text-sm">
+                        {option.label}
+                      </Label>
+                      <input
+                        type="hidden"
+                        name="donation_preferences"
+                        value={
+                          selectedPreferences.includes(option.id)
+                            ? option.id
+                            : ""
+                        }
+                      />
+                    </div>
+                  ))}
+                  {signupState?.errors?.donation_preferences && (
+                    <p className="text-sm text-red-500 col-span-full">
+                      {signupState.errors.donation_preferences[0]}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

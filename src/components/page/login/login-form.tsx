@@ -1,5 +1,5 @@
 "use client";
-import { login } from "@/src/actions/auth";
+import { login } from "@/src/actions/auth-donor";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
 import { Input } from "@/src/components/ui/input";

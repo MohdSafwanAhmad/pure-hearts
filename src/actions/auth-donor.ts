@@ -7,13 +7,15 @@ import { z } from "zod";
 import { createServerSupabaseClient } from "@/src/lib/supabase/server";
 
 // Define the validation schema
-const signupAuthSchema = z.object({
+const signupAsDonorAuthSchema = z.object({
   email: z.email("Please enter a valid email address"),
   first_name: z
     .string()
     .min(2, "First name must be at least 2 characters long"),
   last_name: z.string().min(2, "Last name must be at least 2 characters long"),
+  donation_preferences: z.array(z.string()).optional(),
 });
+
 const loginAuthSchema = z.object({
   email: z.email("Please enter a valid email address"),
 });
@@ -65,20 +67,29 @@ export async function login(
   return redirect(`/otp?email=${encodeURIComponent(result.data.email)}`);
 }
 
-export async function signup(
+export async function signupAsDonor(
   prevState: unknown,
   formData: FormData
 ): Promise<{
-  errors: Partial<Record<keyof z.infer<typeof signupAuthSchema>, string[]>> & {
+  errors: Partial<
+    Record<keyof z.infer<typeof signupAsDonorAuthSchema>, string[]>
+  > & {
     _form?: string[];
   };
 }> {
   const supabase = await createServerSupabaseClient();
 
-  const result = signupAuthSchema.safeParse({
+  // Parse donation preferences from form data
+  const donationPreferences = formData
+    .getAll("donation_preferences")
+    .filter(Boolean) as string[];
+
+  const result = signupAsDonorAuthSchema.safeParse({
     email: formData.get("email"),
     first_name: formData.get("first_name"),
     last_name: formData.get("last_name"),
+    donation_preferences:
+      donationPreferences.length > 0 ? donationPreferences : undefined,
   });
 
   if (!result.success) {
@@ -93,6 +104,7 @@ export async function signup(
       data: {
         first_name: result.data.first_name,
         last_name: result.data.last_name,
+        donation_preferences: result.data.donation_preferences,
       },
     },
   });
