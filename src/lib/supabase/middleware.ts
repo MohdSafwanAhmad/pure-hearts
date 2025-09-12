@@ -40,7 +40,6 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const protectedRoutes = ["/dashboard"];
-  const authRoutes = ["/login", "/signup"];
   if (!user && protectedRoutes.includes(request.nextUrl.pathname)) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
@@ -48,7 +47,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && authRoutes.includes(request.nextUrl.pathname)) {
+  const authRoutesValue = ["login", "signup", "otp"];
+  const paths = request.nextUrl.pathname.split("/");
+  const isAuthRoute = paths.some((path) => authRoutesValue.includes(path));
+
+  if (user && isAuthRoute) {
     // user, potentially respond by redirecting the user to the dashboard
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
