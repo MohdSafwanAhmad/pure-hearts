@@ -1,5 +1,5 @@
 "use client";
-import { verifyOtp } from "@/src/actions/auth-donor";
+import { verifyOtp } from "@/src/actions/auth";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
 import {

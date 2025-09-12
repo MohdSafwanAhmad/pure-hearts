@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/src/components/ui/button";
 
 export default function SignupPage() {
   return (
@@ -15,29 +16,26 @@ export default function SignupPage() {
           </div>
 
           <div className="space-y-4">
-            <Link
-              href="/signup/donor"
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-4 text-primary-foreground font-medium transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <span>Sign up as a Donor</span>
-            </Link>
+            <Button asChild size="lg" className="w-full">
+              <Link href="/signup/donor">
+                Sign up as a Donor
+              </Link>
+            </Button>
 
-            <Link
-              href="/signup/organization"
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-input bg-background px-6 py-4 font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <span>Sign up as an Organization</span>
-            </Link>
+            <Button asChild variant="outline" size="lg" className="w-full">
+              <Link href="/signup/organization">
+                Sign up as an Organization
+              </Link>
+            </Button>
           </div>
 
           <p className="text-muted-foreground text-xs md:text-sm">
             Already have an account?{" "}
-            <Link
-              href="/login"
-              className="text-primary underline-offset-4 hover:underline"
-            >
-              Sign in
-            </Link>
+            <Button asChild variant="link" className="h-auto p-0 text-xs md:text-sm">
+              <Link href="/login">
+                Sign in
+              </Link>
+            </Button>
           </p>
         </div>
       </div>
