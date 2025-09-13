@@ -1,4 +1,5 @@
-{/*import { Badge } from "@/components/ui/badge"
+{
+  /*import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -26,8 +27,10 @@ import footer from "@/components/footer"
 export default function PureHeartsLandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      {/* <header className="border-b bg-card">
+      {/* Header */
+}
+{
+  /* <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4">
           <nav className="flex items-center justify-between">
             <div className="flex items-center gap-8">
@@ -62,10 +65,14 @@ export default function PureHeartsLandingPage() {
             </div>
           </nav>
         </div>
-      </header> */}
+      </header> */
+}
 
-      {/* Hero Section */}
-     {/* <section className="bg-gradient-to-r from-primary/10 to-background py-20">
+{
+  /* Hero Section */
+}
+{
+  /* <section className="bg-gradient-to-r from-primary/10 to-background py-20">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
@@ -112,8 +119,10 @@ export default function PureHeartsLandingPage() {
         </div>
       </section>
 
-      {/* Impact Quote */}
-      {/*<section className="py-16 bg-muted/50">
+      {/* Impact Quote */
+}
+{
+  /*<section className="py-16 bg-muted/50">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold text-primary mb-4">
             “Give with confidence—track your impact from donation to delivery.”
@@ -122,8 +131,10 @@ export default function PureHeartsLandingPage() {
         </div>
       </section>
 
-      {/* Key Features */}
-      {/*<section id="features" className="py-20">
+      {/* Key Features */
+}
+{
+  /*<section id="features" className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Why Pure Hearts</h2>
@@ -194,8 +205,10 @@ export default function PureHeartsLandingPage() {
         </div>
       </section>
 
-      {/* Programs / Projects */}
-      {/*<section id="projects" className="py-20 bg-muted/30">
+      {/* Programs / Projects */
+}
+{
+  /*<section id="projects" className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Featured Campaigns</h2>
@@ -280,8 +293,10 @@ export default function PureHeartsLandingPage() {
         </div>
       </section>
 
-      {/* How donations work (icon grid) */}
-      {/*<section className="py-20">
+      {/* How donations work (icon grid) */
+}
+{
+  /*<section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">How Your Donation Flows</h2>
@@ -335,8 +350,10 @@ export default function PureHeartsLandingPage() {
         </div>
       </section>
 
-      {/* Testimonial / Story */}
-      {/*<section className="py-20 bg-muted/30">
+      {/* Testimonial / Story */
+}
+{
+  /*<section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Impact Stories</h2>
@@ -363,8 +380,10 @@ export default function PureHeartsLandingPage() {
         </div>
       </section>
 
-      {/* Stats */}
-      {/*<section className="py-20 bg-primary text-primary-foreground">
+      {/* Stats */
+}
+{
+  /*<section className="py-20 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Pure Hearts Impact — 2025</h2>
@@ -406,8 +425,10 @@ export default function PureHeartsLandingPage() {
         </div>
       </section>
 
-      {/* App / PWA */}
-    {/*  <section id="methods" className="py-20">
+      {/* App / PWA */
+}
+{
+  /*  <section id="methods" className="py-20">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
@@ -456,8 +477,10 @@ export default function PureHeartsLandingPage() {
       </section>
        <footer /> 
 
-      {/* Footer */}
-   {/*  <footer className="bg-primary text-primary-foreground py-16">
+      {/* Footer */
+}
+{
+  /*  <footer className="bg-primary text-primary-foreground py-16">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="space-y-4">
@@ -508,24 +531,23 @@ export default function PureHeartsLandingPage() {
   
   
   )
-*/}
+*/
+}
 
-
-import Hero from "@/components/hero"
-import FeatureCampaigns from "@/components/feature-campaigns"
-import DonationWorkflow from "@/components/donation-workflow"
-import HowItWorks from "@/components/how-it-works"
-import Footer from "@/components/footer"
+import Hero from "@/src/components/page/pure-hearts-landing-page/hero";
+import FeatureCampaigns from "@/src/components/page/pure-hearts-landing-page/feature-campaigns";
+import DonationWorkflow from "@/src/components/page/pure-hearts-landing-page/donation-workflow";
+import HowItWorks from "@/src/components/page/pure-hearts-landing-page/how-it-works";
+import Footer from "@/src/components/page/pure-hearts-landing-page/footer";
 
 export default function PureHeartsLandingPage() {
   return (
     <>
-      
       <Hero />
       <FeatureCampaigns />
       <DonationWorkflow />
       <HowItWorks />
       <Footer />
     </>
-  )
+  );
 }
