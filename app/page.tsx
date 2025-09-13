@@ -537,7 +537,6 @@ export default function PureHeartsLandingPage() {
 import Hero from "@/components/page/pure-hearts-landing-page/hero";
 import FeatureCampaigns from "@/components/page/pure-hearts-landing-page/feature-campaigns";
 import DonationWorkflow from "@/components/page/pure-hearts-landing-page/donation-workflow";
-import HowItWorks from "@/components/page/pure-hearts-landing-page/how-it-works";
 import Footer from "@/components/page/pure-hearts-landing-page/footer";
 
 export default function PureHeartsLandingPage() {
@@ -546,7 +545,6 @@ export default function PureHeartsLandingPage() {
       <Hero />
       <FeatureCampaigns />
       <DonationWorkflow />
-      {/* <HowItWorks /> */}
       <Footer />
     </>
   );
