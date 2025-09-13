@@ -1,7 +1,3 @@
-"use client"
-
-import React from "react"
-
 export default function TermsAndConditionsPage() {
   return (
     <main className="container mx-auto max-w-4xl px-6 py-12">
