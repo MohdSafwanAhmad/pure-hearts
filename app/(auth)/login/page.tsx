@@ -3,7 +3,7 @@ import { Button } from "@/src/components/ui/button";
 
 export default function LoginPage() {
   return (
-    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
+    <div className="flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-sm md:max-w-md">
         <div className="space-y-6 text-center">
           <div className="space-y-2">
@@ -17,24 +17,22 @@ export default function LoginPage() {
 
           <div className="space-y-4">
             <Button asChild size="lg" className="w-full">
-              <Link href="/login/donor">
-                Login as a Donor
-              </Link>
+              <Link href="/login/donor">Login as a Donor</Link>
             </Button>
 
             <Button asChild variant="outline" size="lg" className="w-full">
-              <Link href="/login/organization">
-                Login as an Organization
-              </Link>
+              <Link href="/login/organization">Login as an Organization</Link>
             </Button>
           </div>
 
           <p className="text-muted-foreground text-xs md:text-sm">
             Don&apos;t have an account?{" "}
-            <Button asChild variant="link" className="h-auto p-0 text-xs md:text-sm">
-              <Link href="/signup">
-                Sign up
-              </Link>
+            <Button
+              asChild
+              variant="link"
+              className="h-auto p-0 text-xs md:text-sm"
+            >
+              <Link href="/signup">Sign up</Link>
             </Button>
           </p>
         </div>
