@@ -76,11 +76,9 @@ Once you have completed the initial setup, you can follow this cycle for develop
 ## Making changes to Supabase / Database
 
 1. Run first `npx supabase db pull` to make sure your local database is up to date with the remote database
-2. Update local database using studio OR by adding migration files under `supabase/migrations/`.  
-Example: `migrations git:(project) ✗ npx supabase migration new add_projects_donations`
-2. Paste your SQL into the new migration file.
-3. Apply migrations locally: `npx supabase db reset`. This recreates the DB, runs all migrations, and applies `supabase/seed.sql`.
-4. Test locally in Studio and in your app.
+2. Update local database with Studio
+3. Test it locally, then create migration file using `npx supabase db diff --schema public -f <migration_name>`
+4. Apply migrations locally: `npx supabase db reset`. This recreates the DB, runs all migrations, and applies `supabase/seed.sql`.
 5. Commit and push your migration files to Git. Other devs just need to pull your branch and run: `npx supabase db reset` to get the same schema.
 
 ### Syncing with the Cloud Database
