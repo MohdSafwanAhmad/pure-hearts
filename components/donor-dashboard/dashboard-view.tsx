@@ -10,7 +10,7 @@ import {
 
 import data from "./data.json"
 
-export default function Page() {
+export default function DashboardView() {
   return (
     <SidebarProvider
       style={
