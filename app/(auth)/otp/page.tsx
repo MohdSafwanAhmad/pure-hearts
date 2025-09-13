@@ -1,5 +1,5 @@
-import { OTPForm } from "@/src/components/page/otp/otp-form";
-import { Card, CardContent } from "@/src/components/ui/card";
+import { OTPForm } from "@/components/page/otp/otp-form";
+import { Card, CardContent } from "@/components/ui/card";
 import { redirect } from "next/navigation";
 
 export default async function OTPPage({

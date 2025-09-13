@@ -1,4 +1,4 @@
-import { LoginForm } from "@/src/components/page/login/login-form";
+import { LoginForm } from "@/components/page/login/login-form";
 
 export default function DonorLoginPage() {
   return (

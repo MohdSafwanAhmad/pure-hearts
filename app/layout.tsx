@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import Navbar from "@/src/components/global/navbar";
-import { Toaster } from "@/src/components/ui/sonner";
+import Navbar from "@/components/global/navbar";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Pure Hearts",

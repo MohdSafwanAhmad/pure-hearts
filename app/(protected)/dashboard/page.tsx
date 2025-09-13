@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-// import LogoutButton from "@/src/components/global/logout-button";
+// import LogoutButton from "@/components/global/logout-button";
 import { getDonorProfile } from "@/src/lib/supabase/server";
 import DashboardView from "@/components/donor-dashboard/dashboard-view";
 

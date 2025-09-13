@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/site-header"
 import {
   SidebarInset,
   SidebarProvider,
-} from "@/src/components/ui/sidebar"
+} from "@/components/ui/sidebar"
 
 import data from "./data.json"
 
