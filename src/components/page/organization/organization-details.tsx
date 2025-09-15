@@ -1,0 +1,164 @@
+"use client";
+
+import { Organization } from "@/src/api/organization";
+import { useState } from "react";
+interface OrganizationDetailsProps {
+  organization: Organization;
+}
+
+type TabKey = "contact" | "overview";
+
+interface Tab {
+  key: TabKey;
+  label: string;
+}
+
+const tabs: Tab[] = [
+  { key: "contact", label: "Contact Data" },
+  { key: "overview", label: "Overview" },
+];
+
+export function OrganizationDetails({
+  organization,
+}: OrganizationDetailsProps) {
+  const [activeTab, setActiveTab] = useState<TabKey>("overview");
+
+  const projectAreas = Array.isArray(organization.project_areas)
+    ? (organization.project_areas as string[])
+    : [];
+
+  const overviewItems = [
+    {
+      label: "Name of the Organization",
+      value: organization.organization_name,
+    },
+    {
+      label: "Organization Area",
+      value: projectAreas.length > 0 ? projectAreas.join(", ") : "Social",
+    },
+    {
+      label: "Street Address",
+      value: organization.address,
+    },
+    {
+      label: "Province/State",
+      value: organization.state,
+    },
+    {
+      label: "City",
+      value: organization.city,
+    },
+    {
+      label: "Country",
+      value: organization.country,
+    },
+  ];
+
+  const contactItems = [
+    {
+      label: "Organization Phone",
+      value: organization.organization_phone,
+      type: "phone",
+    },
+    {
+      label: "Website",
+      value: organization.website_url,
+      type: "link",
+    },
+    {
+      label: "Facebook",
+      value: organization.facebook_url,
+      type: "link",
+    },
+    {
+      label: "Twitter",
+      value: organization.twitter_url,
+      type: "link",
+    },
+    {
+      label: "Instagram",
+      value: organization.instagram_url,
+      type: "link",
+    },
+    {
+      label: "LinkedIn",
+      value: organization.linkedin_url,
+      type: "link",
+    },
+  ].filter((item) => item.value); // Filter out null or undefined values
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "contact":
+        return (
+          <div className="grid gap-x-6 grid-cols-1 sm:grid-cols-2 divide-y">
+            {contactItems.map((item, index) => (
+              <div key={index} className="py-4">
+                <span className="text-gray-600">{item.label}</span>
+                <div className="font-semibold">
+                  {item.type === "phone" ? (
+                    <a
+                      href={`tel:${item.value}`}
+                      className="text-blue-600 hover:underline cursor-pointer"
+                    >
+                      {item.value}
+                    </a>
+                  ) : item.type === "link" ? (
+                    <a
+                      href={item.value!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {item.value}
+                    </a>
+                  ) : (
+                    item.value
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+
+      case "overview":
+      default:
+        return (
+          <div className="grid gap-x-6 grid-cols-1 sm:grid-cols-2 divide-y">
+            {overviewItems.map((item, index) => (
+              <div key={index} className="py-4">
+                <span className="text-gray-600">{item.label}</span>
+                <div className="font-semibold">{item.value}</div>
+              </div>
+            ))}
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="mb-8">
+      <div className="border-b border-gray-200">
+        <nav className="flex space-x-8 px-0">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`py-2 px-1 border-b-4 ${
+                activeTab === tab.key
+                  ? "border-emerald-500 text-emerald-600 font-medium"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+      <div className="space-y-6">
+        {/* Tab Content */}
+        {renderTabContent()}
+      </div>
+    </div>
+  );
+}

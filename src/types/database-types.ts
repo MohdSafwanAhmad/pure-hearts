@@ -74,6 +74,7 @@ export type Database = {
           organization_name: string;
           organization_phone: string;
           project_areas: Json | null;
+          slug: string;
           state: string;
           twitter_url: string | null;
           user_id: string;
@@ -94,6 +95,7 @@ export type Database = {
           organization_name: string;
           organization_phone: string;
           project_areas?: Json | null;
+          slug: string;
           state: string;
           twitter_url?: string | null;
           user_id: string;
@@ -114,6 +116,7 @@ export type Database = {
           organization_name?: string;
           organization_phone?: string;
           project_areas?: Json | null;
+          slug?: string;
           state?: string;
           twitter_url?: string | null;
           user_id?: string;
