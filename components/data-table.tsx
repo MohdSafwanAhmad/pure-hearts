@@ -168,17 +168,17 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-  {
+/*  {
     accessorKey: "header",
     header: "Header",
     cell: ({ row }) => {
       return <TableCellViewer item={row.original} />
     },
     enableHiding: false,
-  },
+  },*/
   {
     accessorKey: "type",
-    header: "Section Type",
+    header: "Project",
     cell: ({ row }) => (
       <div className="w-32">
         <Badge variant="outline" className="text-muted-foreground px-1.5">
@@ -188,8 +188,8 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     ),
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "Organization",
+    header: "Organization",
     cell: ({ row }) => (
       <Badge variant="outline" className="text-muted-foreground px-1.5">
         {row.original.status === "Done" ? (
@@ -202,8 +202,8 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     ),
   },
   {
-    accessorKey: "target",
-    header: () => <div className="w-full text-right">Target</div>,
+    accessorKey: "Amount Donated",
+    header:"Amount Donated",
     cell: ({ row }) => (
       <form
         onSubmit={(e) => {
@@ -227,8 +227,8 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     ),
   },
   {
-    accessorKey: "limit",
-    header: () => <div className="w-full text-right">Limit</div>,
+    accessorKey: "Date",
+    header: "Date",
     cell: ({ row }) => (
       <form
         onSubmit={(e) => {
@@ -252,10 +252,10 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     ),
   },
   {
-    accessorKey: "reviewer",
-    header: "Reviewer",
+    accessorKey: "Receipt",
+    header: "Receipt",
     cell: ({ row }) => {
-      const isAssigned = row.original.reviewer !== "Assign reviewer"
+      /*const isAssigned = row.original.reviewer !== "Assign reviewer"
 
       if (isAssigned) {
         return row.original.reviewer
@@ -282,7 +282,24 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
             </SelectContent>
           </Select>
         </>
-      )
+      )*/
+     
+    const donationId = row.original.id
+    return (
+      <a
+        href={`/api/receipts/${donationId}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 hover:underline"
+      >
+        Download
+      </a>
+    )
+  
+
+     
+
+
     },
   },
   {

@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import {
@@ -209,7 +210,8 @@ export function ChartAreaInteractive() {
         </CardAction>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <ChartContainer
+       {/*
+<ChartContainer
           config={chartConfig}
           className="aspect-auto h-[250px] w-full"
         >
@@ -218,7 +220,7 @@ export function ChartAreaInteractive() {
               <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
                 <stop
                   offset="5%"
-                  stopColor="var(--color-desktop)"
+                 /* stopColor="var(--color-desktop)"
                   stopOpacity={1.0}
                 />
                 <stop
@@ -284,8 +286,54 @@ export function ChartAreaInteractive() {
               stackId="a"
             />
           </AreaChart>
-        </ChartContainer>
-      </CardContent>
+        </ChartContainer>*/}
+        <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
+  <BarChart data={filteredData}>
+    <CartesianGrid vertical={false} />
+    <XAxis
+      dataKey="date"
+      tickLine={false}
+      axisLine={false}
+      tickMargin={8}
+      minTickGap={32}
+      tickFormatter={(value) =>
+        new Date(value).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        })
+      }
+    />
+    <ChartTooltip
+      cursor={{ fillOpacity: 0.06 }}
+      content={
+        <ChartTooltipContent
+          labelFormatter={(value) =>
+            new Date(value).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            })
+          }
+        />
+      }
+    />
+    {/* Stacked bars; remove stackId="a" for grouped bars */}
+    <Bar
+      dataKey="mobile"
+      fill="var(--color-mobile)"
+      stackId="a"
+      radius={[4, 4, 0, 0]}
+    />
+    <Bar
+      dataKey="desktop"
+      fill="var(--color-desktop)"
+      stackId="a"
+      radius={[4, 4, 0, 0]}
+    />
+  </BarChart>
+</ChartContainer>
+
+
+             </CardContent>
     </Card>
   )
 }
