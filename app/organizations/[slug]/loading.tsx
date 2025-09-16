@@ -5,16 +5,16 @@ export default function OrganizationLoading() {
       {/* Header Section Skeleton - match gradient, height, logo size */}
       <div className="bg-gradient-to-b from-emerald-600 to-emerald-700 mb-section">
         <div className="container mx-auto py-12 px-4">
-          <div className="flex flex-col lg:flex-row gap-8 items-center text-white">
+          <div className="flex flex-col lg:flex-row gap-8 items-center text-white w-full">
             {/* Logo Skeleton */}
-            <div className="w-48 h-48 lg:w-64 lg:h-64 bg-background rounded-lg shadow-lg overflow-hidden relative flex items-center justify-center">
+            <div className="w-48 h-48 lg:w-64 lg:h-64 bg-background rounded-lg shadow-lg overflow-hidden relative flex items-center justify-center mb-4 lg:mb-0">
               <Skeleton className="w-40 h-40 lg:w-56 lg:h-56 rounded-lg" />
             </div>
             {/* Info Skeleton */}
-            <div className="flex-1 text-center lg:text-left">
-              <Skeleton className="h-10 w-2/3 mb-2 mx-auto lg:mx-0" />
-              <div className="flex items-center justify-center lg:justify-start gap-2 mb-4">
-                <Skeleton className="h-6 w-1/3" />
+            <div className="flex-1 w-full text-center lg:text-left flex flex-col items-center lg:items-start">
+              <Skeleton className="h-10 w-2/3 mb-2" />
+              <div className="flex items-center justify-center lg:justify-start gap-2 mb-4 w-full">
+                <Skeleton className="h-6 w-1/2" />
               </div>
             </div>
           </div>
