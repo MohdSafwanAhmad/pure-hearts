@@ -1,25 +1,25 @@
-import { Button } from "@/src/components/ui/button";
+import logo from "@/public/fake_logo_charity.webp";
 import { Organization } from "@/src/api/organization";
 import { Heading } from "@/src/components/global/heading";
 import { MapPin } from "lucide-react";
+import Image from "next/image";
 interface OrganizationHeaderProps {
   organization: Organization;
 }
 
 export function OrganizationHeader({ organization }: OrganizationHeaderProps) {
   return (
-    <div className="bg-gradient-to-b from-emerald-600 to-emerald-700 mb-6">
-      <div className="container mx-auto px-4 py-12">
+    <div className="bg-gradient-to-b from-emerald-600 to-emerald-700 mb-section">
+      <div className="container mx-auto py-12 px-4">
         <div className="flex flex-col lg:flex-row gap-8 items-center text-white">
           {/* Organization Logo */}
-          <div className="flex-shrink-0">
-            <div className="w-48 h-48 lg:w-64 lg:h-64 bg-white rounded-lg shadow-lg flex items-center justify-center">
-              <div className="w-32 h-32 lg:w-48 lg:h-48 bg-emerald-100 rounded-lg flex items-center justify-center">
-                <span className="text-emerald-600 text-xl font-bold">
-                  {organization.organization_name.charAt(0)}
-                </span>
-              </div>
-            </div>
+          <div className="w-48 h-48 lg:w-64 lg:h-64 bg-background rounded-lg shadow-lg overflow-hidden relative">
+            <Image
+              src={logo}
+              alt={organization.organization_name}
+              fill
+              className="object-cover"
+            />
           </div>
 
           {/* Organization Info */}
@@ -33,16 +33,6 @@ export function OrganizationHeader({ organization }: OrganizationHeaderProps) {
                 {organization.city} - {organization.state}
               </span>
             </div>
-          </div>
-
-          {/* Quick Donation Button */}
-          <div className="flex-shrink-0">
-            <Button
-              size="lg"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full"
-            >
-              Quick Donation
-            </Button>
           </div>
         </div>
       </div>

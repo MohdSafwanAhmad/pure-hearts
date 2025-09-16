@@ -63,97 +63,95 @@ export function ProjectsSection() {
     activeProjectType === "completed" ? completedProjects : existingProjects;
 
   return (
-    <section className="w-full bg-gray-100 py-12">
-      <div className="container mx-auto px-4 md:px-6 lg:px-8">
-        <Heading level={2} className="mb-6">
-          The list of projects
-        </Heading>
+    <section className="mb-section">
+      <Heading level={2} className="mb-subtitle">
+        The list of projects
+      </Heading>
 
-        {/* Project Toggle */}
-        <div className="flex mb-6">
-          <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1">
-            <button
-              onClick={() => setActiveProjectType("completed")}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeProjectType === "completed"
-                  ? "text-white bg-emerald-600"
-                  : "text-gray-700 hover:text-gray-900"
-              }`}
-            >
-              Completed Projects
-            </button>
-            <button
-              onClick={() => setActiveProjectType("existing")}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeProjectType === "existing"
-                  ? "text-white bg-emerald-600"
-                  : "text-gray-700 hover:text-gray-900"
-              }`}
-            >
-              Existing Projects
-            </button>
-          </div>
+      {/* Project Toggle */}
+      <div className="flex mb-subtitle">
+        <div className="rounded-lg border border-gray-200 bg-white p-1">
+          <button
+            onClick={() => setActiveProjectType("completed")}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              activeProjectType === "completed"
+                ? "text-white bg-emerald-600"
+                : "text-gray-700 hover:text-gray-900"
+            }`}
+          >
+            Completed Projects
+          </button>
+          <button
+            onClick={() => setActiveProjectType("existing")}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              activeProjectType === "existing"
+                ? "text-white bg-emerald-600"
+                : "text-gray-700 hover:text-gray-900"
+            }`}
+          >
+            Existing Projects
+          </button>
         </div>
+      </div>
 
-        {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-          {currentProjects.map((project) => (
-            <Card key={project.id} className="overflow-hidden">
-              <div className="relative h-48 bg-gray-200">
-                <div className="absolute top-4 left-4">
-                  <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-bold">Logo</span>
-                  </div>
+      {/* Projects Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+        {currentProjects.map((project) => (
+          <Card key={project.id} className="overflow-hidden">
+            <div className="relative h-48 bg-gray-200">
+              <div className="absolute top-4 left-4">
+                <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">Logo</span>
                 </div>
               </div>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm text-gray-600">{project.title}</span>
-                </div>
-                <div className="text-xs text-gray-500 mb-3 line-clamp-2">
-                  {project.description}
-                </div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-600">
-                      {activeProjectType === "completed"
-                        ? "Completion History"
-                        : "Start Date"}
-                    </span>
-                    <div className="font-semibold">
-                      {project.completionDate || "01/01/2024"}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Status number</span>
-                    <div className="font-semibold">{project.statusNumber}</div>
+            </div>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm text-gray-600">{project.title}</span>
+              </div>
+              <div className="text-xs text-gray-500 mb-3 line-clamp-2">
+                {project.description}
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-600">
+                    {activeProjectType === "completed"
+                      ? "Completion History"
+                      : "Start Date"}
+                  </span>
+                  <div className="font-semibold">
+                    {project.completionDate || "01/01/2024"}
                   </div>
                 </div>
-                <div className="mt-4 space-y-2">
-                  {activeProjectType === "completed" ? (
-                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
-                      Review of the report
-                    </Button>
-                  ) : (
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                      Support Project
-                    </Button>
-                  )}
-                  <Button variant="outline" className="w-full text-gray-600">
-                    View Details
+                <div>
+                  <span className="text-gray-600">Status number</span>
+                  <div className="font-semibold">{project.statusNumber}</div>
+                </div>
+              </div>
+              <div className="mt-4 space-y-2">
+                {activeProjectType === "completed" ? (
+                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+                    Review of the report
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                ) : (
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                    Support Project
+                  </Button>
+                )}
+                <Button variant="outline" className="w-full text-gray-600">
+                  View Details
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-        {/* More Button */}
-        <div className="text-center">
-          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-2">
-            More
-          </Button>
-        </div>
+      {/* More Button */}
+      <div className="text-center">
+        <Button className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-2">
+          More
+        </Button>
       </div>
     </section>
   );

@@ -2,6 +2,7 @@
 
 import { Organization } from "@/src/api/organization";
 import { useState } from "react";
+import { Heading } from "@/src/components/global/heading";
 interface OrganizationDetailsProps {
   organization: Organization;
 }
@@ -137,7 +138,16 @@ export function OrganizationDetails({
   };
 
   return (
-    <div className="mb-8">
+    <section className="mb-section">
+      {/* Organization Description */}
+      <div className="mb-subtitle">
+        <Heading level={2} className="mb-element">
+          About {organization.organization_name}
+        </Heading>
+        <p className="text-gray-700 leading-relaxed">
+          {organization.mission_statement}
+        </p>
+      </div>
       <div className="border-b border-gray-200">
         <nav className="flex space-x-8 px-0">
           {tabs.map((tab) => (
@@ -159,6 +169,6 @@ export function OrganizationDetails({
         {/* Tab Content */}
         {renderTabContent()}
       </div>
-    </div>
+    </section>
   );
 }

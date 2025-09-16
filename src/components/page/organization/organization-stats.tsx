@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/src/components/ui/card";
 
 export function OrganizationStats() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-section">
       <Card className="bg-transparent border border-gray-300">
         <CardContent className="px-4 text-left">
           <div className="text-emerald-600 text-sm font-semibold mb-1">
@@ -39,6 +39,6 @@ export function OrganizationStats() {
           <div className="text-gray-600 text-sm">Contributors</div>
         </CardContent>
       </Card>
-    </div>
+    </section>
   );
 }

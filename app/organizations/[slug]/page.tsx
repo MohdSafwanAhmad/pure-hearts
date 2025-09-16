@@ -22,23 +22,19 @@ export default async function OrganizationPage({
   }
 
   return (
-    <>
+    <div>
       {/* Header Section */}
       <OrganizationHeader organization={organization} />
 
       {/* Content Section */}
-      <div className="min-h-screen space-y-10">
-        <div className="container mx-auto px-4 py-8">
-          {/* Statistics Cards */}
-          <OrganizationStats />
+      <div className="container mx-auto px-4">
+        {/* Statistics Cards */}
+        <OrganizationStats />
 
-          {/* Organization Details Tabs */}
-          <OrganizationDetails organization={organization} />
-        </div>
-
-        {/* Projects Section - Outside container for full width background */}
+        {/* Organization Details Tabs */}
+        <OrganizationDetails organization={organization} />
         <ProjectsSection />
       </div>
-    </>
+    </div>
   );
 }
