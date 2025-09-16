@@ -132,25 +132,6 @@
 /* Semantic Spacing System - Based on LiftKit */
 /* Margin bottom utilities for content hierarchy */
 
-@utility mb-micro {
-  margin-bottom: 0.128rem;
-} /* gap-xs equivalent */
-@utility mb-tiny {
-  margin-bottom: 0.272rem;
-} /* gap-s equivalent */
-@utility mb-small {
-  margin-bottom: 0.618rem;
-} /* gap-m equivalent */
-@utility mb-base {
-  margin-bottom: 1rem;
-} /* gap-l equivalent */
-@utility mb-large {
-  margin-bottom: 1.618rem;
-} /* gap-xl equivalent */
-@utility mb-huge {
-  margin-bottom: 2.618rem;
-} /* gap-xxl equivalent */
-
 /* Content-specific sremantic classes */
 @utility mb-title {
   margin-bottom: 1.618rem;
@@ -166,4 +147,20 @@
 } /* Between paragraphs */
 @utility mb-element {
   margin-bottom: 0.272rem;
+}
+
+@utility mt-title {
+  margin-top: 1.618rem;
+} /* For main titles */
+@utility mt-subtitle {
+  margin-top: 1rem;
+} /* For subtitles */
+@utility mt-section {
+  margin-top: 2.618rem;
+} /* Between major sections */
+@utility mt-paragraph {
+  margin-top: 0.618rem;
+} /* Between paragraphs */
+@utility mt-element {
+  margin-top: 0.272rem;
 }
