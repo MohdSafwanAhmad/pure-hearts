@@ -5,6 +5,8 @@ import { Button } from "@/src/components/ui/button";
 import { useState } from "react";
 import { OrganizationProjectCard } from "./project-card";
 
+import { FolderOpen } from "lucide-react";
+
 type ProjectType = "completed" | "existing";
 
 interface Props {
@@ -39,7 +41,7 @@ export function ProjectsSection({ projects }: Props) {
       </Heading>
 
       {/* Project Toggle */}
-      <div className="flex mb-subtitle">
+      <div className="flex mb-title">
         <div className="rounded-lg border border-gray-200 bg-white p-1">
           <button
             onClick={() => setActiveProjectType("completed")}
@@ -64,24 +66,38 @@ export function ProjectsSection({ projects }: Props) {
         </div>
       </div>
 
-      {/* Projects Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-        {currentProjects.map((project) => (
-          <OrganizationProjectCard
-            key={project.projectId}
-            title={project.title}
-            description={project.description}
-            projectBackgroundImage={project.projectBackgroundImage}
-            completionDate={project.completionDate}
-            startDate={project.startDate}
-            projectId={project.projectId}
-          />
-        ))}
-      </div>
+      {/* Projects Grid or Empty State */}
+      {currentProjects.length === 0 ? (
+        <div className="flex flex-col items-center justify-center mb-section text-gray-500">
+          <FolderOpen className="h-16 w-16 mb-subtitle text-gray-300" />
+          <span className="text-lg font-semibold text-center mb-element">
+            No projects found.
+          </span>
+          <span className="text-sm text-center">
+            Check back later or contact the organization for updates.
+          </span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-section">
+          {currentProjects.map((project) => (
+            <OrganizationProjectCard
+              key={project.projectId}
+              title={project.title}
+              description={project.description}
+              projectBackgroundImage={project.projectBackgroundImage}
+              completionDate={project.completionDate}
+              startDate={project.startDate}
+              projectId={project.projectId}
+            />
+          ))}
+        </div>
+      )}
 
       {/* More Button */}
       <div className="text-center">
-        <Button size={"lg"}>More</Button>
+        <Button size={"lg"} disabled={currentProjects.length === 0}>
+          More
+        </Button>
       </div>
     </section>
   );
