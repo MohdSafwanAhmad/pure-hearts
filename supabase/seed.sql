@@ -1,5 +1,6 @@
--- Seed: 10 Islamic-themed organization users (8 verified, 2 not verified)
--- First, insert into auth.users
+-- =============================================================
+-- Seed Data for Organizations
+-- =============================================================
 INSERT INTO
     auth.users (id, email, raw_user_meta_data)
 VALUES
