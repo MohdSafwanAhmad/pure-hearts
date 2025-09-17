@@ -16,7 +16,22 @@ This project uses ESLint and Prettier for code quality and formatting. To set th
 ### Set Up Environment Variables
 
 1. You can take a look at the file `env.example` to see which environment variables are needed.
-2. Create a `.env` file at the root of your project for the moment add nothing to it.
+2. **For local development**  
+   Create a `.env.local` file at the root of your project with the values printed by `npx supabase start`:
+
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<anon key from terminal>
+   ```
+
+   ️ Never commit `.env.local`. It is meant for your machine only.
+
+3. **For production (Vercel)**  
+   You do **not** need a `.env` file in the repo. Instead, go to your Vercel project:
+
+- Open **Project Settings → Environment Variables**
+- Add the same keys, but use the **cloud Supabase project values** (`https://<project-ref>.supabase.co` and its `anon key`).
+- Redeploy after saving changes.
 
 ### Set Up Supabase to run the project locally
 
@@ -28,31 +43,26 @@ The goal of running Supabase locally is to be able to develop the database, auth
 2. Install Docker Desktop if you haven't already: [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 3. On the root of your project, run `npx supabase start` to install the Supabase CLI globally.
    -- It should download the Supabase Docker image and start the local Supabase instance. It takes time, so be patient.
-4. After the local Supabase instance is running, you can access the different services supabase is running locally - There url should be printed in the terminal.
-   It should like that:
+4. After the local Supabase instance is running, you’ll see connection details like:
 
-```
-Started supabase local development setup.
-API URL: http://localhost:54321 -- The RESTful API endpoint for your database and edge functions.
-DB URL: postgresql://postgres:postgres@localhost:54322/postgres -- Never used it
-Studio URL: http://localhost:54323 -- The web interface to manage your database and authentication, just like the cloud version of Supabase.
-Mailpit URL: http://localhost:54324 -- A web interface to view the emails sent by your application during development. Good for login/signup email testing.
-anon key: eyJh......
-service_role key: eyJh......
-```
+   ```
+   Started supabase local development setup.
+   API URL: http://localhost:54321 -- The RESTful API endpoint for your database and edge functions.
+   DB URL: postgresql://postgres:postgres@localhost:54322/postgres -- Never used it
+   Studio URL: http://localhost:54323 -- The web interface to manage your database and authentication, just like the cloud version of Supabase.
+   Mailpit URL: http://localhost:54324 -- A web interface to view the emails sent by your application during development. Good for login/signup email testing.
+   anon key: eyJh......
+   service_role key: eyJh......
+   ```
 
-4. In your environment variables file `.env`, set the:
+   Copy the API URL and anon key into your `.env.local` file as shown above.
 
-   - `NEXT_PUBLIC_SUPABASE_URL` to the local Supabase URL printed in the terminal after running `npx supabase start`:
-   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the anon key that is also printed in the terminal after running `npx supabase start`
-
-5. Run `npx supabase functions serve` in another terminal window to start the local edge functions server. This will allow you to test edge functions locally.
-   - If the Edge functions rely on some environment variables, contact a developer to get them.
+5. Run `npx supabase functions serve` in another terminal window to start the local edge functions server. This will allow you to test edge functions locally. If the Edge functions rely on some environment variables, contact a developer to get them.
 
 ### Start the Development Server
 
 1. Run the development server with: `npm run dev`
-   - Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Cycle of Development
 
@@ -67,18 +77,26 @@ Once you have completed the initial setup, you can follow this cycle for develop
    - Stop the web development server by pressing `Ctrl + C` in the terminal window where it's running.
    - Stop the local Supabase instance by running `npx supabase stop` in any terminal window at root project path.
 
-### Making change on Supabase/Database
+## Making changes to Supabase / Database
 
 1. Run first `npx supabase db pull` to make sure your local database is up to date with the remote database
-2. Update local database using studio
-3. Test it locally
-4. Create migration file using `npx supabase db diff --schema public -f <migration_name>`
-5. Apply migration to local database using `npx supabase db reset`
-6. **When you want to push migration file to production**
-   - Run `npx supabase db pull` to make sure your local database is up to date with the remote database
-   - Create migration file using `npx supabase db diff --schema public -f <migration_name>`
-   - Test migration file by running `npx supabase db reset`
-   - If everything works as expected run `npx supabase db push` to push migration to remote database
+2. Update local database with Studio
+3. Test it locally, then create migration file using `npx supabase db diff --schema public -f <migration_name>`
+4. Apply migrations locally: `npx supabase db reset`. This recreates the DB, runs all migrations, and applies `supabase/seed.sql`.
+5. Commit and push your migration files to Git. Other devs just need to pull your branch and run: `npx supabase db reset` to get the same schema.
+
+### Syncing with the Cloud Database
+
+Only when you are ready to deploy to the cloud:
+
+1. Authenticate and link your project:
+   ```
+   npx supabase login
+   npx supabase link --project-ref <PROJECT_REF>
+   ```
+   Find `<PROJECT_REF>` at the end of your dashboard URL: `https://supabase.com/dashboard/project/<PROJECT_REF>`
+2. Pull to ensure your local schema matches cloud: `npx supabase db pull`.
+3. Only when you are ready to deploy to the cloud, push your local migrations to the cloud: `npx supabase db push`
 
 ### Making change on Supabase/Edge functions
 
