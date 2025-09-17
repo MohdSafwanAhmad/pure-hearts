@@ -24,10 +24,11 @@ The goal of running Supabase locally is to be able to develop the database, auth
 
 - Useful Documentation [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started)
 
-1. Install Docker Desktop if you haven't already: [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-2. On the root of your project, run `npx supabase start` to install the Supabase CLI globally.
+1. Inside the root supabase folder add a folder named `public-images`. This is where the images uploaded to the `public-images` storage bucket will be stored locally. To get the images contact a developer.
+2. Install Docker Desktop if you haven't already: [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+3. On the root of your project, run `npx supabase start` to install the Supabase CLI globally.
    -- It should download the Supabase Docker image and start the local Supabase instance. It takes time, so be patient.
-3. After the local Supabase instance is running, you can access the different services supabase is running locally - There url should be printed in the terminal.
+4. After the local Supabase instance is running, you can access the different services supabase is running locally - There url should be printed in the terminal.
    It should like that:
 
 ```
