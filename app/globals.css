@@ -128,3 +128,39 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Semantic Spacing System - Based on LiftKit */
+/* Margin bottom utilities for content hierarchy */
+
+/* Content-specific sremantic classes */
+@utility mb-title {
+  margin-bottom: 1.618rem;
+} /* For main titles */
+@utility mb-subtitle {
+  margin-bottom: 1rem;
+} /* For subtitles */
+@utility mb-section {
+  margin-bottom: 2.618rem;
+} /* Between major sections */
+@utility mb-paragraph {
+  margin-bottom: 0.618rem;
+} /* Between paragraphs */
+@utility mb-element {
+  margin-bottom: 0.272rem;
+}
+
+@utility mt-title {
+  margin-top: 1.618rem;
+} /* For main titles */
+@utility mt-subtitle {
+  margin-top: 1rem;
+} /* For subtitles */
+@utility mt-section {
+  margin-top: 2.618rem;
+} /* Between major sections */
+@utility mt-paragraph {
+  margin-top: 0.618rem;
+} /* Between paragraphs */
+@utility mt-element {
+  margin-top: 0.272rem;
+}

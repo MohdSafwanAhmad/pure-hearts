@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import { generateUniqueSlug } from "@/src/lib/slugifier";
 
 const signupAsOrganizationAuthSchema = z.object({
   organizationEmail: z.email("Please enter a valid organization email address"),
@@ -129,6 +130,22 @@ export async function signupAsOrganization(
     };
   }
 
+  let slug: string;
+  try {
+    slug = await generateUniqueSlug(
+      result.data.organizationName,
+      "organizations"
+    );
+  } catch {
+    return {
+      errors: {
+        organizationName: [
+          "An organization with this name already exists. Please choose a different name.",
+        ],
+      },
+    };
+  }
+
   const { error } = await supabase.auth.signInWithOtp({
     email: result.data.organizationEmail,
     options: {
@@ -150,6 +167,7 @@ export async function signupAsOrganization(
         twitter_url: result.data.twitterUrl,
         instagram_url: result.data.instagramUrl,
         linkedin_url: result.data.linkedinUrl,
+        slug: slug,
       },
     },
   });
