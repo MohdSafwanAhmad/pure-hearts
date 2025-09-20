@@ -70,10 +70,12 @@ export type Database = {
           instagram_url: string | null;
           is_verified: boolean | null;
           linkedin_url: string | null;
+          logo: string | null;
           mission_statement: string;
           organization_name: string;
           organization_phone: string;
           project_areas: Json | null;
+          slug: string;
           state: string;
           twitter_url: string | null;
           user_id: string;
@@ -90,10 +92,12 @@ export type Database = {
           instagram_url?: string | null;
           is_verified?: boolean | null;
           linkedin_url?: string | null;
+          logo?: string | null;
           mission_statement: string;
           organization_name: string;
           organization_phone: string;
           project_areas?: Json | null;
+          slug: string;
           state: string;
           twitter_url?: string | null;
           user_id: string;
@@ -110,10 +114,12 @@ export type Database = {
           instagram_url?: string | null;
           is_verified?: boolean | null;
           linkedin_url?: string | null;
+          logo?: string | null;
           mission_statement?: string;
           organization_name?: string;
           organization_phone?: string;
           project_areas?: Json | null;
+          slug?: string;
           state?: string;
           twitter_url?: string | null;
           user_id?: string;

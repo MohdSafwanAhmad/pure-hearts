@@ -63,7 +63,10 @@ export function OrganizationLoginForm() {
 
               <div className="text-center text-sm">
                 Don&apos;t have an organization account?{" "}
-                <Link href="/signup/organization" className="underline underline-offset-4">
+                <Link
+                  href="/signup/organization"
+                  className="underline underline-offset-4"
+                >
                   Sign up
                 </Link>
               </div>
@@ -82,8 +85,8 @@ export function OrganizationLoginForm() {
       </Card>
       <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
         By clicking continue, you agree to our{" "}
-        <Link href="#">Terms of Service</Link> and{" "}
-        <Link href="#">Privacy Policy</Link>.
+        <Link href="/terms-and-conditions">Terms and Conditions</Link> and{" "}
+        <Link href="/privacy-policy">Privacy Policy</Link>.
       </div>
     </div>
   );

@@ -17,17 +17,20 @@ This project uses ESLint and Prettier for code quality and formatting. To set th
 
 1. You can take a look at the file `env.example` to see which environment variables are needed.
 2. **For local development**  
-Create a `.env.local` file at the root of your project with the values printed by `npx supabase start`:
+   Create a `.env.local` file at the root of your project with the values printed by `npx supabase start`:
+
    ```
    NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<anon key from terminal>
    ```
+
    ️ Never commit `.env.local`. It is meant for your machine only.
 
 3. **For production (Vercel)**  
-You do **not** need a `.env` file in the repo. Instead, go to your Vercel project:  
-- Open **Project Settings → Environment Variables**  
-- Add the same keys, but use the **cloud Supabase project values** (`https://<project-ref>.supabase.co` and its `anon key`).  
+   You do **not** need a `.env` file in the repo. Instead, go to your Vercel project:
+
+- Open **Project Settings → Environment Variables**
+- Add the same keys, but use the **cloud Supabase project values** (`https://<project-ref>.supabase.co` and its `anon key`).
 - Redeploy after saving changes.
 
 ### Set Up Supabase to run the project locally
@@ -36,10 +39,11 @@ The goal of running Supabase locally is to be able to develop the database, auth
 
 - Useful Documentation [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started)
 
-1. Install Docker Desktop if you haven't already: [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-2. On the root of your project, run `npx supabase start` to install the Supabase CLI globally.
+1. Inside the root supabase folder add a folder named `public-images`. This is where the images uploaded to the `public-images` storage bucket will be stored locally. To get the images contact a developer.
+2. Install Docker Desktop if you haven't already: [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+3. On the root of your project, run `npx supabase start` to install the Supabase CLI globally.
    -- It should download the Supabase Docker image and start the local Supabase instance. It takes time, so be patient.
-3. After the local Supabase instance is running, you’ll see connection details like:
+4. After the local Supabase instance is running, you’ll see connection details like:
 
    ```
    Started supabase local development setup.
@@ -53,7 +57,7 @@ The goal of running Supabase locally is to be able to develop the database, auth
 
    Copy the API URL and anon key into your `.env.local` file as shown above.
 
-4. Run `npx supabase functions serve` in another terminal window to start the local edge functions server. This will allow you to test edge functions locally. If the Edge functions rely on some environment variables, contact a developer to get them.
+5. Run `npx supabase functions serve` in another terminal window to start the local edge functions server. This will allow you to test edge functions locally. If the Edge functions rely on some environment variables, contact a developer to get them.
 
 ### Start the Development Server
 
@@ -82,9 +86,10 @@ Once you have completed the initial setup, you can follow this cycle for develop
 5. Commit and push your migration files to Git. Other devs just need to pull your branch and run: `npx supabase db reset` to get the same schema.
 
 ### Syncing with the Cloud Database
-Only when you are ready to deploy to the cloud: 
 
-1. Authenticate and link your project: 
+Only when you are ready to deploy to the cloud:
+
+1. Authenticate and link your project:
    ```
    npx supabase login
    npx supabase link --project-ref <PROJECT_REF>

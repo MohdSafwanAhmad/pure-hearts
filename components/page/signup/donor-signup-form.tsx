@@ -154,7 +154,7 @@ export function DonorSignupForm() {
                   )}
                 </div>
               </div>
-
+              {/* 
               <div className="grid grid-cols-2 gap-4">
                 <Button variant="outline" type="button" className="w-full">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -174,7 +174,7 @@ export function DonorSignupForm() {
                   </svg>
                   <span className="sr-only">Login with Meta</span>
                 </Button>
-              </div>
+              </div> */}
 
               <Button
                 type="submit"
@@ -205,8 +205,8 @@ export function DonorSignupForm() {
       </Card>
       <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
         By clicking continue, you agree to our{" "}
-        <Link href="#">Terms of Service</Link> and{" "}
-        <Link href="#">Privacy Policy</Link>.
+        <Link href="/terms-and-conditions">Terms and Conditions</Link> and{" "}
+        <Link href="/privacy-policy">Privacy Policy</Link>.
       </div>
     </div>
   );
