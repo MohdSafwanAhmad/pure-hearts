@@ -1,4 +1,8 @@
--- Zakat Foundation Canada
+-- =============================================================
+-- Seed Data: Organizations
+-- =============================================================
+
+-- Zakat Foundation Canada and other organizations
 INSERT INTO
     auth.users (
         instance_id,
@@ -20,6 +24,7 @@ INSERT INTO
         recovery_token
     )
 VALUES
+    -- Org 1
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -39,6 +44,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 2
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -58,6 +64,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 3
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -77,6 +84,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 4
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -96,6 +104,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 5
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -115,6 +124,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 6
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -134,6 +144,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 7
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -153,6 +164,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 8
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -172,6 +184,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 9
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -192,12 +205,11 @@ VALUES
         ''
     );
 
--- test user email identities
+-- Create email identities for all users
 INSERT INTO
     auth.identities (
         id,
         user_id,
-        -- New column
         provider_id,
         identity_data,
         provider,
@@ -208,7 +220,6 @@ INSERT INTO
         select
             uuid_generate_v4 (),
             id,
-            -- New column
             id,
             format('{"sub":"%s","email":"%s"}', id::text, email)::jsonb,
             'email',
@@ -219,6 +230,272 @@ INSERT INTO
             auth.users
     );
 
+-- Backfill organizations | Remove once merged with master with the trigger migration
+INSERT INTO 
+    public.organizations (
+        user_id, 
+        organization_name, 
+        organization_phone, 
+        country, 
+        state, 
+        city, 
+        address,
+        contact_person_name, 
+        contact_person_email, 
+        contact_person_phone, 
+        mission_statement,
+        project_areas, 
+        website_url, 
+        facebook_url, 
+        twitter_url, 
+        instagram_url, 
+        linkedin_url
+    )
+SELECT
+        u.id,
+        u.raw_user_meta_data->>'organization_name',
+        u.raw_user_meta_data->>'organization_phone',
+        COALESCE(u.raw_user_meta_data->>'country','Canada'),
+        u.raw_user_meta_data->>'state',
+        u.raw_user_meta_data->>'city',
+        u.raw_user_meta_data->>'address',
+        u.raw_user_meta_data->>'contact_person_name',
+        u.raw_user_meta_data->>'contact_person_email',
+        u.raw_user_meta_data->>'contact_person_phone',
+        COALESCE(u.raw_user_meta_data->>'mission_statement',''),
+        COALESCE(u.raw_user_meta_data->'project_areas','[]'::jsonb),
+        u.raw_user_meta_data->>'website_url',
+        u.raw_user_meta_data->>'facebook_url',
+        u.raw_user_meta_data->>'twitter_url',
+        u.raw_user_meta_data->>'instagram_url',
+        u.raw_user_meta_data->>'linkedin_url'
+FROM 
+    auth.users u
+LEFT JOIN 
+    public.organizations o 
+    ON 
+    o.user_id = u.id
+WHERE 
+    u.raw_user_meta_data->>'user_type' = 'organization' 
+AND 
+    o.user_id IS NULL;
+
+-- =============================================================
+-- Seed Data: Donors
+-- =============================================================
+INSERT INTO 
+auth.users (
+        instance_id, 
+        id, 
+        aud, 
+        role, 
+        email, 
+        encrypted_password,
+        email_confirmed_at, 
+        recovery_sent_at, 
+        last_sign_in_at,
+        raw_app_meta_data, 
+        raw_user_meta_data,
+        created_at, 
+        updated_at,
+        confirmation_token, 
+        email_change, 
+        email_change_token_new, 
+        recovery_token
+    )
+VALUES
+    (
+        '00000000-0000-0000-0000-000000000000',
+        uuid_generate_v4(),
+        'authenticated',
+        'authenticated',
+        'donor1@purezakat.com',
+        '',
+        current_timestamp, 
+        current_timestamp, 
+        current_timestamp,
+        '{"provider":"email","providers":["email"]}',
+        '{"user_type":"donor","first_name":"Mounir","last_name":"Aiache","donation_preferences":["Education","Orphan Care"]}',
+        current_timestamp, 
+        current_timestamp,
+        '',
+        '',
+        '',
+        ''
+    ),
+(
+        '00000000-0000-0000-0000-000000000000',
+        uuid_generate_v4(),
+        'authenticated',
+        'authenticated',
+        'donor2@purezakat.com',
+        '',
+        current_timestamp, 
+        current_timestamp, 
+        current_timestamp,
+        '{"provider":"email","providers":["email"]}',
+        '{"user_type":"donor","first_name":"Safwan","last_name":"Ansari","donation_preferences":["Education","Poverty Alleviation"]}',
+        current_timestamp, 
+        current_timestamp,
+        '',
+        '',
+        '',
+        ''
+    ),
+    (
+        '00000000-0000-0000-0000-000000000000',
+        uuid_generate_v4(),
+        'authenticated',
+        'authenticated',
+        'donor3@purezakat.com',
+        '',
+        current_timestamp, 
+        current_timestamp, 
+        current_timestamp,
+        '{"provider":"email","providers":["email"]}',
+        '{"user_type":"donor","first_name":"Fatima","last_name":"Rahman","donation_preferences":["Orphan Care"]}',
+        current_timestamp, 
+        current_timestamp,
+        '',
+        '',
+        '',
+        ''
+    ),
+    (
+        '00000000-0000-0000-0000-000000000000',
+        uuid_generate_v4(),
+        'authenticated',
+        'authenticated',
+        'donor4@purezakat.com',
+        '',
+        current_timestamp, 
+        current_timestamp, 
+        current_timestamp,
+        '{"provider":"email","providers":["email"]}',
+        '{"user_type":"donor","first_name":"Bilal","last_name":"Siddiq","donation_preferences":["Emergency Relief","Clean Water"]}',
+        current_timestamp, 
+        current_timestamp,
+        '',
+        '',
+        '',
+        ''
+    );
+
+-- Backfill donors | Remove once merged with master with the trigger migration
+INSERT INTO 
+    public.donors (
+        user_id, 
+        first_name, 
+        last_name, 
+        donation_preferences
+    )
+SELECT
+  u.id,
+  u.raw_user_meta_data->>'first_name',
+  u.raw_user_meta_data->>'last_name',
+  COALESCE(u.raw_user_meta_data->'donation_preferences','[]'::jsonb)
+FROM auth.users u
+LEFT JOIN public.donors d ON d.user_id = u.id
+WHERE u.raw_user_meta_data->>'user_type' = 'donor'
+  AND d.user_id IS NULL;
+
+-- =============================================================
+-- Beneficiary Types
+-- =============================================================
+INSERT INTO public.beneficiary_types (code, label)
+VALUES
+  ('ORPHANS',  'Orphans'),
+  ('STUDENTS', 'Students'),
+  ('WIDOWS',   'Widows'),
+  ('CITIZENS', 'Citizens'),
+  ('RESIDENTS','Residents')
+ON CONFLICT (code) DO NOTHING;
+
+-- =============================================================
+-- Projects (10 across 4 orgs)
+-- =============================================================
+INSERT INTO public.projects (
+  organization_user_id, title, description, goal_amount, beneficiary_type_id
+)
+-- Org1
+SELECT u.id, 'School Supplies Drive', 'Raising funds for school supplies for students.', 5000.00, bt.id
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email='org1@purezakat.com' AND bt.code='STUDENTS'
+
+UNION ALL
+SELECT u.id, 'Winter Clothing Appeal', 'Warm clothing for families in need.', 7000.00, bt.id
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email='org1@purezakat.com' AND bt.code='CITIZENS'
+
+-- Org2
+UNION ALL
+SELECT u.id, 'Food Basket Program', 'Monthly food baskets for families.', 9000.00, bt.id
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email='org2@halalmealsproject.org' AND bt.code='RESIDENTS'
+
+UNION ALL
+SELECT u.id, 'Emergency Rent Support', 'Rent relief for struggling families.', 12000.00, bt.id
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email='org2@halalmealsproject.org' AND bt.code='WIDOWS'
+
+-- Org3
+UNION ALL
+SELECT u.id, 'Shelter Starter Kits', 'Basic furnishings for new homes.', 6000.00, bt.id
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email='org3@masjidoutreach.ca' AND bt.code='RESIDENTS'
+
+UNION ALL
+SELECT u.id, 'Tuition Bridge Fund', 'Grants to keep students enrolled.', 8000.00, bt.id
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email='org3@masjidoutreach.ca' AND bt.code='STUDENTS'
+
+UNION ALL
+SELECT u.id, 'Community Pantry', 'Neighborhood pantry restock.', 4000.00, bt.id
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email='org3@masjidoutreach.ca' AND bt.code='CITIZENS'
+
+-- Org4
+UNION ALL
+SELECT u.id, 'Medical Aid Vouchers', 'Pharmacy vouchers for essential meds.', 7000.00, bt.id
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email='org4@muslimfoodbank.ca' AND bt.code='RESIDENTS'
+
+UNION ALL
+SELECT u.id, 'Accessibility Upgrades', 'Home modifications for accessibility.', 15000.00, bt.id
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email='org4@muslimfoodbank.ca' AND bt.code='CITIZENS'
+
+UNION ALL
+SELECT u.id, 'Elderly Care Packages', 'Monthly hygiene & care packages.', 5000.00, bt.id
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email='org4@muslimfoodbank.ca' AND bt.code='WIDOWS';
+
+-- =============================================================
+-- Donations
+-- =============================================================
+INSERT INTO public.donations (donor_id, project_id, amount, created_at)
+SELECT d.id, p.id, 100.00, now() - interval '10 days'
+FROM auth.users d, public.projects p
+WHERE d.email='donor1@purezakat.com' AND p.title='School Supplies Drive'
+
+UNION ALL
+SELECT d.id, p.id, 75.00, now() - interval '5 days'
+FROM auth.users d, public.projects p
+WHERE d.email='donor2@purezakat.com' AND p.title='Food Basket Program'
+
+UNION ALL
+SELECT d.id, p.id, 50.00, now() - interval '3 days'
+FROM auth.users d, public.projects p
+WHERE d.email='donor3@purezakat.com' AND p.title='Medical Aid Vouchers'
+
+UNION ALL
+SELECT d.id, p.id, 120.00, now() - interval '1 day'
+FROM auth.users d, public.projects p
+WHERE d.email='donor4@purezakat.com' AND p.title='Elderly Care Packages';
+
+-- =============================================================
+-- Organization Logo & Verification Updates
+-- =============================================================
 UPDATE public.organizations
 SET
     logo = 'logo_zakat-foundation-canada_101.png',

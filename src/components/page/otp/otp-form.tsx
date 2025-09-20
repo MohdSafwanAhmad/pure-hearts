@@ -1,12 +1,12 @@
 "use client";
 import { verifyOtp } from "@/src/actions/auth";
-import { Button } from "@/src/components/ui/button";
-import { Card, CardContent } from "@/src/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "@/src/components/ui/input-otp";
+} from "@/components/ui/input-otp";
 import { createBrowserSupabaseClient } from "@/src/lib/supabase/client";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";

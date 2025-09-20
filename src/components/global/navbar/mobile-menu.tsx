@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/src/components/ui/button";
-import { Separator } from "@/src/components/ui/separator";
-import { Sheet, SheetContent, SheetTrigger } from "@/src/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, HeartHandshake } from "lucide-react";
 import LinkItem from "./link-item";
 import SearchBox from "./search-box";

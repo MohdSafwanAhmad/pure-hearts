@@ -1,4 +1,4 @@
-import { DonorSignupForm } from "@/src/components/page/signup/donor-signup-form";
+import { DonorSignupForm } from "@/components/page/signup/donor-signup-form";
 
 export default function SignupPage() {
   return (

@@ -1,6 +1,6 @@
 import Image from "next/image";
-import { Badge } from "@/src/components/ui/badge";
-import { Button } from "@/src/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Building2, ShieldCheck, Sparkles } from "lucide-react";
 
 export default function Hero() {

@@ -1,12 +1,12 @@
 import Image from "next/image";
-import { Button } from "@/src/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/src/components/ui/card";
+} from "@/components/ui/card";
 import { Star } from "lucide-react";
 
 const campaigns = [

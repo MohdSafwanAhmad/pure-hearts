@@ -1,20 +1,20 @@
 "use client";
 import { signupAsOrganization } from "@/src/actions/auth-organization";
-import { Button } from "@/src/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/src/components/ui/card";
-import { Progress } from "@/src/components/ui/progress";
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useActionState, useState } from "react";
-import { BasicInformationSection } from "@/src/components/page/signup/organization-signup-form-sections/basic-information-section";
-import { LocationSection } from "@/src/components/page/signup/organization-signup-form-sections/location-section";
-import { MissionProjectsSection } from "@/src/components/page/signup/organization-signup-form-sections/mission-projects-section";
-import { FieldErrorsSummary } from "@/src/components/page/signup/organization-signup-form-sections/field-errors-summary";
+import { BasicInformationSection } from "@/components/page/signup/organization-signup-form-sections/basic-information-section";
+import { LocationSection } from "@/components/page/signup/organization-signup-form-sections/location-section";
+import { MissionProjectsSection } from "@/components/page/signup/organization-signup-form-sections/mission-projects-section";
+import { FieldErrorsSummary } from "@/components/page/signup/organization-signup-form-sections/field-errors-summary";
 import { OrganizationFormData } from "@/src/types/auth-organizations-types";
 
 export function OrganizationSignupForm() {

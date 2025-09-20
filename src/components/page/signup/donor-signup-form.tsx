@@ -1,10 +1,10 @@
 "use client";
 import { signupAsDonor } from "@/src/actions/auth-donor";
-import { Button } from "@/src/components/ui/button";
-import { Card, CardContent } from "@/src/components/ui/card";
-import { Checkbox } from "@/src/components/ui/checkbox";
-import { Input } from "@/src/components/ui/input";
-import { Label } from "@/src/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import Link from "next/link";
 import { useActionState, useState } from "react";

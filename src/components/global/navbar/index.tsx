@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { Button } from "@/src/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { HeartHandshake } from "lucide-react";
-import DesktopNav from "@/src/components/global/navbar/desktop-nav";
-import MobileMenu from "@/src/components/global/navbar/mobile-menu";
+import DesktopNav from "@/components/global/navbar/desktop-nav";
+import MobileMenu from "@/components/global/navbar/mobile-menu";
 
 export default function Navbar() {
   return (

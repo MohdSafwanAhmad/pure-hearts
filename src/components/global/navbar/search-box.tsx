@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/src/lib/utils";
 import { Search } from "lucide-react";
-import { Input } from "@/src/components/ui/input";
+import { Input } from "@/components/ui/input";
 
 export default function SearchBox({ className }: { className?: string }) {
   const router = useRouter();
