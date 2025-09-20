@@ -2,7 +2,7 @@
 -- Seed Data: Organizations
 -- =============================================================
 
--- Zakat Foundation Canada
+-- Zakat Foundation Canada and other organizations
 INSERT INTO
     auth.users (
         instance_id,
@@ -24,6 +24,7 @@ INSERT INTO
         recovery_token
     )
 VALUES
+    -- Org 1
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -43,6 +44,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 2
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -62,6 +64,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 3
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -81,6 +84,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 4
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -100,6 +104,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 5
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -119,6 +124,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 6
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -138,6 +144,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 7
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -157,6 +164,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 8
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -176,6 +184,7 @@ VALUES
         '',
         ''
     ),
+    -- Org 9
     (
         '00000000-0000-0000-0000-000000000000',
         uuid_generate_v4 (),
@@ -196,137 +205,190 @@ VALUES
         ''
     );
 
+-- Create email identities for all users
+INSERT INTO
+    auth.identities (
+        id,
+        user_id,
+        provider_id,
+        identity_data,
+        provider,
+        last_sign_in_at,
+        created_at,
+        updated_at
+    ) (
+        select
+            uuid_generate_v4 (),
+            id,
+            id,
+            format('{"sub":"%s","email":"%s"}', id::text, email)::jsonb,
+            'email',
+            current_timestamp,
+            current_timestamp,
+            current_timestamp
+        from
+            auth.users
+    );
+
 -- Backfill organizations | Remove once merged with master with the trigger migration
-INSERT INTO public.organizations (
-  user_id, organization_name, organization_phone, country, state, city, address,
-  contact_person_name, contact_person_email, contact_person_phone, mission_statement,
-  project_areas, website_url, facebook_url, twitter_url, instagram_url, linkedin_url
-)
+INSERT INTO 
+    public.organizations (
+        user_id, 
+        organization_name, 
+        organization_phone, 
+        country, 
+        state, 
+        city, 
+        address,
+        contact_person_name, 
+        contact_person_email, 
+        contact_person_phone, 
+        mission_statement,
+        project_areas, 
+        website_url, 
+        facebook_url, 
+        twitter_url, 
+        instagram_url, 
+        linkedin_url
+    )
 SELECT
-  u.id,
-  u.raw_user_meta_data->>'organization_name',
-  u.raw_user_meta_data->>'organization_phone',
-  COALESCE(u.raw_user_meta_data->>'country','Canada'),
-  u.raw_user_meta_data->>'state',
-  u.raw_user_meta_data->>'city',
-  u.raw_user_meta_data->>'address',
-  u.raw_user_meta_data->>'contact_person_name',
-  u.raw_user_meta_data->>'contact_person_email',
-  u.raw_user_meta_data->>'contact_person_phone',
-  COALESCE(u.raw_user_meta_data->>'mission_statement',''),
-  COALESCE(u.raw_user_meta_data->'project_areas','[]'::jsonb),
-  u.raw_user_meta_data->>'website_url',
-  u.raw_user_meta_data->>'facebook_url',
-  u.raw_user_meta_data->>'twitter_url',
-  u.raw_user_meta_data->>'instagram_url',
-  u.raw_user_meta_data->>'linkedin_url'
-FROM auth.users u
-LEFT JOIN public.organizations o ON o.user_id = u.id
-WHERE u.raw_user_meta_data->>'user_type' = 'organization'
-  AND o.user_id IS NULL;
+        u.id,
+        u.raw_user_meta_data->>'organization_name',
+        u.raw_user_meta_data->>'organization_phone',
+        COALESCE(u.raw_user_meta_data->>'country','Canada'),
+        u.raw_user_meta_data->>'state',
+        u.raw_user_meta_data->>'city',
+        u.raw_user_meta_data->>'address',
+        u.raw_user_meta_data->>'contact_person_name',
+        u.raw_user_meta_data->>'contact_person_email',
+        u.raw_user_meta_data->>'contact_person_phone',
+        COALESCE(u.raw_user_meta_data->>'mission_statement',''),
+        COALESCE(u.raw_user_meta_data->'project_areas','[]'::jsonb),
+        u.raw_user_meta_data->>'website_url',
+        u.raw_user_meta_data->>'facebook_url',
+        u.raw_user_meta_data->>'twitter_url',
+        u.raw_user_meta_data->>'instagram_url',
+        u.raw_user_meta_data->>'linkedin_url'
+FROM 
+    auth.users u
+LEFT JOIN 
+    public.organizations o 
+    ON 
+    o.user_id = u.id
+WHERE 
+    u.raw_user_meta_data->>'user_type' = 'organization' 
+AND 
+    o.user_id IS NULL;
 
 -- =============================================================
 -- Seed Data: Donors
 -- =============================================================
-INSERT INTO auth.users (
-    instance_id, 
-    id, 
-    aud, 
-    role, 
-    email, 
-    encrypted_password,
-    email_confirmed_at, 
-    recovery_sent_at, 
-    last_sign_in_at,
-    raw_app_meta_data, 
-    raw_user_meta_data,
-    created_at, 
-    updated_at,
-    confirmation_token, 
-    email_change, 
-    email_change_token_new, 
-    recovery_token
-)
+INSERT INTO 
+auth.users (
+        instance_id, 
+        id, 
+        aud, 
+        role, 
+        email, 
+        encrypted_password,
+        email_confirmed_at, 
+        recovery_sent_at, 
+        last_sign_in_at,
+        raw_app_meta_data, 
+        raw_user_meta_data,
+        created_at, 
+        updated_at,
+        confirmation_token, 
+        email_change, 
+        email_change_token_new, 
+        recovery_token
+    )
 VALUES
+    (
+        '00000000-0000-0000-0000-000000000000',
+        uuid_generate_v4(),
+        'authenticated',
+        'authenticated',
+        'donor1@purezakat.com',
+        '',
+        current_timestamp, 
+        current_timestamp, 
+        current_timestamp,
+        '{"provider":"email","providers":["email"]}',
+        '{"user_type":"donor","first_name":"Mounir","last_name":"Aiache","donation_preferences":["Education","Orphan Care"]}',
+        current_timestamp, 
+        current_timestamp,
+        '',
+        '',
+        '',
+        ''
+    ),
 (
-  '00000000-0000-0000-0000-000000000000',
-  uuid_generate_v4(),
-  'authenticated',
-  'authenticated',
-  'donor1@purezakat.com',
-  '',
-  current_timestamp, 
-  current_timestamp, 
-  current_timestamp,
-  '{"provider":"email","providers":["email"]}',
-  '{"user_type":"donor","first_name":"Mounir","last_name":"Aiache","donation_preferences":["Education","Orphan Care"]}',
-  current_timestamp, 
-  current_timestamp,
-  '',
-  '',
-  '',
-  ''
-),
-(
-  '00000000-0000-0000-0000-000000000000',
-  uuid_generate_v4(),
-  'authenticated',
-  'authenticated',
-  'donor2@purezakat.com',
-  '',
-  current_timestamp, 
-  current_timestamp, 
-  current_timestamp,
-  '{"provider":"email","providers":["email"]}',
-  '{"user_type":"donor","first_name":"Safwan","last_name":"Ansari","donation_preferences":["Education","Poverty Alleviation"]}',
-  current_timestamp, 
-  current_timestamp,
-  '',
-  '',
-  '',
-  ''
-),
-(
-  '00000000-0000-0000-0000-000000000000',
-  uuid_generate_v4(),
-  'authenticated',
-  'authenticated',
-  'donor3@purezakat.com',
-  '',
-  current_timestamp, 
-  current_timestamp, 
-  current_timestamp,
-  '{"provider":"email","providers":["email"]}',
-  '{"user_type":"donor","first_name":"Fatima","last_name":"Rahman","donation_preferences":["Orphan Care"]}',
-  current_timestamp, 
-  current_timestamp,
-  '',
-  '',
-  '',
-  ''
-),
-(
-  '00000000-0000-0000-0000-000000000000',
-  uuid_generate_v4(),
-  'authenticated',
-  'authenticated',
-  'donor4@purezakat.com',
-  '',
-  current_timestamp, 
-  current_timestamp, 
-  current_timestamp,
-  '{"provider":"email","providers":["email"]}',
-  '{"user_type":"donor","first_name":"Bilal","last_name":"Siddiq","donation_preferences":["Emergency Relief","Clean Water"]}',
-  current_timestamp, 
-  current_timestamp,
-  '',
-  '',
-  '',
-  ''
-);
+        '00000000-0000-0000-0000-000000000000',
+        uuid_generate_v4(),
+        'authenticated',
+        'authenticated',
+        'donor2@purezakat.com',
+        '',
+        current_timestamp, 
+        current_timestamp, 
+        current_timestamp,
+        '{"provider":"email","providers":["email"]}',
+        '{"user_type":"donor","first_name":"Safwan","last_name":"Ansari","donation_preferences":["Education","Poverty Alleviation"]}',
+        current_timestamp, 
+        current_timestamp,
+        '',
+        '',
+        '',
+        ''
+    ),
+    (
+        '00000000-0000-0000-0000-000000000000',
+        uuid_generate_v4(),
+        'authenticated',
+        'authenticated',
+        'donor3@purezakat.com',
+        '',
+        current_timestamp, 
+        current_timestamp, 
+        current_timestamp,
+        '{"provider":"email","providers":["email"]}',
+        '{"user_type":"donor","first_name":"Fatima","last_name":"Rahman","donation_preferences":["Orphan Care"]}',
+        current_timestamp, 
+        current_timestamp,
+        '',
+        '',
+        '',
+        ''
+    ),
+    (
+        '00000000-0000-0000-0000-000000000000',
+        uuid_generate_v4(),
+        'authenticated',
+        'authenticated',
+        'donor4@purezakat.com',
+        '',
+        current_timestamp, 
+        current_timestamp, 
+        current_timestamp,
+        '{"provider":"email","providers":["email"]}',
+        '{"user_type":"donor","first_name":"Bilal","last_name":"Siddiq","donation_preferences":["Emergency Relief","Clean Water"]}',
+        current_timestamp, 
+        current_timestamp,
+        '',
+        '',
+        '',
+        ''
+    );
 
 -- Backfill donors | Remove once merged with master with the trigger migration
-INSERT INTO public.donors (user_id, first_name, last_name, donation_preferences)
+INSERT INTO 
+    public.donors (
+        user_id, 
+        first_name, 
+        last_name, 
+        donation_preferences
+    )
 SELECT
   u.id,
   u.raw_user_meta_data->>'first_name',
@@ -430,3 +492,76 @@ UNION ALL
 SELECT d.id, p.id, 120.00, now() - interval '1 day'
 FROM auth.users d, public.projects p
 WHERE d.email='donor4@purezakat.com' AND p.title='Elderly Care Packages';
+
+-- =============================================================
+-- Organization Logo & Verification Updates
+-- =============================================================
+UPDATE public.organizations
+SET
+    logo = 'logo_zakat-foundation-canada_101.png',
+    is_verified = true
+WHERE
+    organization_name = 'Zakat Foundation Canada';
+
+UPDATE public.organizations
+SET
+    logo = 'logo_islamic-relief-toronto_102.png',
+    is_verified = true
+WHERE
+    organization_name = 'Islamic Relief Toronto';
+
+UPDATE public.organizations
+SET
+    logo = 'logo_halal-meals-project_107.png',
+    is_verified = true
+WHERE
+    organization_name = 'Halal Meals Project';
+
+UPDATE public.organizations
+SET
+    logo = 'logo_masjid-outreach_108.webp',
+    is_verified = true
+WHERE
+    organization_name = 'Masjid Outreach';
+
+UPDATE public.organizations
+SET
+    logo = 'logo_muslim-food-bank_103.png',
+    is_verified = true
+WHERE
+    organization_name = 'Muslim Food Bank';
+
+UPDATE public.organizations
+SET
+    logo = 'logo_quran-education-center_106.png',
+    is_verified = true
+WHERE
+    organization_name = 'Quran Education Center';
+
+UPDATE public.organizations
+SET
+    logo = 'logo_sadaqah-trust_105.png',
+    is_verified = true
+WHERE
+    organization_name = 'Sadaqah Trust';
+
+UPDATE public.organizations
+SET
+    logo = 'logo_ummah-shelter_104.png',
+    is_verified = true
+WHERE
+    organization_name = 'Ummah Shelter';
+
+UPDATE public.organizations
+SET
+    logo = 'logo_hijrah-support_109.png',
+    is_verified = true
+WHERE
+    organization_name = 'Hijrah Support';
+
+UPDATE public.organizations
+SET
+    logo = 'logo_hijrah-support_110.jpg',
+    is_verified = true
+WHERE
+    organization_name = 'Hijrah Support 110';
