@@ -34,6 +34,66 @@ export type Database = {
   };
   public: {
     Tables: {
+      beneficiary_types: {
+        Row: {
+          code: string;
+          created_at: string | null;
+          id: string;
+          label: string;
+        };
+        Insert: {
+          code: string;
+          created_at?: string | null;
+          id?: string;
+          label: string;
+        };
+        Update: {
+          code?: string;
+          created_at?: string | null;
+          id?: string;
+          label?: string;
+        };
+        Relationships: [];
+      };
+      donations: {
+        Row: {
+          amount: number;
+          created_at: string | null;
+          donor_id: string;
+          id: string;
+          project_id: string;
+        };
+        Insert: {
+          amount: number;
+          created_at?: string | null;
+          donor_id: string;
+          id?: string;
+          project_id: string;
+        };
+        Update: {
+          amount?: number;
+          created_at?: string | null;
+          donor_id?: string;
+          id?: string;
+          project_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "donations_donor_id_fkey";
+            columns: ["donor_id"];
+            isOneToOne: false;
+            referencedRelation: "donors";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "donations_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       donors: {
         Row: {
           donation_preferences: Json | null;
@@ -126,6 +186,63 @@ export type Database = {
           website_url?: string | null;
         };
         Relationships: [];
+      };
+      projects: {
+        Row: {
+          beneficiary_type_id: string | null;
+          created_at: string | null;
+          description: string | null;
+          end_date: string | null;
+          goal_amount: number | null;
+          id: string;
+          organization_user_id: string;
+          project_background_image: string | null;
+          start_date: string | null;
+          title: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          beneficiary_type_id?: string | null;
+          created_at?: string | null;
+          description?: string | null;
+          end_date?: string | null;
+          goal_amount?: number | null;
+          id?: string;
+          organization_user_id: string;
+          project_background_image?: string | null;
+          start_date?: string | null;
+          title: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          beneficiary_type_id?: string | null;
+          created_at?: string | null;
+          description?: string | null;
+          end_date?: string | null;
+          goal_amount?: number | null;
+          id?: string;
+          organization_user_id?: string;
+          project_background_image?: string | null;
+          start_date?: string | null;
+          title?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "projects_beneficiary_type_id_fkey";
+            columns: ["beneficiary_type_id"];
+            isOneToOne: false;
+            referencedRelation: "beneficiary_types";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "projects_organization_user_id_fkey";
+            columns: ["organization_user_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["user_id"];
+          }
+        ];
       };
     };
     Views: {
