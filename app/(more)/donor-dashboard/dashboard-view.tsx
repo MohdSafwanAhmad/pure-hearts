@@ -1,17 +1,14 @@
-
-// BEFORE
-// import data from "@/app/(protected)/dashboard/data.json"
-
-import { ChartAreaInteractive } from "@/src/components/donor-dashboard/chart-area-interactive"
-import { DataTable } from "@/src/components/donor-dashboard/data-table"
-import { SectionCards } from "@/src/components/donor-dashboard/section-cards"
-import { SiteHeader } from "@/src/components/donor-dashboard/site-header"
-import { SidebarInset, SidebarProvider } from "@/src/components/ui/sidebar"
+import { ChartAreaInteractive } from "@/src/components/donor-dashboard/chart-area-interactive";
+import { DataTable } from "@/src/components/donor-dashboard/data-table";
+import { SectionCards } from "@/src/components/donor-dashboard/section-cards";
+import { SiteHeader } from "@/src/components/donor-dashboard/site-header";
+import { SidebarInset, SidebarProvider } from "@/src/components/ui/sidebar";
 
 // NEW: server fetch
 import { getDonationRowsForCurrentUser } from "@/src/lib/supabase/queries/get-donation-rows";
 
-export default async function DashboardView() {     // <-- async
+export default async function DashboardView() {
+  // <-- async
   const rows = await getDonationRowsForCurrentUser(); // <-- fetch on server
 
   return (
@@ -31,12 +28,11 @@ export default async function DashboardView() {     // <-- async
               <div className="px-4 lg:px-6">
                 <ChartAreaInteractive />
               </div>
-              <DataTable data={rows} />   {/* <-- from DB now */}
+              <DataTable data={rows} /> {/* <-- from DB now */}
             </div>
           </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
-

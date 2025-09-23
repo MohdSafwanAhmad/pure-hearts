@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 // Standalone build: embeds AFM data so no disk reads for Helvetica
-// @ts-ignore
+// @ts-expect-errorprofile-card
 import PDFDocument from "pdfkit/js/pdfkit.standalone.js";
 import { createServerSupabaseClient } from "@/src/lib/supabase/server";
 
@@ -45,7 +45,8 @@ export async function GET(
 
     const { data, error } = await supabase
       .from("donations")
-      .select(`
+      .select(
+        `
         id,
         amount,
         created_at,
@@ -54,7 +55,8 @@ export async function GET(
           title,
           organizations:organization_user_id ( organization_name )
         )
-      `)
+      `
+      )
       .eq("id", donationId)
       .eq("donor_id", user.id)
       .maybeSingle();
@@ -63,7 +65,9 @@ export async function GET(
     if (!data) return new Response("Not found", { status: 404 });
 
     const donorName =
-      [data.donors?.first_name, data.donors?.last_name].filter(Boolean).join(" ") ||
+      [data.donors?.first_name, data.donors?.last_name]
+        .filter(Boolean)
+        .join(" ") ||
       user.email ||
       "—";
     const organization = data.projects?.organizations?.organization_name ?? "—";
@@ -92,7 +96,7 @@ export async function GET(
     }
     const fontBuf = await fs.promises.readFile(interPath);
     doc.registerFont("Body", fontBuf);
-    doc.font("Body");   // <- activate it BEFORE first page
+    doc.font("Body"); // <- activate it BEFORE first page
     doc.addPage();
 
     // Content
