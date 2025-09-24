@@ -15,12 +15,15 @@ export type DonationRow = {
 export async function getDonationRowsForCurrentUser(): Promise<DonationRow[]> {
   const supabase = await createServerSupabaseClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return [];
 
   const { data, error } = await supabase
     .from("donations")
-    .select(`
+    .select(
+      `
       id,
       amount,
       created_at,
@@ -30,21 +33,25 @@ export async function getDonationRowsForCurrentUser(): Promise<DonationRow[]> {
           organization_name
         )
       )
-    `)
+    `
+    )
     .eq("donor_id", user.id)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
 
-  return (data ?? []).map((d: any): DonationRow => ({
-    id: d.id,
-    header: d.projects?.title ?? "Donation",
-    type: d.projects?.title ?? "—",
-    status: d.projects?.organizations?.organization_name ?? "—",
-    target: String(d.amount ?? ""),
-// in get-donation-rows.ts
-// get-donation-rows.ts
-limit: new Date(d.created_at).toISOString().slice(0, 10),
-    reviewer: "",
-  }));
+  return (data ?? []).map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (d: any): DonationRow => ({
+      id: d.id,
+      header: d.projects?.title ?? "Donation",
+      type: d.projects?.title ?? "—",
+      status: d.projects?.organizations?.organization_name ?? "—",
+      target: String(d.amount ?? ""),
+      // in get-donation-rows.ts
+      // get-donation-rows.ts
+      limit: new Date(d.created_at).toISOString().slice(0, 10),
+      reviewer: "",
+    })
+  );
 }
