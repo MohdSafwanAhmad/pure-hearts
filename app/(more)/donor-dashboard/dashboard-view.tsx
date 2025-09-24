@@ -1,18 +1,13 @@
-// app/(more)/donor-dashboard/dashboard-view.tsx
 import { DataTable } from "@/src/components/donor-dashboard/data-table";
 import ChartAreaInteractive from "@/src/components/donor-dashboard/chart-area-interactive";
-import { getDonationSeriesForCurrentUser } from "@/src/lib/supabase/queries/get-donation-series";
-
-//import { ChartAreaInteractive } from "@/src/components/donor-dashboard/chart-area-interactive";
 import { SectionCards } from "@/src/components/donor-dashboard/section-cards";
 import { SidebarInset, SidebarProvider } from "@/src/components/ui/sidebar";
 import { getDonationRowsForCurrentUser } from "@/src/lib/supabase/queries/get-donation-rows";
-//mport { getDonationSeriesForCurrentUser } from "@/src/lib/supabase/queries/get-donation-series";
+import { getDonationSeriesForCurrentUser } from "@/src/lib/supabase/queries/get-donation-series";
 
 export default async function DashboardView() {
-  const rows = await getDonationRowsForCurrentUser(); // table rows (you already use this)
-  //const series = await getDonationSeriesForCurrentUser();   // new: chart series
-  const series = await getDonationSeriesForCurrentUser(); // [{date, amount}]
+  const rows = await getDonationRowsForCurrentUser();
+  const series = await getDonationSeriesForCurrentUser();
 
   return (
     <SidebarProvider

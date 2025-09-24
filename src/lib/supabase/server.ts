@@ -45,7 +45,7 @@ export async function getDonorProfile() {
   const { data: profile } = await supabase
     .from("donors")
     .select("*")
-    .eq("id", user.id)
+    .eq("user_id", user.id)
     .single();
 
   return {
@@ -65,7 +65,7 @@ export async function getOrganizationProfile() {
   const { data: profile } = await supabase
     .from("organizations")
     .select("*")
-    .eq("id", user.id)
+    .eq("user_id", user.id)
     .single();
   return {
     ...profile,

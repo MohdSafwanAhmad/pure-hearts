@@ -116,14 +116,18 @@ export async function GET(
     const bytes = new Uint8Array(pdf.length);
     bytes.set(pdf);
 
+    const dateForFilename = new Date(dateIso).toISOString().split("T")[0]; // YYYY-MM-DD format
+    const filename = `pure_hearts_donation_receipt_${dateForFilename}.pdf`;
+
     return new Response(bytes, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="receipt_${donationId}.pdf"`,
+        "Content-Disposition": `attachment; filename="${filename}.pdf"`,
         "Cache-Control": "private, max-age=0, must-revalidate",
       },
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     console.error("Receipt route error:", e);
     return new Response(e?.message ?? "Internal Server Error", { status: 500 });
