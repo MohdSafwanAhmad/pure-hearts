@@ -1,6 +1,6 @@
-import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
-
-import { Badge } from "@/src/components/ui/badge"
+// src/components/donor-dashboard/section-cards.tsx
+import { IconTrendingUp } from "@tabler/icons-react";
+import type { Database } from "@/src/types/database-types";
 import {
   Card,
   CardAction,
@@ -8,95 +8,134 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/src/components/ui/card"
+} from "@/src/components/ui/card";
+import { createServerSupabaseClient } from "@/src/lib/supabase/server";
 
-export function SectionCards() {
+// Narrow row type for our select
+type DonationSlim = Pick<
+  Database["public"]["Tables"]["donations"]["Row"],
+  "amount" | "project_id" | "created_at"
+>;
+
+// Formatters
+const fmtCurrency = (n: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+    n || 0,
+  );
+const fmtNumber = (n: number) =>
+  new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n || 0);
+
+// Windows for "active" logic
+const DAILY_MS = 24 * 60 * 60 * 1000;
+const MONTHLY_MS = 31 * DAILY_MS;
+
+async function fetchDonationsForUser(): Promise<DonationSlim[]> {
+  const supabase = await createServerSupabaseClient();
+
+  const {
+    data: { user },
+    error: userErr,
+  } = await supabase.auth.getUser();
+  if (userErr || !user) return [];
+
+  const { data, error } = await supabase
+    .from("donations")
+    .select("amount, project_id, created_at")
+    .eq("donor_id", user.id);
+
+  if (error) {
+    console.error("SectionCards donations fetch error:", error.message);
+    return [];
+  }
+  return (data ?? []) as DonationSlim[];
+}
+
+/**
+ * Server Component: fetches metrics for the current donor and renders the cards
+ */
+async function SectionCards() {
+  const rows = await fetchDonationsForUser();
+
+  // Total amount (Supabase may return numeric as string)
+  const totalDonations = rows.reduce((sum, r) => {
+    const v =
+      typeof r.amount === "string"
+        ? parseFloat(r.amount)
+        : typeof r.amount === "number"
+          ? r.amount
+          : 0;
+    return sum + (Number.isFinite(v) ? v : 0);
+  }, 0);
+
+  // Distinct projects the donor has ever contributed to
+  const totalCampaigns = new Set(
+    rows.map((r) => r.project_id).filter(Boolean) as string[],
+  ).size;
+
+  // Active projects: donations in the last 31 days (monthly) and last 24h (daily)
+  const now = Date.now();
+  const monthlyCutoff = now - MONTHLY_MS;
+  const dailyCutoff = now - DAILY_MS;
+
+  const activeMonthlySet = new Set<string>();
+  const activeDailySet = new Set<string>();
+
+  for (const r of rows) {
+    if (!r.project_id || !r.created_at) continue;
+    const ts = Date.parse(r.created_at);
+    if (!Number.isFinite(ts)) continue;
+
+    if (ts >= monthlyCutoff) activeMonthlySet.add(r.project_id);
+    if (ts >= dailyCutoff) activeDailySet.add(r.project_id);
+  }
+
+  const activeMonthly = activeMonthlySet.size;
+
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+      {/* Total Donations */}
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Total Revenue</CardDescription>
+          <CardDescription>Total Donations</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            $1,250.00
+            {fmtCurrency(totalDonations)}
           </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +12.5%
-            </Badge>
-          </CardAction>
         </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Trending up this month <IconTrendingUp className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Visitors for the last 6 months
-          </div>
-        </CardFooter>
       </Card>
+
+      {/* Total Campaigns (distinct projects ever donated to) */}
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>New Customers</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            1,234
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingDown />
-              -20%
-            </Badge>
-          </CardAction>
+          <CardDescription>Total Campaigns</CardDescription>
         </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Down 20% this period <IconTrendingDown className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Acquisition needs attention
-          </div>
-        </CardFooter>
+        <CardHeader>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+            {fmtNumber(totalCampaigns)}
+          </CardTitle>
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1.5 text-sm"></CardFooter>
       </Card>
+
+      {/* Active Donations (projects in last 31 days). Badge shows 24h. */}
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Active Accounts</CardDescription>
+          <CardDescription>Active Donations</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            45,678
+            {fmtNumber(activeMonthly)}
           </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +12.5%
-            </Badge>
-          </CardAction>
+          <CardAction></CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Strong user retention <IconTrendingUp className="size-4" />
+            Projects you’re giving to this month{" "}
+            <IconTrendingUp className="size-4" />
           </div>
-          <div className="text-muted-foreground">Engagement exceed targets</div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Growth Rate</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            4.5%
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +4.5%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Steady performance increase <IconTrendingUp className="size-4" />
-          </div>
-          <div className="text-muted-foreground">Meets growth projections</div>
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
+
+export default SectionCards;
+// If some places import it as a named export:
+export { SectionCards };

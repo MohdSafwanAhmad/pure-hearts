@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   closestCenter,
   DndContext,
@@ -11,15 +11,15 @@ import {
   useSensors,
   type DragEndEvent,
   type UniqueIdentifier,
-} from "@dnd-kit/core"
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers"
+} from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   IconChevronDown,
   IconChevronLeft,
@@ -31,9 +31,8 @@ import {
   IconGripVertical,
   IconLayoutColumns,
   IconLoader,
-  IconPlus,
   IconTrendingUp,
-} from "@tabler/icons-react"
+} from "@tabler/icons-react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -48,21 +47,21 @@ import {
   SortingState,
   useReactTable,
   VisibilityState,
-} from "@tanstack/react-table"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-import { toast } from "sonner"
-import { z } from "zod"
+} from "@tanstack/react-table";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { toast } from "sonner";
+import { z } from "zod";
 
-import { useIsMobile } from "@/src/hooks/use-mobile"
-import { Badge } from "@/src/components/ui/badge"
-import { Button } from "@/src/components/ui/button"
+import { useIsMobile } from "@/src/hooks/use-mobile";
+import { Badge } from "@/src/components/ui/badge";
+import { Button } from "@/src/components/ui/button";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/src/components/ui/chart"
-import { Checkbox } from "@/src/components/ui/checkbox"
+} from "@/src/components/ui/chart";
+import { Checkbox } from "@/src/components/ui/checkbox";
 import {
   Drawer,
   DrawerClose,
@@ -72,7 +71,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/src/components/ui/drawer"
+} from "@/src/components/ui/drawer";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -80,17 +79,17 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/src/components/ui/dropdown-menu"
-import { Input } from "@/src/components/ui/input"
-import { Label } from "@/src/components/ui/label"
+} from "@/src/components/ui/dropdown-menu";
+import { Input } from "@/src/components/ui/input";
+import { Label } from "@/src/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/src/components/ui/select"
-import { Separator } from "@/src/components/ui/separator"
+} from "@/src/components/ui/select";
+import { Separator } from "@/src/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -98,29 +97,29 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/src/components/ui/table"
+} from "@/src/components/ui/table";
 import {
   Tabs,
   TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/src/components/ui/tabs"
+  // TabsList,
+  //TabsTrigger,
+} from "@/src/components/ui/tabs";
 
 export const schema = z.object({
- id: z.string(),
-  header: z.string().optional().default(""),  // <-- made optional
+  id: z.string(),
+  header: z.string().optional().default(""), // <-- made optional
   type: z.string(),
   status: z.string(),
   target: z.string(),
   limit: z.string(),
-  reviewer: z.string().optional().default(""), 
-})
+  reviewer: z.string().optional().default(""),
+});
 
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: string }) {
   const { attributes, listeners } = useSortable({
     id,
-  })
+  });
 
   return (
     <Button
@@ -133,7 +132,7 @@ function DragHandle({ id }: { id: string }) {
       <IconGripVertical className="text-muted-foreground size-3" />
       <span className="sr-only">Drag to reorder</span>
     </Button>
-  )
+  );
 }
 
 const columns: ColumnDef<z.infer<typeof schema>>[] = [
@@ -168,14 +167,6 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-/*  {
-    accessorKey: "header",
-    header: "Header",
-    cell: ({ row }) => {
-      return <TableCellViewer item={row.original} />
-    },
-    enableHiding: false,
-  },*/
   {
     accessorKey: "type",
     header: "Project",
@@ -203,16 +194,16 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
   {
     accessorKey: "Amount Donated",
-    header:"Amount Donated",
+    header: "Amount Donated",
     cell: ({ row }) => (
       <form
         onSubmit={(e) => {
-          e.preventDefault()
+          e.preventDefault();
           toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
             loading: `Saving ${row.original.header}`,
             success: "Done",
             error: "Error",
-          })
+          });
         }}
       >
         <Label htmlFor={`${row.original.id}-target`} className="sr-only">
@@ -227,82 +218,39 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     ),
   },
   {
-    accessorKey: "Date",
+    accessorKey: "limit", // <-- this is the date field in your rows
     header: "Date",
-    cell: ({ row }) => (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: `Saving ${row.original.header}`,
-            success: "Done",
-            error: "Error",
-          })
-        }}
-      >
-        <Label htmlFor={`${row.original.id}-limit`} className="sr-only">
-          Limit
-        </Label>
-        <Input
-          className="hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent"
-          defaultValue={row.original.limit}
-          id={`${row.original.id}-limit`}
-        />
-      </form>
-    ),
+    cell: ({ row }) => {
+      const v = row.original.limit; // string | null
+      // Safe, readable value
+      const out = (() => {
+        if (!v) return "—";
+        const d = new Date(v);
+        return isNaN(d.getTime()) ? String(v) : d.toISOString().slice(0, 10); // YYYY-MM-DD
+      })();
+
+      return <span className="tabular-nums">{out}</span>;
+    },
+    // (optional) make date sort correctly:
+    sortingFn: (a, b) =>
+      new Date(a.original.limit ?? 0).getTime() -
+      new Date(b.original.limit ?? 0).getTime(),
   },
   {
     accessorKey: "Receipt",
     header: "Receipt",
     cell: ({ row }) => {
-      /*const isAssigned = row.original.reviewer !== "Assign reviewer"
-
-      if (isAssigned) {
-        return row.original.reviewer
-      }
-
+      const donationId = row.original.id;
       return (
-        <>
-          <Label htmlFor={`${row.original.id}-reviewer`} className="sr-only">
-            Reviewer
-          </Label>
-          <Select>
-            <SelectTrigger
-              className="w-38 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate"
-              size="sm"
-              id={`${row.original.id}-reviewer`}
-            >
-              <SelectValue placeholder="Assign reviewer" />
-            </SelectTrigger>
-            <SelectContent align="end">
-              <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-              <SelectItem value="Jamik Tashpulatov">
-                Jamik Tashpulatov
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </>
-      )*/
-     
-    const donationId = row.original.id
-    return (
-     <a
-  href={`/api/receipts/${donationId}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="text-blue-600 hover:underline"
->
-  Download
-</a>
-
-
-
-    )
-  
-
-     
-
-
+        <a
+          href={`/api/receipts/${donationId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:underline"
+        >
+          Download
+        </a>
+      );
     },
   },
   {
@@ -329,12 +277,12 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
       </DropdownMenu>
     ),
   },
-]
+];
 
 function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original.id,
-  })
+  });
 
   return (
     <TableRow
@@ -353,37 +301,37 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
         </TableCell>
       ))}
     </TableRow>
-  )
+  );
 }
 
 export function DataTable({
   data: initialData,
 }: {
-  data: z.infer<typeof schema>[]
+  data: z.infer<typeof schema>[];
 }) {
-  const [data, setData] = React.useState(() => initialData)
-  const [rowSelection, setRowSelection] = React.useState({})
+  const [data, setData] = React.useState(() => initialData);
+  const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
+    React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const [sorting, setSorting] = React.useState<SortingState>([])
+    [],
+  );
+  const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10,
-  })
-  const sortableId = React.useId()
+  });
+  const sortableId = React.useId();
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
     useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {})
-  )
+    useSensor(KeyboardSensor, {}),
+  );
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
     () => data?.map(({ id }) => id) || [],
-    [data]
-  )
+    [data],
+  );
 
   const table = useReactTable({
     data,
@@ -395,7 +343,7 @@ export function DataTable({
       columnFilters,
       pagination,
     },
-    getRowId: (row) => row.id,   // <-- CHANGED: it's already a string
+    getRowId: (row) => row.id, // <-- CHANGED: it's already a string
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
@@ -408,16 +356,16 @@ export function DataTable({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-  })
+  });
 
   function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
+    const { active, over } = event;
     if (active && over && active.id !== over.id) {
       setData((data) => {
-        const oldIndex = dataIds.indexOf(active.id)
-        const newIndex = dataIds.indexOf(over.id)
-        return arrayMove(data, oldIndex, newIndex)
-      })
+        const oldIndex = dataIds.indexOf(active.id);
+        const newIndex = dataIds.indexOf(over.id);
+        return arrayMove(data, oldIndex, newIndex);
+      });
     }
   }
 
@@ -427,34 +375,6 @@ export function DataTable({
       className="w-full flex-col justify-start gap-6"
     >
       <div className="flex items-center justify-between px-4 lg:px-6">
-        <Label htmlFor="view-selector" className="sr-only">
-          View
-        </Label>
-        <Select defaultValue="outline">
-          <SelectTrigger
-            className="flex w-fit @4xl/main:hidden"
-            size="sm"
-            id="view-selector"
-          >
-            <SelectValue placeholder="Select a view" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="outline">Outline</SelectItem>
-            <SelectItem value="past-performance">Past Performance</SelectItem>
-            <SelectItem value="key-personnel">Key Personnel</SelectItem>
-            <SelectItem value="focus-documents">Focus Documents</SelectItem>
-          </SelectContent>
-        </Select>
-        <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
-          <TabsTrigger value="outline">Outline</TabsTrigger>
-          <TabsTrigger value="past-performance">
-            Past Performance <Badge variant="secondary">3</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="key-personnel">
-            Key Personnel <Badge variant="secondary">2</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
-        </TabsList>
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -471,7 +391,7 @@ export function DataTable({
                 .filter(
                   (column) =>
                     typeof column.accessorFn !== "undefined" &&
-                    column.getCanHide()
+                    column.getCanHide(),
                 )
                 .map((column) => {
                   return (
@@ -485,14 +405,10 @@ export function DataTable({
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
-                  )
+                  );
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" size="sm">
-            <IconPlus />
-            <span className="hidden lg:inline">Add Section</span>
-          </Button>
         </div>
       </div>
       <TabsContent
@@ -518,10 +434,10 @@ export function DataTable({
                             ? null
                             : flexRender(
                                 header.column.columnDef.header,
-                                header.getContext()
+                                header.getContext(),
                               )}
                         </TableHead>
-                      )
+                      );
                     })}
                   </TableRow>
                 ))}
@@ -563,7 +479,7 @@ export function DataTable({
               <Select
                 value={`${table.getState().pagination.pageSize}`}
                 onValueChange={(value) => {
-                  table.setPageSize(Number(value))
+                  table.setPageSize(Number(value));
                 }}
               >
                 <SelectTrigger size="sm" className="w-20" id="rows-per-page">
@@ -644,7 +560,7 @@ export function DataTable({
         <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
       </TabsContent>
     </Tabs>
-  )
+  );
 }
 
 const chartData = [
@@ -654,7 +570,7 @@ const chartData = [
   { month: "April", desktop: 73, mobile: 190 },
   { month: "May", desktop: 209, mobile: 130 },
   { month: "June", desktop: 214, mobile: 140 },
-]
+];
 
 const chartConfig = {
   desktop: {
@@ -665,10 +581,11 @@ const chartConfig = {
     label: "Mobile",
     color: "var(--primary)",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
 
   return (
     <Drawer direction={isMobile ? "bottom" : "right"}>
@@ -823,5 +740,5 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
-  )
+  );
 }
