@@ -20,7 +20,7 @@ type DonationSlim = Pick<
 // Formatters
 const fmtCurrency = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-    n || 0,
+    n || 0
   );
 const fmtNumber = (n: number) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n || 0);
@@ -62,14 +62,14 @@ async function SectionCards() {
       typeof r.amount === "string"
         ? parseFloat(r.amount)
         : typeof r.amount === "number"
-          ? r.amount
-          : 0;
+        ? r.amount
+        : 0;
     return sum + (Number.isFinite(v) ? v : 0);
   }, 0);
 
   // Distinct projects the donor has ever contributed to
   const totalCampaigns = new Set(
-    rows.map((r) => r.project_id).filter(Boolean) as string[],
+    rows.map((r) => r.project_id).filter(Boolean) as string[]
   ).size;
 
   // Active projects: donations in the last 31 days (monthly) and last 24h (daily)
@@ -107,13 +107,10 @@ async function SectionCards() {
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>Total Campaigns</CardDescription>
-        </CardHeader>
-        <CardHeader>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {fmtNumber(totalCampaigns)}
           </CardTitle>
         </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm"></CardFooter>
       </Card>
 
       {/* Active Donations (projects in last 31 days). Badge shows 24h. */}
@@ -123,14 +120,7 @@ async function SectionCards() {
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {fmtNumber(activeMonthly)}
           </CardTitle>
-          <CardAction></CardAction>
         </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Projects you’re giving to this month{" "}
-            <IconTrendingUp className="size-4" />
-          </div>
-        </CardFooter>
       </Card>
     </div>
   );
