@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { Database } from "@/src/types/database-types";
+
 /**
  * Creates a Supabase client for server-side use.
  * @returns A Supabase client instance.
@@ -44,7 +45,7 @@ export async function getDonorProfile() {
   const { data: profile } = await supabase
     .from("donors")
     .select("*")
-    .eq("id", user.id)
+    .eq("user_id", user.id)
     .single();
 
   return {
@@ -64,7 +65,7 @@ export async function getOrganizationProfile() {
   const { data: profile } = await supabase
     .from("organizations")
     .select("*")
-    .eq("id", user.id)
+    .eq("user_id", user.id)
     .single();
   return {
     ...profile,
