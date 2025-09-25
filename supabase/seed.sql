@@ -35,7 +35,7 @@ VALUES
         current_timestamp,
         current_timestamp,
         '{"provider":"email","providers":["email"]}',
-        '{"user_type": "organization", "organization_name": "Zakat Foundation Canada", "organization_phone": "613-555-0101", "country": "Canada", "state": "Ontario", "city": "Ottawa", "address": "101 Zakat Crescent", "contact_person_name": "Ahmed Karim", "contact_person_email": "ahmed@zakatfoundation.ca", "contact_person_phone": "613-555-0101", "mission_statement": "Empowering communities through Zakat.", "project_areas": ["Zakat", "Relief"], "slug": "zakat-foundation-canada", "website_url": "https://zakatfoundation.ca", "facebook_url": "https://facebook.com/zakatfoundationcanada", "twitter_url": "https://twitter.com/zakatcanada", "instagram_url": "https://instagram.com/zakatfoundationcanada", "linkedin_url": "https://linkedin.com/company/zakatfoundationcanada"}',
+        '{"user_type": "organization", "organization_name": "Zakat Foundation Canada", "organization_phone": "+16135550101", "country": "Canada", "state": "Ontario", "city": "Ottawa", "address": "101 Zakat Crescent", "contact_person_name": "Ahmed Karim", "contact_person_email": "ahmed@zakatfoundation.ca", "contact_person_phone": "+16135550101", "mission_statement": "Empowering communities through Zakat.", "project_areas": ["Zakat", "Relief"], "slug": "zakat-foundation-canada", "website_url": "https://zakatfoundation.ca", "facebook_url": "https://facebook.com/zakatfoundationcanada", "twitter_url": "https://twitter.com/zakatcanada", "instagram_url": "https://instagram.com/zakatfoundationcanada", "linkedin_url": "https://linkedin.com/company/zakatfoundationcanada"}',
         current_timestamp,
         current_timestamp,
         '',
