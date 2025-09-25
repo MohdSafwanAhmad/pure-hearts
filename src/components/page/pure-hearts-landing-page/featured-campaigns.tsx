@@ -2,6 +2,8 @@
 import Image from "next/image";
 import { Star } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
+import Link from "next/link";
+
 import {
   Card,
   CardContent,
@@ -73,11 +75,12 @@ export default async function FeaturedCampaigns() {
                 <div className="flex items-center justify-between pt-2">
                   <Button size="sm">Donate</Button>
                   <Button
+                    asChild
                     size="sm"
                     variant="outline"
                     className="bg-transparent"
                   >
-                    View Details
+                    <Link href={`/campaigns/${proj.id}`}>View Details</Link>
                   </Button>
                 </div>
               </CardContent>
