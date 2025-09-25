@@ -1,6 +1,6 @@
 import LogoutButton from "@/src/components/global/logout-button";
 import { getDonorProfile } from "@/src/lib/supabase/server";
-import DashboardView from "@/app/(more)/donor-dashboard/dashboard-view";
+import DashboardView from "@/src/components/page/donor-dashboard/dashboard-view";
 
 export default async function DashboardPage() {
   const profile = await getDonorProfile();
