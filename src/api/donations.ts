@@ -83,29 +83,17 @@ export async function getDonationReceiptData(
 export async function generateReceiptPdf(receiptData: DonationReceiptData): Promise<Buffer> {
   const doc = new PDFDocument({ margin: 50, autoFirstPage: false });
 
-  // Stream buffers
+  // Stream -> Buffer
   const chunks: Buffer[] = [];
   doc.on("data", (b: Buffer) => chunks.push(b));
-  const done = new Promise<Buffer>((resolve) =>
-    doc.on("end", () => resolve(Buffer.concat(chunks)))
-  );
+  const done = new Promise<Buffer>((resolve) => doc.on("end", () => resolve(Buffer.concat(chunks))));
 
-  // Load Inter font
-  const interPath = findInterFont();
-  if (!interPath) {
-    throw new Error(
-      "Inter font not found. Place Inter .ttf under /public/fonts/Inter (e.g. /static/Inter-Regular.ttf)."
-    );
-  }
-
-  const fontBuf = await fs.promises.readFile(interPath);
-  doc.registerFont("Body", fontBuf);
-  doc.font("Body");
+  // ✅ No disk reads, no Inter, just use built-in Helvetica
+  doc.font("Helvetica");     // or "Times-Roman", "Courier"
   doc.addPage();
 
-  // Content
   const dateIso = safeIsoDate(receiptData.created_at);
-  
+
   doc.fontSize(20).text("Donation Receipt", { align: "center" }).moveDown();
   doc.fontSize(12);
   doc.text(`Receipt #      : ${receiptData.id}`);
@@ -120,6 +108,7 @@ export async function generateReceiptPdf(receiptData: DonationReceiptData): Prom
 
   return await done;
 }
+
 
 export async function getDonationsByUserId(userId: string): Promise<Donation[]> {
   const supabase = await createServerSupabaseClient();
