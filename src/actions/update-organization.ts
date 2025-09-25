@@ -18,7 +18,7 @@ export async function updateOrganization(
 
   const supabase = await createServerSupabaseClient();
 
-  // Get current user
+  // 1) Get current user
   const {
     data: { user },
     error: userError,
@@ -31,7 +31,7 @@ export async function updateOrganization(
     };
   }
 
-  // Validate data
+  // 2) Validate data
   const dataObj = Object.fromEntries(formData.entries()) as Record<
     string,
     string | string[] | undefined
@@ -65,7 +65,7 @@ export async function updateOrganization(
     };
   }
 
-  // Update organization in database
+  // 3) Update organization in database
   const { error: updateError } = await supabase
     .from("organizations")
     .update({

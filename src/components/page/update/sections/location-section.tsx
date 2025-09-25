@@ -61,12 +61,12 @@ export function LocationSection({ form }: LocationSectionProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                Province/Territory *
+                State/Province *
               </FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger className="w-full text-black">
-                    <SelectValue placeholder="Select your province or territory" />
+                    <SelectValue placeholder="Select your state or province" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
