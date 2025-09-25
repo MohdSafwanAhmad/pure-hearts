@@ -10,6 +10,8 @@ export type DonationRow = {
   target: string;
   limit: string;
   reviewer: string;
+  organizationSlug: string | null;
+  // projectSlug?: string | null;
 };
 
 export async function getDonationRowsForCurrentUser(): Promise<DonationRow[]> {
@@ -30,7 +32,8 @@ export async function getDonationRowsForCurrentUser(): Promise<DonationRow[]> {
       projects:project_id (
         title,
         organizations:organization_user_id (
-          organization_name
+          organization_name,
+          slug
         )
       )
     `
@@ -48,10 +51,9 @@ export async function getDonationRowsForCurrentUser(): Promise<DonationRow[]> {
       type: d.projects?.title ?? "—",
       status: d.projects?.organizations?.organization_name ?? "—",
       target: String(d.amount ?? ""),
-      // in get-donation-rows.ts
-      // get-donation-rows.ts
       limit: new Date(d.created_at).toISOString().slice(0, 10),
       reviewer: "",
+      organizationSlug: d.projects?.organizations?.slug ?? null,
     })
   );
 }
