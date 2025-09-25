@@ -1,7 +1,7 @@
 // app/(more)/donor-dashboard/dashboard-view.tsx
-import { DataTable } from "@/src/components/donor-dashboard/data-table";
-import ChartAreaInteractive from "@/src/components/donor-dashboard/chart-area-interactive";
-import { SectionCards } from "@/src/components/donor-dashboard/section-cards";
+import { DataTable } from "@/src/components/page/donor-dashboard/data-table";
+import ChartAreaInteractive from "@/src/components/page/donor-dashboard/chart-area-interactive";
+import { SectionCards } from "@/src/components/page/donor-dashboard/section-cards";
 import { SidebarInset, SidebarProvider } from "@/src/components/ui/sidebar";
 import { getDonationRowsForCurrentUser } from "@/src/lib/supabase/queries/get-donation-rows";
 import { getDonationSeriesForCurrentUser } from "@/src/lib/supabase/queries/get-donation-series";
