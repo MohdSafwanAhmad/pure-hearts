@@ -67,9 +67,10 @@ export async function getOrganizationProfile() {
     .select("*")
     .eq("user_id", user.id)
     .single();
-  return {
-    ...profile,
-    email: user.email,
-    phoneNumber: user.phone,
-  };
+  
+  if (!profile) {
+    return null;
+  }
+  
+  return profile;
 }
