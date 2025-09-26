@@ -6,8 +6,8 @@ import Link from "next/link";
 import { Button } from "@/src/components/ui/button";
 
 const slides = [
-  { src: "/hero/aid-kits.png", alt: "Volunteers preparing aid kits" },
-  { src: "/hero/food-baskets.png", alt: "Food basket distribution" },
+  { src: "/hero/aid-kits.jpg", alt: "Volunteers preparing aid kits" },
+  { src: "/hero/food-baskets.jpg", alt: "Food basket distribution" },
   { src: "/hero/orphan-support.jpg", alt: "Little Child" },
 ];
 
