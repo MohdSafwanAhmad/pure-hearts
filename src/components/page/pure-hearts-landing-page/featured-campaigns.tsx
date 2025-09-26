@@ -12,7 +12,7 @@ export default function FeaturedCampaigns({ projects }: { projects: Project[] })
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold mb-4">Featured Campaigns</h2>
-          <p className="text-muted-foreground">Choose a cause or let our matching engine allocate your Zakat wisely.</p>
+          <p className="text-muted-foreground">Choose a cause</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
