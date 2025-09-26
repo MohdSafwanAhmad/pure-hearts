@@ -1,4 +1,4 @@
-import { OrganizationDashboard } from "@/src/components/page/organization-dashboard/organization-dashboard";
+import { DashboardNavigation } from "@/src/components/page/dashboard/dashboard-navigation";
 import {
   getDonorProfile,
   getOrganizationProfile,
@@ -58,11 +58,11 @@ export default async function DashboardLayout({
   };
 
   return (
-    <OrganizationDashboard
+    <DashboardNavigation
       dashboardType={donorType}
       sections={sections[donorType]}
     >
       {children}
-    </OrganizationDashboard>
+    </DashboardNavigation>
   );
 }

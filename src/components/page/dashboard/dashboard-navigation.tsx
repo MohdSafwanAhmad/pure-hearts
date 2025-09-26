@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X, Home, User, BarChart3 } from "lucide-react";
+import LogoutButton from "@/src/components/global/logout-button";
 
 export interface Props {
   dashboardType: "organization" | "donor";
@@ -25,7 +26,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   BarChart3,
 };
 
-export function OrganizationDashboard({
+export function DashboardNavigation({
   dashboardType,
   children,
   sections,
@@ -48,48 +49,55 @@ export function OrganizationDashboard({
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
-          <Heading
-            level={5}
-            className="text-lg font-semibold text-sidebar-foreground"
-          >
-            {dashboardType === "organization"
-              ? "Organization Dashboard"
-              : "Donor Dashboard"}
-          </Heading>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+        <div className="flex flex-col h-full justify-between">
+          <div>
+            <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
+              <Heading
+                level={5}
+                className="text-lg font-semibold text-sidebar-foreground"
+              >
+                {dashboardType === "organization"
+                  ? "Organization Dashboard"
+                  : "Donor Dashboard"}
+              </Heading>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <nav className="p-4 space-y-2">
+              {sections.map((section) => {
+                const Icon = iconMap[section.icon];
+                const isActive = pathname.endsWith(section.id);
+                return (
+                  <Link key={section.id} href={section.href}>
+                    <Button
+                      variant={isActive ? "default" : "ghost"}
+                      className={cn(
+                        "w-full justify-start gap-3",
+                        isActive
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      )}
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {section.name}
+                    </Button>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+          <div className="p-4 pb-8">
+            {/* Logout button at the bottom of the sidebar */}
+            <LogoutButton />
+          </div>
         </div>
-
-        <nav className="p-4 space-y-2">
-          {sections.map((section) => {
-            const Icon = iconMap[section.icon];
-            const isActive = pathname.endsWith(section.id);
-            return (
-              <Link key={section.id} href={section.href}>
-                <Button
-                  variant={isActive ? "default" : "ghost"}
-                  className={cn(
-                    "w-full justify-start gap-3",
-                    isActive
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                  )}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <Icon className="h-4 w-4" />
-                  {section.name}
-                </Button>
-              </Link>
-            );
-          })}
-        </nav>
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
