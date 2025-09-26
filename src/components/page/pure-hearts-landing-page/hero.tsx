@@ -20,7 +20,14 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative min-h-[70vh] md:min-h-[64vh] lg:min-h-[70vh] flex items-center justify-center">
+    <section
+      className="
+        relative
+        min-h-[70vh] md:min-h-[64vh] lg:min-h-[70vh]
+        min-h-[100dvh]            /* NEW: dynamic viewport height for mobile */
+        flex items-center justify-center
+      "
+    >
       {/* Background carousel */}
       {slides.map((s, i) => (
         <Image
@@ -37,7 +44,8 @@ export default function Hero() {
       <div className="absolute inset-0 bg-black/50" /> {/* overlay for contrast */}
 
       {/* Content */}
-      <div className="relative z-10 text-center text-white px-6">
+      <div className="relative z-10 text-center text-white px-6 pb-[env(safe-area-inset-bottom)]">
+        {/* NEW: safe-area bottom padding so buttons don't collide with iOS home bar */}
         <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
           Transparent Giving. Zero Admin Fees.
         </h1>
