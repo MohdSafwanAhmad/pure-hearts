@@ -17,6 +17,8 @@ interface Props {
     startDate: Date;
     completionDate?: Date;
     projectBackgroundImage: string;
+    slug: string;
+    organizationSlug: string;
   }[];
 }
 
@@ -87,7 +89,8 @@ export function ProjectsSection({ projects }: Props) {
               projectBackgroundImage={project.projectBackgroundImage}
               completionDate={project.completionDate}
               startDate={project.startDate}
-              projectId={project.projectId}
+              slug={project.slug}
+              organizationSlug={project.organizationSlug}
             />
           ))}
         </div>

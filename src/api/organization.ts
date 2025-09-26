@@ -1,14 +1,21 @@
 import { createServerSupabaseClient } from "@/src/lib/supabase/server";
 import { Tables } from "@/src/types/database-types";
 import { PUBLIC_IMAGE_BUCKET_NAME } from "@/src/lib/constants";
+import slugify from "slugify";
 
 export type Organization = Tables<"organizations">;
+export type Project = Tables<"projects">;
 
 export interface OrganizationStats {
   completedProjects: number;
   activeProjects: number;
   totalDonations: number;
   donorsCount: number;
+}
+
+export interface EnhancedProject extends Project {
+  slug: string;
+  projectBackgroundImage: string;
 }
 
 export async function getOrganizationBySlug(
@@ -45,16 +52,6 @@ export async function getOrganizationStats(
   const supabase = await createServerSupabaseClient();
   const today = new Date().toISOString();
 
-  // Define our types upfront
-  interface DonationAmount {
-    amount: number;
-  }
-
-  interface ProjectWithDonations {
-    id: string;
-    donations: DonationAmount[] | null;
-  }
-
   interface DonorData {
     donor_id: string;
     project: {
@@ -86,14 +83,9 @@ export async function getOrganizationStats(
 
     // 3. Get total donations for all projects of this organization
     supabase
-      .from("projects")
-      .select(
-        `
-        id,
-        donations:donations(amount)
-      `
-      )
-      .eq("organization_user_id", organizationUserId),
+      .from("donations")
+      .select("amount, project:projects!inner(organization_user_id)")
+      .eq("project.organization_user_id", organizationUserId),
 
     // 4. Get count of unique donors
     supabase
@@ -101,11 +93,13 @@ export async function getOrganizationStats(
       .select(
         `
         donor_id,
-        project:projects(organization_user_id)
+        project:projects!inner(organization_user_id)
       `
       )
       .eq("project.organization_user_id", organizationUserId),
   ]);
+
+  console.log(organizationUserId);
 
   const { count: completedProjectsCount, error: completedError } =
     completedProjectsResult;
@@ -118,13 +112,11 @@ export async function getOrganizationStats(
   let totalDonations = 0;
 
   if (donationsData) {
-    for (const project of donationsData as ProjectWithDonations[]) {
+    for (const { amount } of donationsData) {
       // If there are donations for this project
-      if (project.donations && project.donations.length > 0) {
+      if (amount) {
         // Sum up the donations
-        project.donations.forEach((donation: DonationAmount) => {
-          totalDonations += donation.amount || 0;
-        });
+        totalDonations += amount || 0;
       }
     }
   }
@@ -155,4 +147,49 @@ export async function getOrganizationStats(
     totalDonations: parseFloat(totalDonations.toFixed(2)),
     donorsCount: uniqueDonors.size,
   };
+}
+
+/**
+ * Get all projects for a specific organization
+ * @param organizationUserId The user_id of the organization
+ * @returns Array of projects with enhanced data (slug and default background image)
+ */
+export async function getOrganizationProjects(
+  organizationUserId: string
+): Promise<EnhancedProject[]> {
+  const supabase = await createServerSupabaseClient();
+  const defaultBackgroundImage = "/project-background.webp";
+
+  const { data: projects, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("organization_user_id", organizationUserId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching organization projects:", error);
+    return [];
+  }
+
+  // Transform the projects data to include the slug and default background image if needed
+  const enhancedProjects: EnhancedProject[] = projects.map((project) => {
+    // Generate a slug from the project title
+    const projectSlug = slugify(project.title, {
+      replacement: "-",
+      remove: /[*+~.()'"!:@]/g,
+      lower: true,
+      strict: true,
+      locale: "en",
+    });
+
+    return {
+      ...project,
+      start_date: project.start_date || new Date().toISOString(),
+      slug: projectSlug,
+      projectBackgroundImage:
+        project.project_background_image || defaultBackgroundImage,
+    };
+  });
+
+  return enhancedProjects;
 }

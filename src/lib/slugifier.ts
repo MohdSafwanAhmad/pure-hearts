@@ -29,8 +29,6 @@ export async function generateUniqueSlug(
   const supabase = await createServerSupabaseClient();
   const baseSlug = generateSlug(name);
 
-  console.log("Generated base slug:", baseSlug);
-
   if (!baseSlug) {
     throw new Error("Unable to generate slug from organization name");
   }
