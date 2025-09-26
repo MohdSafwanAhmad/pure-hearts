@@ -9,25 +9,40 @@ export type ProjectWithTotals = {
   collected: number;
   remaining: number;
   percent: number;
-  beneficiary_count: number; // computed: unique donors for this project
+  beneficiary_count: number;
+  slug: string;
+  project_background_image: string | null;
+  organization?: { user_id: string; name: string; slug: string } | null;
+};
+
+// Local row shapes to bypass stale generated types
+type ProjectRowLite = {
+  id: string;
+  title: string | null;
+  description: string | null;
+  goal_amount: number | null;
   organization_user_id: string;
   project_background_image: string | null;
-  organization?: { user_id: string; name: string } | null;
+  slug: string;
+  created_at: string | null;
 };
+type DonationRow = { project_id: string; donor_id: string; amount: number | string | null };
+type OrgRow = { user_id: string; organization_name: string | null; slug: string };
 
 export async function getFeaturedProjectsWithTotals(
   limit = 8
 ): Promise<ProjectWithTotals[]> {
   const supabase = await createServerSupabaseClient();
 
-  // 1) Featured projects (only existing columns)
+  // 1) Featured projects (+ slug)
   const { data: projects, error: pErr } = await supabase
     .from("projects")
     .select(
-      "id, title, description, goal_amount, organization_user_id, project_background_image, created_at"
+      "id, title, description, goal_amount, organization_user_id, project_background_image, slug, created_at"
     )
     .order("created_at", { ascending: false })
-    .limit(limit);
+    .limit(limit)
+    .returns<ProjectRowLite[]>(); // <-- key
 
   if (pErr) {
     console.error("projects fetch error:", pErr.message);
@@ -35,13 +50,13 @@ export async function getFeaturedProjectsWithTotals(
   }
   if (!projects?.length) return [];
 
-  // 2) Donations for these projects (sum + unique donors in TS)
+  // 2) Donations (sum + unique donors)
   const projectIds = projects.map((p) => p.id);
-
   const { data: donationRows, error: dErr } = await supabase
     .from("donations")
     .select("project_id, donor_id, amount")
-    .in("project_id", projectIds);
+    .in("project_id", projectIds)
+    .returns<DonationRow[]>(); // <-- key
 
   if (dErr) {
     console.error("donations fetch error:", dErr.message);
@@ -51,48 +66,48 @@ export async function getFeaturedProjectsWithTotals(
   const donorsById = new Map<string, Set<string>>();
 
   for (const r of donationRows ?? []) {
-    const pid = String((r as any).project_id);
-    const amt = Number((r as any).amount ?? 0);
+    const pid = String(r.project_id);
+    const amt = Number(r.amount ?? 0);
     if (Number.isFinite(amt)) {
       totalById.set(pid, (totalById.get(pid) ?? 0) + amt);
     }
-    const donor = String((r as any).donor_id ?? "");
+    const donor = String(r.donor_id ?? "");
     if (donor) {
       if (!donorsById.has(pid)) donorsById.set(pid, new Set());
       donorsById.get(pid)!.add(donor);
     }
   }
 
-  // 3) Organizations (map org name from `organization_name`)
-  const orgIds = Array.from(
-    new Set(projects.map((p) => p.organization_user_id).filter(Boolean))
-  );
+  // 3) Organizations (name + slug)
+  const orgIds = Array.from(new Set(projects.map((p) => p.organization_user_id)));
+  const orgMap = new Map<string, { user_id: string; name: string; slug: string }>();
 
-  const orgMap = new Map<string, { user_id: string; name: string }>();
   if (orgIds.length) {
     const { data: orgRows, error: oErr } = await supabase
       .from("organizations")
-      .select("user_id, organization_name")
-      .in("user_id", orgIds);
+      .select("user_id, organization_name, slug")
+      .in("user_id", orgIds)
+      .returns<OrgRow[]>(); // <-- key
 
     if (oErr) {
       console.error("organizations fetch error:", oErr.message);
     }
 
     for (const o of orgRows ?? []) {
-      const user_id = String((o as any).user_id);
-      const name = String((o as any).organization_name ?? "");
-      orgMap.set(user_id, { user_id, name });
+      orgMap.set(o.user_id, {
+        user_id: o.user_id,
+        name: String(o.organization_name ?? ""),
+        slug: String(o.slug ?? ""),
+      });
     }
   }
 
-  // 4) Build view models
+  // 4) View models
   return projects.map((p) => {
     const goal = Number(p.goal_amount ?? 0);
     const collected = totalById.get(p.id) ?? 0;
     const remaining = Math.max(goal - collected, 0);
-    const percent =
-      goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
+    const percent = goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
     const beneficiary_count = donorsById.get(p.id)?.size ?? 0;
     const organization = orgMap.get(p.organization_user_id) ?? null;
 
@@ -105,7 +120,7 @@ export async function getFeaturedProjectsWithTotals(
       remaining,
       percent,
       beneficiary_count,
-      organization_user_id: p.organization_user_id,
+      slug: p.slug,
       project_background_image: p.project_background_image ?? null,
       organization,
     };

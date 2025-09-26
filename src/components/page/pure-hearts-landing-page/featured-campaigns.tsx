@@ -14,11 +14,11 @@ import {
 import { Progress } from "@/src/components/ui/progress";
 import { getFeaturedProjectsWithTotals } from "@/src/lib/supabase/queries/get-featured-projects";
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n);
+const fmt = (n: number | null | undefined) =>
+  new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Number(n ?? 0));
 
 export default async function FeaturedCampaigns() {
-  const projects = await getFeaturedProjectsWithTotals(4);
+  const projects = await getFeaturedProjectsWithTotals();
 
   return (
     <section id="projects" className="py-20 bg-muted/30">
@@ -36,7 +36,7 @@ export default async function FeaturedCampaigns() {
             >
               <div className="aspect-video relative">
                 <Image
-                  src="/placeholder.jpg"
+                  src={proj.project_background_image || "/placeholder.jpg"}
                   alt={proj.title}
                   fill
                   className="object-cover"
@@ -77,7 +77,7 @@ export default async function FeaturedCampaigns() {
                     variant="outline"
                     className="bg-transparent"
                   >
-                    <Link href={`/campaigns/${proj.id}`}>View Details</Link>
+                    <Link href={`/campaigns/${proj.organization!.slug}/${proj.slug}`}>View Details</Link>
                   </Button>
                 </div>
               </CardContent>

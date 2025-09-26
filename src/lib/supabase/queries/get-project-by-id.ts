@@ -12,7 +12,7 @@ export type ProjectDetail = {
   percent: number;
   project_background_image: string | null;
   organization_user_id: string;
-  organization?: { user_id: string; name: string | null } | null;
+  organization?: { user_id: string; slug: string; name: string | null } | null;
   beneficiary_count: number;
 };
 
@@ -72,7 +72,7 @@ export async function getProjectByIdWithTotals(
   // 3) Organization (your table uses `organization_name`)
   const { data: orgRow, error: oErr } = await supabase
     .from("organizations")
-    .select("user_id, organization_name")
+    .select("user_id, organization_name, slug")
     .eq("user_id", p.organization_user_id)
     .maybeSingle();
 
@@ -83,6 +83,7 @@ export async function getProjectByIdWithTotals(
   const organization = orgRow
     ? {
         user_id: orgRow.user_id as string,
+        slug: (orgRow as any).slug as string,
         name: (orgRow as any).organization_name ?? null,
       }
     : null;

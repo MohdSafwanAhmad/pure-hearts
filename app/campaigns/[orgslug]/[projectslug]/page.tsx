@@ -1,30 +1,54 @@
 import Image from "next/image";
 import Link from "next/link";
+import { createServerSupabaseClient } from "@/src/lib/supabase/server";
 import { getProjectByIdWithTotals } from "@/src/lib/supabase/queries/get-project-by-id";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Progress } from "@/src/components/ui/progress";
-import { DonationBox } from "@/src/components/page/project/donationbox"; // <— IMPORTANT
+import { DonationBox } from "@/src/components/page/project/donationbox";
+
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n || 0);
 
-export default async function ProjectPage({
+export default async function ProjectBySlugsPage({
   params,
 }: {
-  params: { id: string };
+  params: { orgslug: string; projectslug: string };
 }) {
-  const project = await getProjectByIdWithTotals(params.id);
+  const supabase = await createServerSupabaseClient();
 
+  // 1) find org by slug
+  const { data: org, error: orgErr } = await supabase
+    .from("organizations")
+    .select("user_id, organization_name")
+    .eq("slug", params.orgslug)
+    .maybeSingle();
+
+  if (orgErr || !org) {
+    console.error("org fetch error:", orgErr?.message ?? "not found");
+    return <div className="container mx-auto px-4 py-20">Project not found.</div>;
+  }
+
+  // 2) find project by (org, slug) to get the canonical ID
+  const { data: proj, error: projErr } = await supabase
+    .from("projects")
+    .select("id, project_background_image, title")
+    .eq("organization_user_id", org.user_id)
+    .eq("slug", params.projectslug)
+    .maybeSingle();
+
+  if (projErr || !proj) {
+    console.error("project fetch error:", projErr?.message ?? "not found");
+    return <div className="container mx-auto px-4 py-20">Project not found.</div>;
+  }
+
+  // 3) reuse the same data builder you already have
+  const project = await getProjectByIdWithTotals(proj.id);
   if (!project) {
-    return (
-      <div className="container mx-auto px-4 py-20">Project not found.</div>
-    );
+    return <div className="container mx-auto px-4 py-20">Project not found.</div>;
   }
 
   // Always show a cover (fallback to placeholder)
@@ -32,7 +56,6 @@ export default async function ProjectPage({
 
   return (
     <div className="container mx-auto px-4 py-10">
-      {/* 12-col layout: left 7 / right 5 */}
       <div className="grid gap-8 lg:grid-cols-12">
         {/* LEFT */}
         <Card className="overflow-hidden lg:col-span-7">
@@ -63,9 +86,7 @@ export default async function ProjectPage({
                 <div className="font-semibold">${fmt(project.remaining)}</div>
               </div>
               <div className="rounded-lg bg-muted p-4 text-center">
-                <div className="text-xs text-muted-foreground">
-                  Beneficiaries
-                </div>
+                <div className="text-xs text-muted-foreground">Beneficiaries</div>
                 <div className="font-semibold">
                   {project.beneficiary_count ?? "—"}
                 </div>
@@ -115,7 +136,7 @@ export default async function ProjectPage({
                   size="sm"
                   className="mt-auto self-start"
                 >
-                  <Link href={`/organizations/${project.organization.user_id}`}>
+                  <Link href={`/organizations/${project.organization.slug}`}>
                     Visit organization
                   </Link>
                 </Button>
