@@ -1,62 +1,66 @@
+"use client";
+
+import * as React from "react";
 import Image from "next/image";
-import { Badge } from "@/src/components/ui/badge";
+import Link from "next/link";
 import { Button } from "@/src/components/ui/button";
-import { Building2, ShieldCheck, Sparkles } from "lucide-react";
+
+const slides = [
+  { src: "/hero/aid-kits.jpg", alt: "Volunteers preparing aid kits" },
+  { src: "/hero/food-baskets.jpg", alt: "Food basket distribution" },
+  { src: "/hero/orphan-support.jpg", alt: "Little Child" },
+];
 
 export default function Hero() {
-  return (
-    <section className="bg-gradient-to-r from-primary/10 to-background py-20">
-      <div className="container mx-auto px-4">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <Badge className="bg-accent/20 text-accent-foreground border-accent/30">
-              Tech-Driven Zakat & Charity Initiative
-            </Badge>
-            <h1 className="text-4xl lg:text-6xl font-bold text-balance">
-              Transparent Giving. Zero Admin Fees.
-            </h1>
-            <p className="text-xl text-muted-foreground text-pretty">
-              Pure Hearts is a modern donations platform that uses automation,
-              AI, and blockchain to make Zakat and charity distribution
-              efficient, transparent, and accessible—so every dollar reaches
-              people who need it.
-            </p>
-            <div className="flex gap-4">
-              <Button size="lg" className="text-lg px-8">
-                Donate Now
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="text-lg px-8 bg-transparent"
-              >
-                Apply for Aid
-              </Button>
-            </div>
-            <div className="flex gap-6 pt-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4" /> Auditable on-chain ledger
-              </div>
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4" /> AI eligibility & matching
-              </div>
-              <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4" /> Zero office overhead
-              </div>
-            </div>
-          </div>
+  const [idx, setIdx] = React.useState(0);
 
-          <div className="relative">
-            <div className="aspect-square bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl p-8 relative">
-              <Image
-                src="/pure-hearts-hero.jpg"
-                alt="Pure Hearts transparent donations"
-                fill
-                className="object-cover rounded-2xl"
-                sizes="(min-width: 1024px) 520px, 100vw"
-              />
-            </div>
-          </div>
+  React.useEffect(() => {
+    const t = setInterval(() => setIdx((p) => (p + 1) % slides.length), 4000);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <section
+      className="
+        relative
+        min-h-[70vh] md:min-h-[64vh] lg:min-h-[70vh]
+        min-h-[100dvh]            /* NEW: dynamic viewport height for mobile */
+        flex items-center justify-center
+      "
+    >
+      {/* Background carousel */}
+      {slides.map((s, i) => (
+        <Image
+          key={s.src}
+          src={s.src}
+          alt={s.alt}
+          fill
+          priority={i === 0}
+          className={`absolute inset-0 object-cover transition-opacity duration-1000 ${
+            i === idx ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      ))}
+      <div className="absolute inset-0 bg-black/50" /> {/* overlay for contrast */}
+
+      {/* Content */}
+      <div className="relative z-10 text-center text-white px-6 pb-[env(safe-area-inset-bottom)]">
+        {/* NEW: safe-area bottom padding so buttons don't collide with iOS home bar */}
+        <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
+          Transparent Giving. Zero Admin Fees.
+        </h1>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button asChild size="lg" className="px-8 text-lg">
+            <Link href="/donation">Donate Now</Link>
+          </Button>
+          <Button
+            asChild
+            size="lg"
+            variant="secondary"
+            className="px-8 text-lg bg-white/20 text-white border-white/40 hover:bg-white/30"
+          >
+            <Link href="/apply">Apply for Aid</Link>
+          </Button>
         </div>
       </div>
     </section>
