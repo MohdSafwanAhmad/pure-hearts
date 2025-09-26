@@ -1,6 +1,7 @@
-import { createServerSupabaseClient } from "@/src/lib/supabase/server"; // <- your helper
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import { unstable_noStore as noStore } from "next/cache"; // <-- add this
 
-// The shape your detail page needs
 export type ProjectDetail = {
   id: string;
   title: string;
@@ -13,16 +14,16 @@ export type ProjectDetail = {
   organization_user_id: string;
   organization?: { user_id: string; name: string | null } | null;
   beneficiary_count: number;
-  // Add more optional fields later if you add columns (e.g. beneficiary_count)
 };
 
 export async function getProjectByIdWithTotals(
   id: string
 ): Promise<ProjectDetail | null> {
-  const supabase = createServerSupabaseClient();
+  noStore();
+  const supabase = await createServerSupabaseClient();
 
-  // 1) Read a single project – only columns that actually exist
-  const { data: p, error: projErr } = await (await supabase)
+  // 1) Project (select only existing columns)
+  const { data: p, error: projErr } = await supabase
     .from("projects")
     .select(
       "id, title, description, goal_amount, organization_user_id, project_background_image"
@@ -31,85 +32,72 @@ export async function getProjectByIdWithTotals(
     .maybeSingle();
 
   if (projErr || !p) {
-    console.error("project error:", projErr?.message);
+    console.error("project fetch error:", projErr?.message ?? "not found");
     return null;
   }
 
-  // 2) Compute collected amount
-  let collected = 0;
+  // 2) Donations (aggregate in TS)
+  // No status in your schema; we sum all rows for demo parity.
+  const { data: donations, error: dErr } = await supabase
+    .from("donations")
+    .select("amount, donor_id")
+    .eq("project_id", id);
 
-  // Prefer the RPC (typed cast to avoid “never” if Database types don’t include the RPC)
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: totals, error } = await (supabase as any).rpc(
-      "get_project_donation_totals",
-      { ids: [id] }
-    );
-    if (!error && Array.isArray(totals) && totals.length > 0) {
-      collected = Number(totals[0]?.total ?? 0);
-    } else if (error) {
-      console.warn("RPC totals error (fallback to table sum):", error.message);
-    }
-  } catch {
-    /* ignore, will fallback */
+  if (dErr) {
+    console.error("donations fetch error:", dErr.message);
+  }
+  // DEBUG: see what we actually got back (server console)
+  if (process.env.NODE_ENV !== "production") {
+    console.log("[donations]", {
+      projectId: id,
+      rows: donations?.length ?? 0,
+      sample: donations?.[0] ?? null,
+    });
   }
 
-  // Fallback: sum donations directly if RPC unavailable
-  if (!collected) {
-    const { data: donations, error: dErr } = await (await supabase)
-      .from("donations")
-      .select("amount")
-      .eq("project_id", id);
-
-    if (!dErr) {
-      collected =
-        donations?.reduce(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (s: number, d: any) => s + Number(d.amount ?? 0),
-          0
-        ) ?? 0;
-    } else {
-      console.warn("donations sum error:", dErr.message);
-    }
-  }
+  const collected = (donations ?? []).reduce(
+    (sum, r: any) => sum + Number(r?.amount ?? 0),
+    0
+  );
+  // Beneficiaries = unique donors for this project (feels more accurate than raw count)
+  const beneficiary_count = new Set(
+    (donations ?? []).map((r: any) => String(r?.donor_id))
+  ).size;
 
   const goal = Number(p.goal_amount ?? 0);
   const remaining = Math.max(goal - collected, 0);
   const percent =
     goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
-  const { count: benCount, error: countErr } = await (
-    await supabase
-  )
-    .from("donations")
-    .select("id", { head: true, count: "exact" }) // no rows returned, only count
-    .eq("project_id", p.id);
 
-  if (countErr) {
-    console.error("beneficiary count error:", countErr);
-  }
-
-  // 3) Optional organization info (name to show a “Visit org” button)
-  const { data: org } = await (await supabase)
+  // 3) Organization (your table uses `organization_name`)
+  const { data: orgRow, error: oErr } = await supabase
     .from("organizations")
     .select("user_id, organization_name")
     .eq("user_id", p.organization_user_id)
     .maybeSingle();
 
+  if (oErr) {
+    console.error("organization fetch error:", oErr.message);
+  }
+
+  const organization = orgRow
+    ? {
+        user_id: orgRow.user_id as string,
+        name: (orgRow as any).organization_name ?? null,
+      }
+    : null;
+
   return {
     id: p.id,
-    title: p.title,
+    title: p.title ?? "",
     description: p.description ?? null,
-    goal_amount: goal,
+    goal_amount: Number(p.goal_amount ?? 0),
     collected,
     remaining,
     percent,
     project_background_image: p.project_background_image ?? null,
     organization_user_id: p.organization_user_id,
-    beneficiary_count: benCount ?? 0, // <-- ADD THIS
-
-    organization: org
-      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        { user_id: org.user_id, name: (org as any).organization_name ?? null }
-      : null,
+    beneficiary_count,
+    organization,
   };
 }
