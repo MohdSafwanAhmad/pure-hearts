@@ -1,9 +1,9 @@
 "use client";
 
 import { updateOrganization } from "@/src/actions/update-organization";
-import { BasicInformationSection } from "@/src/components/page/update/sections/basic-information-section";
-import { LocationSection } from "@/src/components/page/update/sections/location-section";
-import { MissionProjectsSection } from "@/src/components/page/update/sections/mission-projects-section";
+import { BasicInformationSection } from "@/src/components/page/organization-dashboard/profile/sections/basic-information-section";
+import { LocationSection } from "@/src/components/page/organization-dashboard/profile/sections/location-section";
+import { MissionProjectsSection } from "@/src/components/page/organization-dashboard/profile/sections/mission-projects-section";
 import { Button } from "@/src/components/ui/button";
 import { Form } from "@/src/components/ui/form";
 import {
@@ -91,7 +91,7 @@ export function OrganizationUpdateForm({
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">

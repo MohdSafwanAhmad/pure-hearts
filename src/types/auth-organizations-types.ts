@@ -1,3 +1,5 @@
+import { Database } from "@/src/types/database-types";
+
 export interface OrganizationFormData {
   // Basic Information
   organizationName: string;
@@ -82,3 +84,8 @@ export const projectAreaOptions = [
   "Community Development",
   "Environmental Conservation (Tawheed)",
 ];
+
+export type TOrganization =
+  Database["public"]["Tables"]["organizations"]["Row"];
+
+export type TDonor = Database["public"]["Tables"]["donors"]["Row"];

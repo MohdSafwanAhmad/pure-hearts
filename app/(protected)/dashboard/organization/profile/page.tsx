@@ -1,12 +1,12 @@
+import { OrganizationUpdateForm } from "@/src/components/page/organization-dashboard/profile/organization-update-form";
 import { getOrganizationProfile } from "@/src/lib/supabase/server";
-import { OrganizationUpdateForm } from "@/src/components/page/update/organization-update-form";
 import { redirect } from "next/navigation";
 
-export default async function OrganizationUpdatePage() {
+export default async function OrganizationProfilePage() {
   const profile = await getOrganizationProfile();
 
   if (!profile) {
-    redirect("/login/organization");
+    return redirect("/login/organization");
   }
 
   return <OrganizationUpdateForm initialData={profile} />;
