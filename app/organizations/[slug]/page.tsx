@@ -1,5 +1,8 @@
 import { notFound } from "next/navigation";
-import { getOrganizationBySlug } from "@/src/api/organization";
+import {
+  getOrganizationBySlug,
+  getOrganizationStats,
+} from "@/src/api/organization";
 import { OrganizationHeader } from "@/src/components/page/organization/header-section";
 import { OrganizationStats } from "@/src/components/page/organization/stats-section";
 import { OrganizationDetails } from "@/src/components/page/organization/details-section";
@@ -16,15 +19,34 @@ export default async function OrganizationPage({
 }: OrganizationPageProps) {
   const { slug } = await params;
   const organization = await getOrganizationBySlug(slug);
+
+  if (!organization) {
+    notFound();
+  }
+
+  const organizationStats = await getOrganizationStats(organization.user_id);
+
   const stats = [
-    { title: "Completed Projects", stat: "4", description: "Projects" },
-    { title: "Active Projects", stat: "2", description: "Projects" },
+    {
+      title: "Completed Projects",
+      stat: String(organizationStats.completedProjects),
+      description: "Projects",
+    },
+    {
+      title: "Active Projects",
+      stat: String(organizationStats.activeProjects),
+      description: "Projects",
+    },
     {
       title: "Total Donations",
-      stat: "$12,450",
+      stat: `$${organizationStats.totalDonations.toLocaleString()}`,
       description: "Raised",
     },
-    { title: "Donors", stat: "89", description: "Contributors" },
+    {
+      title: "Donors",
+      stat: String(organizationStats.donorsCount),
+      description: "Contributors",
+    },
   ];
   const projects = [
     {
@@ -67,10 +89,6 @@ export default async function OrganizationPage({
       projectBackgroundImage: "/project-background.webp",
     },
   ];
-
-  if (!organization) {
-    notFound();
-  }
 
   return (
     <div>
