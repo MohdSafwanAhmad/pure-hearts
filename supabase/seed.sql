@@ -432,7 +432,7 @@ SELECT u.id,
        'Raising funds for school supplies for students.',
        5000.00,
        bt.id,
-       '/public-images/projects/school-supplies-drive.jpg'
+       'school-supplies-drive.jpg'
 FROM auth.users u, public.beneficiary_types bt
 WHERE u.email = 'org1@purezakat.com' AND bt.code = 'STUDENTS'
 UNION ALL
@@ -441,7 +441,7 @@ SELECT u.id,
        'Warm clothing for families in need.',
        7000.00,
        bt.id,
-       '/public-images/projects/winter-clothing-appeal.jpg'
+       'winter-clothing-appeal.jpg'
 FROM auth.users u, public.beneficiary_types bt
 WHERE u.email = 'org1@purezakat.com' AND bt.code = 'CITIZENS'
 
@@ -452,7 +452,7 @@ SELECT u.id,
        'Monthly food baskets for families.',
        9000.00,
        bt.id,
-       '/public-images/projects/food-basket-program.jpg'
+       'food-basket-program.jpg'
 FROM auth.users u, public.beneficiary_types bt
 WHERE u.email = 'org2@halalmealsproject.org' AND bt.code = 'RESIDENTS'
 UNION ALL
@@ -461,7 +461,7 @@ SELECT u.id,
        'Rent relief for struggling families.',
        12000.00,
        bt.id,
-       '/public-images/projects/emergency-rent-support.jpg'
+       'emergency-rent-support.jpg'
 FROM auth.users u, public.beneficiary_types bt
 WHERE u.email = 'org2@halalmealsproject.org' AND bt.code = 'WIDOWS'
 
@@ -472,7 +472,7 @@ SELECT u.id,
        'Basic furnishings for new homes.',
        6000.00,
        bt.id,
-       '/public-images/projects/shelter-starter-kits.jpg'
+       'shelter-starter-kits.jpg'
 FROM auth.users u, public.beneficiary_types bt
 WHERE u.email = 'org3@masjidoutreach.ca' AND bt.code = 'RESIDENTS'
 UNION ALL
@@ -481,7 +481,7 @@ SELECT u.id,
        'Grants to keep students enrolled.',
        8000.00,
        bt.id,
-       '/public-images/projects/tuition-bridge-fund.jpg'
+       'tuition-bridge-fund.jpg'
 FROM auth.users u, public.beneficiary_types bt
 WHERE u.email = 'org3@masjidoutreach.ca' AND bt.code = 'STUDENTS'
 UNION ALL
@@ -490,7 +490,7 @@ SELECT u.id,
        'Neighborhood pantry restock.',
        4000.00,
        bt.id,
-       '/public-images/projects/community-pantry.jpg'
+       'community-pantry.jpg'
 FROM auth.users u, public.beneficiary_types bt
 WHERE u.email = 'org3@masjidoutreach.ca' AND bt.code = 'CITIZENS'
 
@@ -501,7 +501,7 @@ SELECT u.id,
        'Pharmacy vouchers for essential meds.',
        7000.00,
        bt.id,
-       '/public-images/projects/medical-aid-vouchers.jpg'
+       'medical-aid-vouchers.jpg'
 FROM auth.users u, public.beneficiary_types bt
 WHERE u.email = 'org4@muslimfoodbank.ca' AND bt.code = 'RESIDENTS'
 UNION ALL
@@ -510,7 +510,7 @@ SELECT u.id,
        'Home modifications for accessibility.',
        15000.00,
        bt.id,
-       '/public-images/projects/accessibility-upgrades.jpg'
+       'accessibility-upgrades.jpg'
 FROM auth.users u, public.beneficiary_types bt
 WHERE u.email = 'org4@muslimfoodbank.ca' AND bt.code = 'CITIZENS'
 UNION ALL
@@ -519,7 +519,7 @@ SELECT u.id,
        'Monthly hygiene & care packages.',
        5000.00,
        bt.id,
-       '/public-images/projects/elderly-care-packages.jpg'
+       'elderly-care-packages.jpg'
 FROM auth.users u, public.beneficiary_types bt
 WHERE u.email = 'org4@muslimfoodbank.ca' AND bt.code = 'WIDOWS';
 
@@ -652,27 +652,11 @@ WHERE
 
 
 --------------------------------------------------------------------------------
--- PROJECT IMAGES
--- Put files at: /public/public-images/projects/<project-slug>.jpg
--- Example: /public/public-images/projects/winter-clothing-appeal.jpg
---------------------------------------------------------------------------------
-update public.projects
-set project_background_image = '/public-images/projects/' || slug || '.jpg'
-WHERE (project_background_image IS NULL OR project_background_image = '');
---------------------------------------------------------------------------------
--- MORE VERBOSE DESCRIPTIONS FOR EXISTING PROJECTS (by slug)
---------------------------------------------------------------------------------
 -- PROJECT IMAGES (store only the object key that exists in bucket public-images)
-update public.projects set project_background_image = 'school-supplies-drive.jpg' where slug = 'school-supplies-drive';
-update public.projects set project_background_image = 'winter-clothing-appeal.jpg'  where slug = 'winter-clothing-appeal';
-update public.projects set project_background_image = 'food-basket-program.jpg'     where slug = 'food-basket-program';
-update public.projects set project_background_image = 'emergency-rent-support.jpg'  where slug = 'emergency-rent-support';
-update public.projects set project_background_image = 'shelter-starter-kits.jpg'    where slug = 'shelter-starter-kits';
-update public.projects set project_background_image = 'tuition-bridge-fund.jpg'     where slug = 'tuition-bridge-fund';
-update public.projects set project_background_image = 'community-pantry.jpg'        where slug = 'community-pantry';
-update public.projects set project_background_image = 'medical-aid-vouchers.jpg'    where slug = 'medical-aid-vouchers';
-update public.projects set project_background_image = 'accessibility-upgrades.jpg'  where slug = 'accessibility-upgrades';
-update public.projects set project_background_image = 'elderly-care-packages.jpg'   where slug = 'elderly-care-packages';
+--------------------------------------------------------------------------------
+-- Set keys to filenames (bucket: public-images)
+update public.projects
+set project_background_image = slug || '.jpg';
 
 --------------------------------------------------------------------------------
 -- INSERT ADDITIONAL PROJECTS (clean, idempotent by (org, slug) uniqueness)

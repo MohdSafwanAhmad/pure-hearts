@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/src/lib/supabase/server";
-import { getProjectByIdWithTotals } from "@/src/lib/supabase/queries/get-project-by-id";
+import { getProjectByIdWithTotals } from "@/src/api/project";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Progress } from "@/src/components/ui/progress";

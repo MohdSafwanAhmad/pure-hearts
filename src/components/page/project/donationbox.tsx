@@ -54,9 +54,6 @@ export function DonationBox({
         </Button>
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        Demo only — the Donate button isn’t wired up yet.
-      </p>
     </div>
   );
 }

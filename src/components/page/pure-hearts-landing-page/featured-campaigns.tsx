@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/src/components/ui/card";
 import { Progress } from "@/src/components/ui/progress";
-import { getFeaturedProjectsWithTotals } from "@/src/lib/supabase/queries/get-featured-projects";
+import { getFeaturedProjectsWithTotals } from "@/src/api/project";
 
 const fmt = (n: number | null | undefined) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Number(n ?? 0));
