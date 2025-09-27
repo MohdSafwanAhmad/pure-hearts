@@ -1,7 +1,6 @@
+import { PUBLIC_IMAGE_BUCKET_NAME } from "@/src/lib/constants";
 import { createServerSupabaseClient } from "@/src/lib/supabase/server";
 import { Tables } from "@/src/types/database-types";
-import { PUBLIC_IMAGE_BUCKET_NAME } from "@/src/lib/constants";
-import slugify from "slugify";
 
 export type Organization = Tables<"organizations">;
 export type Project = Tables<"projects">;
@@ -174,18 +173,10 @@ export async function getOrganizationProjects(
   // Transform the projects data to include the slug and default background image if needed
   const enhancedProjects: EnhancedProject[] = projects.map((project) => {
     // Generate a slug from the project title
-    const projectSlug = slugify(project.title, {
-      replacement: "-",
-      remove: /[*+~.()'"!:@]/g,
-      lower: true,
-      strict: true,
-      locale: "en",
-    });
-
     return {
       ...project,
       start_date: project.start_date || new Date().toISOString(),
-      slug: projectSlug,
+      slug: project.slug,
       projectBackgroundImage:
         project.project_background_image || defaultBackgroundImage,
     };
