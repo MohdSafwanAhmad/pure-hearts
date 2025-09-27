@@ -197,6 +197,7 @@ export type Database = {
           id: string;
           organization_user_id: string;
           project_background_image: string | null;
+          slug: string;
           start_date: string | null;
           title: string;
           updated_at: string | null;
@@ -210,6 +211,7 @@ export type Database = {
           id?: string;
           organization_user_id: string;
           project_background_image?: string | null;
+          slug: string;
           start_date?: string | null;
           title: string;
           updated_at?: string | null;
@@ -223,6 +225,7 @@ export type Database = {
           id?: string;
           organization_user_id?: string;
           project_background_image?: string | null;
+          slug?: string;
           start_date?: string | null;
           title?: string;
           updated_at?: string | null;
@@ -249,7 +252,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      slugify: {
+        Args: { txt: string };
+        Returns: string;
+      };
     };
     Enums: {
       [_ in never]: never;

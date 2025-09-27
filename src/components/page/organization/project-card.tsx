@@ -7,19 +7,21 @@ import { Heading } from "@/src/components/global/heading";
 interface Props {
   title: string;
   description: string;
-  projectId: string;
   startDate: Date;
   completionDate?: Date;
   projectBackgroundImage: string;
+  slug: string;
+  organizationSlug: string;
 }
 
 export function OrganizationProjectCard({
   title,
   description,
-  projectId,
   startDate,
   completionDate,
   projectBackgroundImage,
+  slug,
+  organizationSlug,
 }: Props) {
   const projectIsCompleted = Boolean(completionDate);
 
@@ -56,7 +58,9 @@ export function OrganizationProjectCard({
         </div>
         <div className="space-y-2">
           <Button className="w-full" asChild>
-            <Link href={`/projects/${projectId}`}>View Details</Link>
+            <Link href={`/campaigns/${organizationSlug}/${slug}`}>
+              View Details
+            </Link>
           </Button>
         </div>
       </CardContent>

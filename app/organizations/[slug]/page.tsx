@@ -1,5 +1,9 @@
 import { notFound } from "next/navigation";
-import { getOrganizationBySlug } from "@/src/api/organization";
+import {
+  getOrganizationBySlug,
+  getOrganizationStats,
+  getOrganizationProjects,
+} from "@/src/api/organization";
 import { OrganizationHeader } from "@/src/components/page/organization/header-section";
 import { OrganizationStats } from "@/src/components/page/organization/stats-section";
 import { OrganizationDetails } from "@/src/components/page/organization/details-section";
@@ -16,61 +20,52 @@ export default async function OrganizationPage({
 }: OrganizationPageProps) {
   const { slug } = await params;
   const organization = await getOrganizationBySlug(slug);
-  const stats = [
-    { title: "Completed Projects", stat: "4", description: "Projects" },
-    { title: "Active Projects", stat: "2", description: "Projects" },
-    {
-      title: "Total Donations",
-      stat: "$12,450",
-      description: "Raised",
-    },
-    { title: "Donors", stat: "89", description: "Contributors" },
-  ];
-  const projects = [
-    {
-      title: "Nutrition for children with Down syndrome",
-      description:
-        "Providing nutritional support for children with special needs",
-      startDate: new Date("2023-05-01"),
-      completionDate: new Date("2023-11-24"),
-      projectId: "1",
-      projectBackgroundImage: "/project-background.webp",
-    },
-    {
-      projectId: "2",
-      title: "Medical care for children with Down syndrome",
-      completionDate: new Date("2023-08-15"),
-      description: "Access to healthcare services and treatments",
-      startDate: new Date("2022-08-15"),
-      projectBackgroundImage: "/project-background.webp",
-    },
-    {
-      projectId: "3",
-      title: "Therapy for children with Down syndrome",
-      completionDate: new Date("2022-05-01"),
-      description: "Therapeutic interventions and support services",
-      startDate: new Date("2021-05-01"),
-      projectBackgroundImage: "/project-background.webp",
-    },
-    {
-      projectId: "4",
-      title: "Education for children with Down syndrome",
-      description: "Inclusive education programs and resources",
-      startDate: new Date("2024-01-10"),
-      projectBackgroundImage: "/project-background.webp",
-    },
-    {
-      projectId: "5",
-      title: "Community support for families",
-      description: "Building a supportive community network",
-      startDate: new Date("2023-09-20"),
-      projectBackgroundImage: "/project-background.webp",
-    },
-  ];
 
   if (!organization) {
     notFound();
   }
+
+  const organizationStats = await getOrganizationStats(organization.user_id);
+  const organizationProjects = await getOrganizationProjects(
+    organization.user_id
+  );
+
+  const stats = [
+    {
+      title: "Completed Projects",
+      stat: String(organizationStats.completedProjects),
+      description: "Projects",
+    },
+    {
+      title: "Active Projects",
+      stat: String(organizationStats.activeProjects),
+      description: "Projects",
+    },
+    {
+      title: "Total Donations",
+      stat: `$${organizationStats.totalDonations.toLocaleString()}`,
+      description: "Raised",
+    },
+    {
+      title: "Donors",
+      stat: String(organizationStats.donorsCount),
+      description: "Contributors",
+    },
+  ];
+
+  // Map the database projects to the format expected by ProjectsSection component
+  const projects = organizationProjects
+    .filter((project) => project.start_date !== null) // Filter out projects without start dates
+    .map((project) => ({
+      title: project.title,
+      description: project.description || "",
+      startDate: new Date(project.start_date!), // We know start_date is not null because of the filter
+      completionDate: project.end_date ? new Date(project.end_date) : undefined,
+      projectId: project.id,
+      projectBackgroundImage: project.projectBackgroundImage,
+      slug: project.slug,
+      organizationSlug: organization.slug,
+    }));
 
   return (
     <div>

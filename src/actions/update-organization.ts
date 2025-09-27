@@ -13,9 +13,6 @@ type Response = {
 export async function updateOrganization(
   formData: FormData
 ): Promise<Response> {
-  console.log("Update organization called");
-  console.log("FormData entries:", formData);
-
   const supabase = await createServerSupabaseClient();
 
   // 1) Get current user
