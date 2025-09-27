@@ -418,147 +418,111 @@ DO NOTHING;
 -- =============================================================
 -- Projects (10 across 4 orgs)
 -- =============================================================
-INSERT INTO
-    public.projects (
-        organization_user_id,
-        title,
-        description,
-        goal_amount,
-        beneficiary_type_id
-    )
-    -- Org1
-SELECT
-    u.id,
-    'School Supplies Drive',
-    'Raising funds for school supplies for students.',
-    5000.00,
-    bt.id
-FROM
-    auth.users u,
-    public.beneficiary_types bt
-WHERE
-    u.email = 'org1@purezakat.com'
-    AND bt.code = 'STUDENTS'
+INSERT INTO public.projects (
+  organization_user_id,
+  title,
+  description,
+  goal_amount,
+  beneficiary_type_id,
+  project_background_image
+)
+-- Org1
+SELECT u.id,
+       'School Supplies Drive',
+       'Raising funds for school supplies for students.',
+       5000.00,
+       bt.id,
+       'school-supplies-drive.jpg'
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email = 'org1@purezakat.com' AND bt.code = 'STUDENTS'
 UNION ALL
-SELECT
-    u.id,
-    'Winter Clothing Appeal',
-    'Warm clothing for families in need.',
-    7000.00,
-    bt.id
-FROM
-    auth.users u,
-    public.beneficiary_types bt
-WHERE
-    u.email = 'org1@purezakat.com'
-    AND bt.code = 'CITIZENS'
-    -- Org2
+SELECT u.id,
+       'Winter Clothing Appeal',
+       'Warm clothing for families in need.',
+       7000.00,
+       bt.id,
+       'winter-clothing-appeal.jpg'
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email = 'org1@purezakat.com' AND bt.code = 'CITIZENS'
+
+-- Org2
 UNION ALL
-SELECT
-    u.id,
-    'Food Basket Program',
-    'Monthly food baskets for families.',
-    9000.00,
-    bt.id
-FROM
-    auth.users u,
-    public.beneficiary_types bt
-WHERE
-    u.email = 'org2@halalmealsproject.org'
-    AND bt.code = 'RESIDENTS'
+SELECT u.id,
+       'Food Basket Program',
+       'Monthly food baskets for families.',
+       9000.00,
+       bt.id,
+       'food-basket-program.jpg'
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email = 'org2@halalmealsproject.org' AND bt.code = 'RESIDENTS'
 UNION ALL
-SELECT
-    u.id,
-    'Emergency Rent Support',
-    'Rent relief for struggling families.',
-    12000.00,
-    bt.id
-FROM
-    auth.users u,
-    public.beneficiary_types bt
-WHERE
-    u.email = 'org2@halalmealsproject.org'
-    AND bt.code = 'WIDOWS'
-    -- Org3
+SELECT u.id,
+       'Emergency Rent Support',
+       'Rent relief for struggling families.',
+       12000.00,
+       bt.id,
+       'emergency-rent-support.jpg'
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email = 'org2@halalmealsproject.org' AND bt.code = 'WIDOWS'
+
+-- Org3
 UNION ALL
-SELECT
-    u.id,
-    'Shelter Starter Kits',
-    'Basic furnishings for new homes.',
-    6000.00,
-    bt.id
-FROM
-    auth.users u,
-    public.beneficiary_types bt
-WHERE
-    u.email = 'org3@masjidoutreach.ca'
-    AND bt.code = 'RESIDENTS'
+SELECT u.id,
+       'Shelter Starter Kits',
+       'Basic furnishings for new homes.',
+       6000.00,
+       bt.id,
+       'shelter-starter-kits.jpg'
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email = 'org3@masjidoutreach.ca' AND bt.code = 'RESIDENTS'
 UNION ALL
-SELECT
-    u.id,
-    'Tuition Bridge Fund',
-    'Grants to keep students enrolled.',
-    8000.00,
-    bt.id
-FROM
-    auth.users u,
-    public.beneficiary_types bt
-WHERE
-    u.email = 'org3@masjidoutreach.ca'
-    AND bt.code = 'STUDENTS'
+SELECT u.id,
+       'Tuition Bridge Fund',
+       'Grants to keep students enrolled.',
+       8000.00,
+       bt.id,
+       'tuition-bridge-fund.jpg'
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email = 'org3@masjidoutreach.ca' AND bt.code = 'STUDENTS'
 UNION ALL
-SELECT
-    u.id,
-    'Community Pantry',
-    'Neighborhood pantry restock.',
-    4000.00,
-    bt.id
-FROM
-    auth.users u,
-    public.beneficiary_types bt
-WHERE
-    u.email = 'org3@masjidoutreach.ca'
-    AND bt.code = 'CITIZENS'
-    -- Org4
+SELECT u.id,
+       'Community Pantry',
+       'Neighborhood pantry restock.',
+       4000.00,
+       bt.id,
+       'community-pantry.jpg'
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email = 'org3@masjidoutreach.ca' AND bt.code = 'CITIZENS'
+
+-- Org4
 UNION ALL
-SELECT
-    u.id,
-    'Medical Aid Vouchers',
-    'Pharmacy vouchers for essential meds.',
-    7000.00,
-    bt.id
-FROM
-    auth.users u,
-    public.beneficiary_types bt
-WHERE
-    u.email = 'org4@muslimfoodbank.ca'
-    AND bt.code = 'RESIDENTS'
+SELECT u.id,
+       'Medical Aid Vouchers',
+       'Pharmacy vouchers for essential meds.',
+       7000.00,
+       bt.id,
+       'medical-aid-vouchers.jpg'
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email = 'org4@muslimfoodbank.ca' AND bt.code = 'RESIDENTS'
 UNION ALL
-SELECT
-    u.id,
-    'Accessibility Upgrades',
-    'Home modifications for accessibility.',
-    15000.00,
-    bt.id
-FROM
-    auth.users u,
-    public.beneficiary_types bt
-WHERE
-    u.email = 'org4@muslimfoodbank.ca'
-    AND bt.code = 'CITIZENS'
+SELECT u.id,
+       'Accessibility Upgrades',
+       'Home modifications for accessibility.',
+       15000.00,
+       bt.id,
+       'accessibility-upgrades.jpg'
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email = 'org4@muslimfoodbank.ca' AND bt.code = 'CITIZENS'
 UNION ALL
-SELECT
-    u.id,
-    'Elderly Care Packages',
-    'Monthly hygiene & care packages.',
-    5000.00,
-    bt.id
-FROM
-    auth.users u,
-    public.beneficiary_types bt
-WHERE
-    u.email = 'org4@muslimfoodbank.ca'
-    AND bt.code = 'WIDOWS';
+SELECT u.id,
+       'Elderly Care Packages',
+       'Monthly hygiene & care packages.',
+       5000.00,
+       bt.id,
+       'elderly-care-packages.jpg'
+FROM auth.users u, public.beneficiary_types bt
+WHERE u.email = 'org4@muslimfoodbank.ca' AND bt.code = 'WIDOWS';
+
 
 -- =============================================================
 -- Donations
@@ -685,3 +649,143 @@ SET
     is_verified = true
 WHERE
     organization_name = 'Hijrah Support 110';
+
+
+--------------------------------------------------------------------------------
+-- PROJECT IMAGES (store only the object key that exists in bucket public-images)
+--------------------------------------------------------------------------------
+-- Set keys to filenames (bucket: public-images)
+update public.projects
+set project_background_image = slug || '.jpg';
+
+--------------------------------------------------------------------------------
+-- INSERT ADDITIONAL PROJECTS (clean, idempotent by (org, slug) uniqueness)
+-- Uses your org slugs: `halal-meals-project`, `zakat-foundation-canada`.
+-- Slugs are generated by your trigger on insert.
+--------------------------------------------------------------------------------
+
+-- Halal Meals Project: add 3 campaigns (with beneficiary_type_id + image)
+insert into public.projects
+  (organization_user_id, title, description, goal_amount, start_date, beneficiary_type_id, project_background_image)
+select o.user_id,
+       'Meals for Newcomers',
+       'Fresh halal meals for recently arrived newcomer families during their first 90 days. Includes culturally familiar menus and nutrition-focused portions.',
+       12000, current_date,
+       bt.id,
+       'meals-for-newcomers.jpg'
+from public.organizations o
+join public.beneficiary_types bt on bt.code = 'RESIDENTS'
+where o.slug = 'halal-meals-project'
+  and not exists (
+    select 1 from public.projects p
+    where p.organization_user_id = o.user_id and p.title = 'Meals for Newcomers'
+  );
+
+insert into public.projects
+  (organization_user_id, title, description, goal_amount, start_date, beneficiary_type_id, project_background_image)
+select o.user_id,
+       'Ramadan Iftar Program',
+       'Daily iftar packs (dates, mains, water) distributed at mosques and shelters throughout Ramadan. Each $10 sponsors one iftar.',
+       15000, current_date,
+       bt.id,
+       'ramadan-iftar-program.jpg'
+from public.organizations o
+join public.beneficiary_types bt on bt.code = 'CITIZENS'
+where o.slug = 'halal-meals-project'
+  and not exists (
+    select 1 from public.projects p
+    where p.organization_user_id = o.user_id and p.title = 'Ramadan Iftar Program'
+  );
+
+insert into public.projects
+  (organization_user_id, title, description, goal_amount, start_date, beneficiary_type_id, project_background_image)
+select o.user_id,
+       'Weekend Family Hampers',
+       'Two-day food hampers for families whose children rely on school meals during weekdays. Packed by volunteers every Friday evening.',
+       9000, current_date,
+       bt.id,
+       'weekend-family-hampers.jpg'
+from public.organizations o
+join public.beneficiary_types bt on bt.code = 'RESIDENTS'
+where o.slug = 'halal-meals-project'
+  and not exists (
+    select 1 from public.projects p
+    where p.organization_user_id = o.user_id and p.title = 'Weekend Family Hampers'
+  );
+
+-- Zakat Foundation Canada: add 3 campaigns (with beneficiary_type_id + image)
+insert into public.projects
+  (organization_user_id, title, description, goal_amount, start_date, beneficiary_type_id, project_background_image)
+select o.user_id,
+       'Refugee Housing Support',
+       'Security deposits and first-month rent assistance for newcomer families transitioning into permanent housing. Paired with settlement worker follow-ups.',
+       25000, current_date,
+       bt.id,
+       'refugee-housing-support.jpg'
+from public.organizations o
+join public.beneficiary_types bt on bt.code = 'RESIDENTS'
+where o.slug = 'zakat-foundation-canada'
+  and not exists (
+    select 1 from public.projects p
+    where p.organization_user_id = o.user_id and p.title = 'Refugee Housing Support'
+  );
+
+insert into public.projects
+  (organization_user_id, title, description, goal_amount, start_date, beneficiary_type_id, project_background_image)
+select o.user_id,
+       'Youth Laptop Library',
+       'Loaner laptops and Wi-Fi hotspots for high-school students in low-connectivity households. Devices are refurbished, encrypted, and tracked.',
+       18000, current_date,
+       bt.id,
+       'youth-laptop-library.jpg'
+from public.organizations o
+join public.beneficiary_types bt on bt.code = 'STUDENTS'
+where o.slug = 'zakat-foundation-canada'
+  and not exists (
+    select 1 from public.projects p
+    where p.organization_user_id = o.user_id and p.title = 'Youth Laptop Library'
+  );
+
+insert into public.projects
+  (organization_user_id, title, description, goal_amount, start_date, beneficiary_type_id, project_background_image)
+select o.user_id,
+       'Water Well Construction',
+       'Shallow well construction in water-stressed villages with community-owned maintenance plans. Includes hygiene training and water committee setup.',
+       30000, current_date,
+       bt.id,
+       'water-well-construction.jpg'
+from public.organizations o
+join public.beneficiary_types bt on bt.code = 'CITIZENS'
+where o.slug = 'zakat-foundation-canada'
+  and not exists (
+    select 1 from public.projects p
+    where p.organization_user_id = o.user_id and p.title = 'Water Well Construction'
+  );
+
+--------------------------------------------------------------------------------
+-- DONATION BULK SEEDING
+-- Distributes many donations across all projects and existing donors.
+-- (Relies on donors already present; if none, this will insert zero rows.)
+--------------------------------------------------------------------------------
+with donors as (
+  select user_id
+  from public.donors
+  limit 200
+),
+projects as (
+  select id
+  from public.projects
+),
+-- build a grid of (donor, 3 random projects) with tiered amounts
+sampled as (
+  select d.user_id as donor_id, p.id as project_id,
+         -- tiered realistic amounts: 25–500
+         (25 * (1 + (floor(random()*8))::int))::numeric as amount
+  from donors d
+  cross join lateral (
+    select id from projects order by random() limit 3
+  ) p
+)
+insert into public.donations (donor_id, project_id, amount)
+select donor_id, project_id, amount
+from sampled;

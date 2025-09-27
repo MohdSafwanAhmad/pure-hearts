@@ -1,7 +1,7 @@
 export const mainLinks = [
   { href: "/", label: "Home" },
-  { href: "/donation", label: "Donation" },
-  { href: "/campaigns", label: "Campaign" },
+  { href: "/donation", label: "Donate" },
+  { href: "/campaigns", label: "Campaigns" },
 ] as const;
 
 export const moreLinks = [
