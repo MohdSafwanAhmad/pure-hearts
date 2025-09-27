@@ -58,7 +58,7 @@ export function OrganizationProjectCard({
         </div>
         <div className="space-y-2">
           <Button className="w-full" asChild>
-            <Link href={`/organizations/${organizationSlug}/projects/${slug}`}>
+            <Link href={`/campaigns/${organizationSlug}/${slug}`}>
               View Details
             </Link>
           </Button>

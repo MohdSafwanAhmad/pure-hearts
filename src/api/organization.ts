@@ -172,13 +172,20 @@ export async function getOrganizationProjects(
 
   // Transform the projects data to include the slug and default background image if needed
   const enhancedProjects: EnhancedProject[] = projects.map((project) => {
+    let backgroundImage = defaultBackgroundImage;
+
+    if (project.project_background_image) {
+      backgroundImage = supabase.storage
+        .from(PUBLIC_IMAGE_BUCKET_NAME)
+        .getPublicUrl(project.project_background_image).data.publicUrl;
+    }
+
     // Generate a slug from the project title
     return {
       ...project,
       start_date: project.start_date || new Date().toISOString(),
       slug: project.slug,
-      projectBackgroundImage:
-        project.project_background_image || defaultBackgroundImage,
+      projectBackgroundImage: backgroundImage,
     };
   });
 
