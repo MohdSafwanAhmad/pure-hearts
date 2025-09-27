@@ -662,25 +662,17 @@ WHERE (project_background_image IS NULL OR project_background_image = '');
 --------------------------------------------------------------------------------
 -- MORE VERBOSE DESCRIPTIONS FOR EXISTING PROJECTS (by slug)
 --------------------------------------------------------------------------------
-update public.projects
-set description = 'Provide monthly food baskets (rice, flour, oil, lentils, and essentials) for families facing food insecurity. Each basket sustains a family of 4–5 for ~4 weeks and is sourced from local vendors to support the community economy.'
-where slug = 'food-basket-program';
-
-update public.projects
-set description = 'Warm clothing (coats, thermal layers, socks, gloves) for families during peak winter. We prioritize children and seniors and run local distribution days in partnership with community centers.'
-where slug = 'winter-clothing-appeal';
-
-update public.projects
-set description = 'Back-to-school kits with backpacks, notebooks, writing materials, and basic stationery for students from low-income households. Each kit is tailored by grade to reduce waste and increase impact.'
-where slug = 'school-supplies-drive';
-
-update public.projects
-set description = 'Digital and paper vouchers redeemable at partner pharmacies for over-the-counter medicine and basic medical supplies. We focus on chronic patients and caregivers who need recurring support.'
-where slug = 'medical-aid-vouchers';
-
-update public.projects
-set description = 'Monthly care packages (food staples + hygiene products) for isolated seniors. Volunteers also perform wellness checks and help with light errands during deliveries.'
-where slug = 'elderly-care-packages';
+-- PROJECT IMAGES (store only the object key that exists in bucket public-images)
+update public.projects set project_background_image = 'school-supplies-drive.jpg' where slug = 'school-supplies-drive';
+update public.projects set project_background_image = 'winter-clothing-appeal.jpg'  where slug = 'winter-clothing-appeal';
+update public.projects set project_background_image = 'food-basket-program.jpg'     where slug = 'food-basket-program';
+update public.projects set project_background_image = 'emergency-rent-support.jpg'  where slug = 'emergency-rent-support';
+update public.projects set project_background_image = 'shelter-starter-kits.jpg'    where slug = 'shelter-starter-kits';
+update public.projects set project_background_image = 'tuition-bridge-fund.jpg'     where slug = 'tuition-bridge-fund';
+update public.projects set project_background_image = 'community-pantry.jpg'        where slug = 'community-pantry';
+update public.projects set project_background_image = 'medical-aid-vouchers.jpg'    where slug = 'medical-aid-vouchers';
+update public.projects set project_background_image = 'accessibility-upgrades.jpg'  where slug = 'accessibility-upgrades';
+update public.projects set project_background_image = 'elderly-care-packages.jpg'   where slug = 'elderly-care-packages';
 
 --------------------------------------------------------------------------------
 -- INSERT ADDITIONAL PROJECTS (clean, idempotent by (org, slug) uniqueness)
@@ -696,7 +688,7 @@ select o.user_id,
        'Fresh halal meals for recently arrived newcomer families during their first 90 days. Includes culturally familiar menus and nutrition-focused portions.',
        12000, current_date,
        bt.id,
-       '/public-images/projects/meals-for-newcomers.jpg'
+       'meals-for-newcomers.jpg'
 from public.organizations o
 join public.beneficiary_types bt on bt.code = 'RESIDENTS'
 where o.slug = 'halal-meals-project'
@@ -712,7 +704,7 @@ select o.user_id,
        'Daily iftar packs (dates, mains, water) distributed at mosques and shelters throughout Ramadan. Each $10 sponsors one iftar.',
        15000, current_date,
        bt.id,
-       '/public-images/projects/ramadan-iftar-program.jpg'
+       'ramadan-iftar-program.jpg'
 from public.organizations o
 join public.beneficiary_types bt on bt.code = 'CITIZENS'
 where o.slug = 'halal-meals-project'
@@ -728,7 +720,7 @@ select o.user_id,
        'Two-day food hampers for families whose children rely on school meals during weekdays. Packed by volunteers every Friday evening.',
        9000, current_date,
        bt.id,
-       '/public-images/projects/weekend-family-hampers.jpg'
+       'weekend-family-hampers.jpg'
 from public.organizations o
 join public.beneficiary_types bt on bt.code = 'RESIDENTS'
 where o.slug = 'halal-meals-project'
@@ -745,7 +737,7 @@ select o.user_id,
        'Security deposits and first-month rent assistance for newcomer families transitioning into permanent housing. Paired with settlement worker follow-ups.',
        25000, current_date,
        bt.id,
-       '/public-images/projects/refugee-housing-support.jpg'
+       'refugee-housing-support.jpg'
 from public.organizations o
 join public.beneficiary_types bt on bt.code = 'RESIDENTS'
 where o.slug = 'zakat-foundation-canada'
@@ -761,7 +753,7 @@ select o.user_id,
        'Loaner laptops and Wi-Fi hotspots for high-school students in low-connectivity households. Devices are refurbished, encrypted, and tracked.',
        18000, current_date,
        bt.id,
-       '/public-images/projects/youth-laptop-library.jpg'
+       'youth-laptop-library.jpg'
 from public.organizations o
 join public.beneficiary_types bt on bt.code = 'STUDENTS'
 where o.slug = 'zakat-foundation-canada'
@@ -777,7 +769,7 @@ select o.user_id,
        'Shallow well construction in water-stressed villages with community-owned maintenance plans. Includes hygiene training and water committee setup.',
        30000, current_date,
        bt.id,
-       '/public-images/projects/water-well-construction.jpg'
+       'water-well-construction.jpg'
 from public.organizations o
 join public.beneficiary_types bt on bt.code = 'CITIZENS'
 where o.slug = 'zakat-foundation-canada'

@@ -87,6 +87,10 @@ export async function getProjectByIdWithTotals(
         name: (orgRow as any).organization_name ?? null,
       }
     : null;
+  const imgKey = p.project_background_image as string | null;
+  const imgUrl = imgKey
+      ? supabase.storage.from("public-images").getPublicUrl(imgKey).data.publicUrl
+      : "/placeholder.jpg";
 
   return {
     id: p.id,
@@ -96,7 +100,7 @@ export async function getProjectByIdWithTotals(
     collected,
     remaining,
     percent,
-    project_background_image: p.project_background_image ?? null,
+    project_background_image: imgUrl,
     organization_user_id: p.organization_user_id,
     beneficiary_count,
     organization,

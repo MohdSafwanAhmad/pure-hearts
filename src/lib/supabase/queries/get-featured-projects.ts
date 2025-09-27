@@ -104,6 +104,10 @@ export async function getFeaturedProjectsWithTotals(
 
   // 4) View models
   return projects.map((p) => {
+    const imgKey = (p as any).project_background_image as string | null;
+    const imgUrl = imgKey
+  ? supabase.storage.from("public-images").getPublicUrl(imgKey).data.publicUrl
+  : "/placeholder.jpg";
     const goal = Number(p.goal_amount ?? 0);
     const collected = totalById.get(p.id) ?? 0;
     const remaining = Math.max(goal - collected, 0);
@@ -120,8 +124,8 @@ export async function getFeaturedProjectsWithTotals(
       remaining,
       percent,
       beneficiary_count,
-      slug: p.slug,
-      project_background_image: p.project_background_image ?? null,
+      slug: String((p as any).slug ?? ""),
+      project_background_image: imgUrl,
       organization,
     };
   });
