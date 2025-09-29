@@ -103,14 +103,15 @@ export function ProjectAreasCombobox({ form }: ProjectAreasComboboxProps) {
                         key={area}
                         value={area}
                         onSelect={() => {
-                          // Only select if not already selected
-                          if (!selectedAreas.includes(area)) {
+                          // Toggle selection: select if not selected, remove if already selected
+                          if (selectedAreas.includes(area)) {
+                            handleRemove(area);
+                          } else {
                             handleSelect(area);
                           }
                         }}
-                        disabled={selectedAreas.includes(area)}
                         className={
-                          selectedAreas.includes(area) ? "opacity-70" : ""
+                          selectedAreas.includes(area) ? "opacity-90" : ""
                         }
                       >
                         {area}
