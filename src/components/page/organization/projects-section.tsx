@@ -46,7 +46,12 @@ export function ProjectsSection({ projects }: Props) {
       <div className="flex mb-title">
         <div className="rounded-lg border border-gray-200 bg-white p-1">
           <button
-            onClick={() => setActiveProjectType("completed")}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setActiveProjectType("completed");
+            }}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               activeProjectType === "completed"
                 ? "text-white bg-primary"
@@ -56,7 +61,12 @@ export function ProjectsSection({ projects }: Props) {
             Completed Projects
           </button>
           <button
-            onClick={() => setActiveProjectType("existing")}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setActiveProjectType("existing");
+            }}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               activeProjectType === "existing"
                 ? "text-white bg-primary"

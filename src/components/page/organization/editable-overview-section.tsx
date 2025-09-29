@@ -10,6 +10,7 @@ import {
 import { Input } from "@/src/components/ui/input";
 import { TOrganizationSchema } from "@/src/schemas/organization";
 import { UseFormReturn } from "react-hook-form";
+import { ProjectAreasCombobox } from "./project-areas-combobox";
 
 interface EditableOverviewSectionProps {
   form: UseFormReturn<TOrganizationSchema>;
@@ -89,6 +90,15 @@ export function EditableOverviewSection({
           </FormItem>
         )}
       />
+
+      {/* Project Areas Combobox */}
+      <div className="col-span-2">
+        <FormField
+          control={form.control}
+          name="projectAreas"
+          render={() => <ProjectAreasCombobox form={form} />}
+        />
+      </div>
     </div>
   );
 }
