@@ -3,18 +3,16 @@ import { createServerSupabaseClient } from "@/src/lib/supabase/server";
 import { Tables } from "@/src/types/database-types";
 
 export type Organization = Tables<"organizations">;
-export type Project = Tables<"projects">;
+export type Project = Tables<"projects"> & {
+  beneficiary_count: number;
+  collected: number;
+};
 
 export interface OrganizationStats {
   completedProjects: number;
   activeProjects: number;
   totalDonations: number;
   donorsCount: number;
-}
-
-export interface EnhancedProject extends Project {
-  slug: string;
-  projectBackgroundImage: string;
 }
 
 export async function getOrganizationBySlug(
@@ -151,17 +149,31 @@ export async function getOrganizationStats(
 /**
  * Get all projects for a specific organization
  * @param organizationUserId The user_id of the organization
- * @returns Array of projects with enhanced data (slug and default background image)
+ * @returns Array of projects with enhanced data (slug, default background image, beneficiary count, collected amount)
  */
 export async function getOrganizationProjects(
   organizationUserId: string
-): Promise<EnhancedProject[]> {
+): Promise<
+  (Project & {
+    beneficiary_count: number;
+    collected: number;
+  })[]
+> {
   const supabase = await createServerSupabaseClient();
   const defaultBackgroundImage = "/project-background.webp";
 
+  // Fetch projects and related donation data
   const { data: projects, error } = await supabase
     .from("projects")
-    .select("*")
+    .select(
+      `
+      *,
+      donations:donations(
+        amount,
+        donor_id
+      )
+    `
+    )
     .eq("organization_user_id", organizationUserId)
     .order("created_at", { ascending: false });
 
@@ -170,8 +182,8 @@ export async function getOrganizationProjects(
     return [];
   }
 
-  // Transform the projects data to include the slug and default background image if needed
-  const enhancedProjects: EnhancedProject[] = projects.map((project) => {
+  // Transform the projects data to include all required fields
+  const enhancedProjects = projects.map((project) => {
     let backgroundImage = defaultBackgroundImage;
 
     if (project.project_background_image) {
@@ -180,12 +192,31 @@ export async function getOrganizationProjects(
         .getPublicUrl(project.project_background_image).data.publicUrl;
     }
 
-    // Generate a slug from the project title
+    // Calculate collected amount (sum of all donations)
+    const collected =
+      project.donations?.reduce(
+        (sum: number, donation: { amount: number }) =>
+          sum + (donation.amount || 0),
+        0
+      ) || 0;
+
+    // Count unique donors (beneficiary count)
+    const uniqueDonors = new Set<string>();
+    project.donations?.forEach((donation: { donor_id: string }) => {
+      if (donation.donor_id) {
+        uniqueDonors.add(donation.donor_id);
+      }
+    });
+
+    const beneficiary_count = uniqueDonors.size;
+
+    // Return enhanced project with all requested fields
     return {
       ...project,
+      project_background_image: backgroundImage,
       start_date: project.start_date || new Date().toISOString(),
-      slug: project.slug,
-      projectBackgroundImage: backgroundImage,
+      beneficiary_count,
+      collected: parseFloat(collected.toFixed(2)),
     };
   });
 

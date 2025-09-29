@@ -27,14 +27,23 @@ interface OrganizationPageClientProps {
     description: string;
   }[];
   projects: {
+    id: string;
     title: string;
     description: string;
     startDate: Date;
-    completionDate?: Date;
+    completionDate: Date | undefined;
     projectId: string;
     projectBackgroundImage: string;
     slug: string;
+    goal_amount: number | null;
+    collected: number;
+    percent: number;
     organizationSlug: string;
+    beneficiaryCount: number;
+    organization: {
+      name: string;
+      organizationSlug: string;
+    };
   }[];
 }
 

@@ -1,40 +1,70 @@
 "use client";
 
 import { Heading } from "@/src/components/global/heading";
+import { ProjectCard } from "@/src/components/global/project-card";
 import { Button } from "@/src/components/ui/button";
-import { useState } from "react";
-import { OrganizationProjectCard } from "./project-card";
-
 import { FolderOpen } from "lucide-react";
+import { useState } from "react";
 
 type ProjectType = "completed" | "existing";
 
 interface Props {
   projects: {
+    id: string;
     title: string;
     description: string;
-    projectId: string;
     startDate: Date;
-    completionDate?: Date;
+    completionDate: Date | undefined;
+    projectId: string;
     projectBackgroundImage: string;
     slug: string;
+    goal_amount: number | null;
+    collected: number;
+    percent: number;
     organizationSlug: string;
+    beneficiaryCount: number;
+    organization: {
+      name: string;
+      organizationSlug: string;
+    };
   }[];
 }
 
 export function ProjectsSection({ projects }: Props) {
-  const completedProjects = projects.filter(
-    (project) => project.completionDate
-  );
-  const existingProjects = projects.filter(
-    (project) => !project.completionDate
-  );
+  const completedProjects = projects.filter((project) => {
+    if (project.completionDate === undefined) return false;
+
+    if (project.completionDate < new Date()) return true;
+
+    return false;
+  });
+
+  const existingProjects = projects.filter((project) => {
+    if (project.completionDate === undefined) return true;
+    if (project.completionDate >= new Date()) return true;
+
+    return false;
+  });
 
   const [activeProjectType, setActiveProjectType] =
     useState<ProjectType>("completed");
+  const [displayCount, setDisplayCount] = useState<number>(3);
 
   const currentProjects =
     activeProjectType === "completed" ? completedProjects : existingProjects;
+
+  const visibleProjects = currentProjects.slice(0, displayCount);
+  const hasMoreProjects = currentProjects.length > displayCount;
+
+  // Reset display count when switching project types
+  const handleProjectTypeChange = (type: ProjectType) => {
+    setActiveProjectType(type);
+    setDisplayCount(3);
+  };
+
+  const handleShowMore = () => {
+    setDisplayCount((prev) => prev + 3);
+  };
 
   return (
     <section className="mb-section">
@@ -50,7 +80,7 @@ export function ProjectsSection({ projects }: Props) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              setActiveProjectType("completed");
+              handleProjectTypeChange("completed");
             }}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               activeProjectType === "completed"
@@ -65,7 +95,7 @@ export function ProjectsSection({ projects }: Props) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              setActiveProjectType("existing");
+              handleProjectTypeChange("existing");
             }}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               activeProjectType === "existing"
@@ -91,27 +121,36 @@ export function ProjectsSection({ projects }: Props) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-section">
-          {currentProjects.map((project) => (
-            <OrganizationProjectCard
-              key={project.projectId}
-              title={project.title}
-              description={project.description}
-              projectBackgroundImage={project.projectBackgroundImage}
-              completionDate={project.completionDate}
-              startDate={project.startDate}
-              slug={project.slug}
-              organizationSlug={project.organizationSlug}
+          {visibleProjects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={{
+                title: project.title,
+                description: project.description,
+                goal_amount: project.goal_amount,
+                collected: project.collected,
+                percent: project.percent,
+                beneficiary_count: project.beneficiaryCount,
+                project_background_image: project.projectBackgroundImage,
+                organization: {
+                  name: project.organization.name,
+                  organizationSlug: project.organization.organizationSlug,
+                },
+                slug: project.slug,
+              }}
             />
           ))}
         </div>
       )}
 
-      {/* More Button */}
-      <div className="text-center">
-        <Button size={"lg"} disabled={currentProjects.length === 0}>
-          More
-        </Button>
-      </div>
+      {/* More Button - Only show if there are more projects to load */}
+      {hasMoreProjects && (
+        <div className="text-center">
+          <Button size={"lg"} onClick={handleShowMore}>
+            Show More
+          </Button>
+        </div>
+      )}
     </section>
   );
 }
