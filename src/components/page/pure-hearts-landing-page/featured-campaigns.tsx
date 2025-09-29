@@ -12,13 +12,13 @@ import {
   CardTitle,
 } from "@/src/components/ui/card";
 import { Progress } from "@/src/components/ui/progress";
-import { getFeaturedProjectsWithTotals } from "@/src/api/project";
+import { getProjects } from "@/src/api/project";
 
 const fmt = (n: number | null | undefined) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Number(n ?? 0));
 
 export default async function FeaturedCampaigns() {
-  const projects = await getFeaturedProjectsWithTotals();
+  const projects = await getProjects(8, 0);
 
   return (
     <section id="projects" className="py-20 bg-muted/30">
@@ -32,8 +32,13 @@ export default async function FeaturedCampaigns() {
           {projects.map((proj) => (
             <Card
               key={proj.id}
-              className="overflow-hidden hover:shadow-lg transition-shadow"
+              className="relative overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
             >
+              <Link
+                href={`/campaigns/${proj.organization!.slug}/${proj.slug}`}
+                aria-label={`View ${proj.title}`}
+                className="absolute inset-0 z-10"
+              />
               <div className="aspect-video relative">
                 <Image
                   src={proj.project_background_image || "/placeholder.jpg"}
@@ -71,14 +76,6 @@ export default async function FeaturedCampaigns() {
 
                 <div className="flex items-center justify-between pt-2">
                   <Button size="sm">Donate</Button>
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="outline"
-                    className="bg-transparent"
-                  >
-                    <Link href={`/campaigns/${proj.organization!.slug}/${proj.slug}`}>View Details</Link>
-                  </Button>
                 </div>
               </CardContent>
             </Card>

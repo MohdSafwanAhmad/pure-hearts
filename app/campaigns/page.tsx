@@ -1,7 +1,7 @@
 // app/campaigns/page.tsx
 import Image from "next/image";
 import Link from "next/link";
-import { getProjectsWithTotals } from "@/src/api/project";
+import { getProjects } from "@/src/api/project";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Progress } from "@/src/components/ui/progress";
 import { Button } from "@/src/components/ui/button";
@@ -19,7 +19,7 @@ export default async function CampaignsIndexPage({
   const pageSize = 24;
   const offset = (page - 1) * pageSize;
 
-  const projects = await getProjectsWithTotals(pageSize, offset);
+  const projects = await getProjects(pageSize, offset);
 
   return (
     <main className="container mx-auto px-4 py-10">
@@ -37,7 +37,12 @@ export default async function CampaignsIndexPage({
 
             return (
               <li key={p.id}>
-                <Card className="h-full overflow-hidden">
+                <Card className="relative h-full overflow-hidden group cursor-pointer">
+                  <Link
+                    href={href}
+                    aria-label={`View ${p.title}`}
+                    className="absolute inset-0 z-10"
+                  />
                   <div className="relative aspect-video">
                     <Image
                       src={p.project_background_image || "/placeholder.jpg"}
@@ -71,12 +76,12 @@ export default async function CampaignsIndexPage({
                     </div>
 
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>Beneficiaries: <strong>{p.beneficiary_count}</strong></span>
+                      <span>Beneficiary Type: <strong>{p.beneficiary?.label ?? "—"}</strong></span>
                       {p.organization?.name && <span className="truncate">{p.organization.name}</span>}
                     </div>
 
-                    <Button asChild className="w-full">
-                      <Link href={href}>View Campaign</Link>
+                    <Button className="w-full" variant="outline">
+                      View Campaign
                     </Button>
                   </CardContent>
                 </Card>
