@@ -4,10 +4,8 @@ import {
   getOrganizationStats,
   getOrganizationProjects,
 } from "@/src/api/organization";
-import { OrganizationHeader } from "@/src/components/page/organization/header-section";
-import { OrganizationStats } from "@/src/components/page/organization/stats-section";
-import { OrganizationDetails } from "@/src/components/page/organization/details-section";
-import { ProjectsSection } from "@/src/components/page/organization/projects-section";
+import { OrganizationPageClient } from "@/src/components/page/organization/organization-page-client";
+import { getOrganizationProfile } from "@/src/lib/supabase/server";
 
 interface OrganizationPageProps {
   params: Promise<{
@@ -20,6 +18,7 @@ export default async function OrganizationPage({
 }: OrganizationPageProps) {
   const { slug } = await params;
   const organization = await getOrganizationBySlug(slug);
+  const organizationProfile = await getOrganizationProfile();
 
   if (!organization) {
     notFound();
@@ -67,20 +66,15 @@ export default async function OrganizationPage({
       organizationSlug: organization.slug,
     }));
 
+  // Check if the logged-in user is the owner of this organization
+  const isOwner = organizationProfile?.user_id === organization.user_id;
+
   return (
-    <div>
-      {/* Header Section */}
-      <OrganizationHeader organization={organization} />
-
-      {/* Content Section */}
-      <div className="container mx-auto px-4">
-        {/* Statistics Cards */}
-        <OrganizationStats stats={stats} />
-
-        {/* Organization Details Tabs */}
-        <OrganizationDetails organization={organization} />
-        <ProjectsSection projects={projects} />
-      </div>
-    </div>
+    <OrganizationPageClient
+      organization={organization}
+      isOwner={isOwner}
+      stats={stats}
+      projects={projects}
+    />
   );
 }

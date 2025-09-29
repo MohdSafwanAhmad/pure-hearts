@@ -3,8 +3,17 @@
 import { Organization } from "@/src/api/organization";
 import { useState } from "react";
 import { Heading } from "@/src/components/global/heading";
-interface OrganizationDetailsProps {
+import { UseFormReturn } from "react-hook-form";
+import { TOrganizationSchema } from "@/src/schemas/organization";
+import { FormControl, FormField, FormItem, FormMessage } from "../../ui/form";
+import { Textarea } from "../../ui/textarea";
+import { EditableOverviewSection } from "./editable-overview-section";
+import { EditableContactSection } from "./editable-contact-section";
+
+interface Props {
   organization: Organization;
+  form: UseFormReturn<TOrganizationSchema>;
+  isEditing: boolean;
 }
 
 type TabKey = "contact" | "overview";
@@ -19,9 +28,11 @@ const tabs: Tab[] = [
   { key: "overview", label: "Overview" },
 ];
 
-export function OrganizationDetails({
+export function EditableDetailsSection({
   organization,
-}: OrganizationDetailsProps) {
+  form,
+  isEditing,
+}: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
 
   const projectAreas = Array.isArray(organization.project_areas)
@@ -91,7 +102,9 @@ export function OrganizationDetails({
   const renderTabContent = () => {
     switch (activeTab) {
       case "contact":
-        return (
+        return isEditing ? (
+          <EditableContactSection form={form} />
+        ) : (
           <div className="grid gap-x-6 grid-cols-1 sm:grid-cols-2 divide-y">
             {contactItems.map((item, index) => (
               <div key={index} className="py-4">
@@ -124,7 +137,9 @@ export function OrganizationDetails({
 
       case "overview":
       default:
-        return (
+        return isEditing ? (
+          <EditableOverviewSection form={form} />
+        ) : (
           <div className="grid gap-x-6 grid-cols-1 sm:grid-cols-2 divide-y">
             {overviewItems.map((item, index) => (
               <div key={index} className="py-4">
@@ -144,16 +159,44 @@ export function OrganizationDetails({
         <Heading level={2} className="mb-element">
           About {organization.organization_name}
         </Heading>
-        <p className="text-gray-700 leading-relaxed">
-          {organization.mission_statement}
-        </p>
+        {isEditing ? (
+          <FormField
+            control={form.control}
+            name="missionStatement"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    placeholder="Describe your organization's mission and goals..."
+                    className={
+                      form.formState.errors?.missionStatement
+                        ? "border-red-500"
+                        : ""
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ) : (
+          <p className="text-gray-700 leading-relaxed">
+            {organization.mission_statement}
+          </p>
+        )}
       </div>
       <div className="border-b border-gray-200">
         <nav className="flex space-x-8 px-0">
           {tabs.map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveTab(tab.key);
+              }}
               className={`py-2 px-1 border-b-4 ${
                 activeTab === tab.key
                   ? "border-primary text-primary font-medium"
