@@ -8,7 +8,6 @@ import { OrganizationHeader } from "@/src/components/page/organization/header-se
 import { OrganizationStats } from "@/src/components/page/organization/stats-section";
 import { OrganizationDetails } from "@/src/components/page/organization/details-section";
 import { ProjectsSection } from "@/src/components/page/organization/projects-section";
-
 interface OrganizationPageProps {
   params: Promise<{
     slug: string;
@@ -71,12 +70,10 @@ export default async function OrganizationPage({
     <div>
       {/* Header Section */}
       <OrganizationHeader organization={organization} />
-
       {/* Content Section */}
       <div className="container mx-auto px-4">
         {/* Statistics Cards */}
         <OrganizationStats stats={stats} />
-
         {/* Organization Details Tabs */}
         <OrganizationDetails organization={organization} />
         <ProjectsSection projects={projects} />

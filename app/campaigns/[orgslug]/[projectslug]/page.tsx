@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/ca
 import { Button } from "@/src/components/ui/button";
 import { Progress } from "@/src/components/ui/progress";
 import { DonationBox } from "@/src/components/page/project/donationbox";
-import { getProjectBySlugs } from "@/src/api/project";
+import { getProjectBySlugs, getProjects } from "@/src/api/project";
+import ProjectCard from "@/src/components/global/project-card";
 
 export const revalidate = 0;
 export const dynamic = "force-dynamic";
@@ -29,7 +30,13 @@ export default async function ProjectBySlugsPage(props: {
 
   const cover = project.project_background_image || "/placeholder.jpg";
 
+  // Related projects (excluding current)
+  const relatedProjects = (await getProjects(8, 0))
+    .filter((p) => p.id !== project.id)
+    .slice(0, 4);
+
   return (
+    <>
     <div className="container mx-auto px-4 py-10">
       <div className="grid gap-8 lg:grid-cols-12">
         {/* LEFT */}
@@ -164,6 +171,36 @@ export default async function ProjectBySlugsPage(props: {
           )}
         </div>
       </div>
+
+      {/* Related projects - NOW USING ProjectCard COMPONENT */}
+      {relatedProjects.length > 0 && (
+        <section className="mt-14">
+          <h2 className="mb-6 text-2xl font-semibold">Other causes you can support</h2>
+          <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {relatedProjects.map((p) => {
+              const orgSlug = p.organization?.slug;
+              const href = orgSlug ? `/campaigns/${orgSlug}/${p.slug}` : `/campaigns/_/${p.slug}`;
+              return (
+                <li key={p.id}>
+                  <ProjectCard
+                    href={href}
+                    title={p.title}
+                    description={p.description}
+                    imageUrl={p.project_background_image}
+                    organizationName={p.organization?.name ?? null}
+                    beneficiaryLabel={p.beneficiary?.label ?? null}
+                    collected={p.collected}
+                    goalAmount={p.goal_amount}
+                    percent={p.percent}
+                    ctaLabel="View Details"
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
     </div>
+    </>
   );
 }
