@@ -9,7 +9,6 @@ import { PUBLIC_IMAGE_BUCKET_NAME } from "@/src/lib/constants";
 
 export type Project = Tables<"projects">;
 
-
 /** ---------- Merged view-model types from queries ---------- */
 
 export type ProjectWithTotals = {
@@ -53,17 +52,25 @@ type ProjectRowLite = {
   slug: string;
   created_at: string | null;
 };
-type DonationRow = { project_id: string; donor_id: string; amount: number | string | null };
-type OrgRow = { user_id: string; organization_name: string | null; slug: string };
-
-
+type DonationRow = {
+  project_id: string;
+  donor_id: string;
+  amount: number | string | null;
+};
+type OrgRow = {
+  user_id: string;
+  organization_name: string | null;
+  slug: string;
+};
 
 function toPublicImageUrl(
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
   key?: string | null
 ) {
   if (!key) return "/placeholder.jpg";
-  const { data } = supabase.storage.from(PUBLIC_IMAGE_BUCKET_NAME).getPublicUrl(key);
+  const { data } = supabase.storage
+    .from(PUBLIC_IMAGE_BUCKET_NAME)
+    .getPublicUrl(key);
   return data.publicUrl ?? "/placeholder.jpg";
 }
 
@@ -77,7 +84,7 @@ export async function getFeaturedProjectsWithTotals(
   const { data: projects, error: pErr } = await supabase
     .from("projects")
     .select(
-      "id, title, description, goal_amount, organization_user_id, project_background_image, slug, created_at"
+      "id, title, description, goal_amount, organization_user_id,slug, project_background_image, created_at"
     )
     .order("created_at", { ascending: false })
     .limit(limit)
@@ -107,7 +114,8 @@ export async function getFeaturedProjectsWithTotals(
   for (const r of donationRows ?? []) {
     const pid = String(r.project_id);
     const amt = Number(r.amount ?? 0);
-    if (Number.isFinite(amt)) totalById.set(pid, (totalById.get(pid) ?? 0) + amt);
+    if (Number.isFinite(amt))
+      totalById.set(pid, (totalById.get(pid) ?? 0) + amt);
 
     const donor = String(r.donor_id ?? "");
     if (donor) {
@@ -117,8 +125,13 @@ export async function getFeaturedProjectsWithTotals(
   }
 
   // 3) Organizations (name + slug)
-  const orgIds = Array.from(new Set(projects.map((p) => p.organization_user_id)));
-  const orgMap = new Map<string, { user_id: string; name: string; slug: string }>();
+  const orgIds = Array.from(
+    new Set(projects.map((p) => p.organization_user_id))
+  );
+  const orgMap = new Map<
+    string,
+    { user_id: string; name: string; slug: string }
+  >();
 
   if (orgIds.length) {
     const { data: orgRows, error: oErr } = await supabase
@@ -144,7 +157,8 @@ export async function getFeaturedProjectsWithTotals(
     const goal = Number(p.goal_amount ?? 0);
     const collected = totalById.get(p.id) ?? 0;
     const remaining = Math.max(goal - collected, 0);
-    const percent = goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
+    const percent =
+      goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
     const beneficiary_count = donorsById.get(p.id)?.size ?? 0;
     const organization = orgMap.get(p.organization_user_id) ?? null;
 
@@ -165,13 +179,17 @@ export async function getFeaturedProjectsWithTotals(
 }
 
 /** ---------- project detail by id + totals ---------- */
-export async function getProjectByIdWithTotals(id: string): Promise<ProjectDetail | null> {
+export async function getProjectByIdWithTotals(
+  id: string
+): Promise<ProjectDetail | null> {
   const supabase = await createServerSupabaseClient();
 
   // 1) Project
   const { data: p, error: projErr } = await supabase
     .from("projects")
-    .select("id, title, description, goal_amount, organization_user_id, project_background_image")
+    .select(
+      "id, title, description, goal_amount, organization_user_id, project_background_image"
+    )
     .eq("id", id)
     .maybeSingle();
 
@@ -188,12 +206,18 @@ export async function getProjectByIdWithTotals(id: string): Promise<ProjectDetai
 
   if (dErr) console.error("donations fetch error:", dErr.message);
 
-  const collected = (donations ?? []).reduce((sum, r: any) => sum + Number(r?.amount ?? 0), 0);
-  const beneficiary_count = new Set((donations ?? []).map((r: any) => String(r?.donor_id))).size;
+  const collected = (donations ?? []).reduce(
+    (sum, r: any) => sum + Number(r?.amount ?? 0),
+    0
+  );
+  const beneficiary_count = new Set(
+    (donations ?? []).map((r: any) => String(r?.donor_id))
+  ).size;
 
   const goal = Number(p.goal_amount ?? 0);
   const remaining = Math.max(goal - collected, 0);
-  const percent = goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
+  const percent =
+    goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
 
   // 3) Org (name + slug)
   const { data: orgRow, error: oErr } = await supabase
@@ -229,7 +253,6 @@ export async function getProjectByIdWithTotals(id: string): Promise<ProjectDetai
   };
 }
 
-
 // src/api/project.ts (append)
 export async function getProjectsWithTotals(
   limit = 24,
@@ -262,7 +285,8 @@ export async function getProjectsWithTotals(
   for (const r of donationRows ?? []) {
     const pid = String(r.project_id);
     const amt = Number(r.amount ?? 0);
-    if (Number.isFinite(amt)) totalById.set(pid, (totalById.get(pid) ?? 0) + amt);
+    if (Number.isFinite(amt))
+      totalById.set(pid, (totalById.get(pid) ?? 0) + amt);
     if (r.donor_id) {
       if (!donorsById.has(pid)) donorsById.set(pid, new Set());
       donorsById.get(pid)!.add(String(r.donor_id));
@@ -270,8 +294,13 @@ export async function getProjectsWithTotals(
   }
 
   // 3) Orgs (name+slug)
-  const orgIds = Array.from(new Set(projects.map((p) => p.organization_user_id)));
-  const orgMap = new Map<string, { user_id: string; name: string; slug: string }>();
+  const orgIds = Array.from(
+    new Set(projects.map((p) => p.organization_user_id))
+  );
+  const orgMap = new Map<
+    string,
+    { user_id: string; name: string; slug: string }
+  >();
   if (orgIds.length) {
     const { data: orgRows } = await supabase
       .from("organizations")
@@ -293,7 +322,8 @@ export async function getProjectsWithTotals(
     const goal = Number(p.goal_amount ?? 0);
     const collected = totalById.get(p.id) ?? 0;
     const remaining = Math.max(goal - collected, 0);
-    const percent = goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
+    const percent =
+      goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
 
     return {
       id: p.id,
