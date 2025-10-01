@@ -66,7 +66,8 @@ export async function getProjectBySlugs(
 
   const goal = Number(project.goal_amount ?? 0);
   const remaining = Math.max(goal - collected, 0);
-  const percent = goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
+  const percent =
+    goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
 
   // 4. Get public image URL for project background
   let project_background_image: string | null = null;
