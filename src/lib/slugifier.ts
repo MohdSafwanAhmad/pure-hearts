@@ -1,3 +1,4 @@
+import "server-only";
 import { createServerSupabaseClient } from "./supabase/server";
 import slugify from "slugify";
 

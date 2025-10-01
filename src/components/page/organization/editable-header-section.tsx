@@ -7,9 +7,9 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
+import { EditableOrganizationLogo } from "@/src/components/page/organization/editable-organization-logo";
 import { TOrganizationSchema } from "@/src/schemas/organization";
 import { MapPin } from "lucide-react";
-import Image from "next/image";
 import { UseFormReturn } from "react-hook-form";
 
 interface Props {
@@ -28,25 +28,11 @@ export function EditableHeaderSection({
       <div className="container mx-auto py-12 px-4">
         <div className="flex flex-col lg:flex-row gap-8 items-center text-white">
           {/* Organization Logo */}
-          <div className="w-48 h-48 lg:w-64 lg:h-64 bg-background rounded-lg shadow-lg overflow-hidden relative">
-            {organization.logo ? (
-              <Image
-                src={organization.logo}
-                alt={organization.organization_name}
-                fill
-                className="object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                <Heading level={1} className="text-gray-500">
-                  {organization.organization_name.charAt(0).toUpperCase()}
-                </Heading>
-              </div>
-            )}
-          </div>
-
+          <EditableOrganizationLogo
+            organization={organization}
+            isEditing={isEditing}
+          />{" "}
           {/* Organization Info */}
-
           {isEditing ? (
             <div className="flex-1 text-center lg:text-left">
               <FormField

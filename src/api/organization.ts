@@ -96,8 +96,6 @@ export async function getOrganizationStats(
       .eq("project.organization_user_id", organizationUserId),
   ]);
 
-  console.log(organizationUserId);
-
   const { count: completedProjectsCount, error: completedError } =
     completedProjectsResult;
   const { count: activeProjectsCount, error: activeError } =

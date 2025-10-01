@@ -1,6 +1,6 @@
 "use client";
 
-import { updateOrganization } from "@/src/actions/update-organization";
+import { updateOrganization } from "@/src/actions/organization";
 import { Organization } from "@/src/api/organization";
 import { EditableHeaderSection } from "@/src/components/page/organization/editable-header-section";
 import { EditableDetailsSection } from "@/src/components/page/organization/editable-details-section";

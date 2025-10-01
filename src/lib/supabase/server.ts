@@ -1,17 +1,31 @@
+import { Database } from "@/src/types/database-types";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { Database } from "@/src/types/database-types";
+import { createClient } from "@supabase/supabase-js";
 
 /**
  * Creates a Supabase client for server-side use.
  * @returns A Supabase client instance.
  */
 export async function createServerSupabaseClient() {
-  const cookieStore = await cookies();
-
-  return createServerClient<Database>(
+  return createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    }
+  );
+}
+
+async function createAnonymousServerSupabaseClient() {
+  const cookieStore = await cookies();
+  return createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
         getAll() {
@@ -34,7 +48,7 @@ export async function createServerSupabaseClient() {
 }
 
 export async function getDonorProfile() {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -59,7 +73,7 @@ export async function getDonorProfile() {
 }
 
 export async function getOrganizationProfile() {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
