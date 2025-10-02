@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   upsertDonorProfile,
@@ -26,15 +25,13 @@ type ProfileFormProps = {
   };
 };
 
-// ---- small type guard so TS knows when a result is an error ----
-function hasError(x: unknown): x is { error?: unknown } {
+// helper to always get a string out of unknown/any error shapes
+const toErrorString = (e: unknown) =>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return !!x && typeof x === "object" && "error" in (x as any);
-}
+  typeof e === "string" ? e : (e as any)?.message ?? "Something went wrong";
 
 export default function ProfileForm({ userId, initial }: ProfileFormProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
 
   const [formData, setFormData] = useState({
     first_name: initial.first_name ?? "",
@@ -49,47 +46,52 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // When profile is already completed, start locked (not editable).
+  // When not completed yet, start editable.
   const [profileCompleted, setProfileCompleted] = useState(
     initial.profile_completed
   );
+  const [editMode, setEditMode] = useState(!initial.profile_completed); // <-- only ONE declaration
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (!editMode) return; // ignore edits while locked
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!editMode) return; // should never happen, but prevents accidental submits when locked
+
     setIsSubmitting(true);
     setError(null);
     setSuccess(null);
 
-    try {
-      const result = await upsertDonorProfile({
-        user_id: userId,
-        ...formData,
-      });
+    const result = await upsertDonorProfile({
+      user_id: userId,
+      ...formData,
+    });
 
-      // Narrow to error shape
-      if (hasError(result)) {
-        setError(String(result.error ?? "Something went wrong"));
-        return;
-      }
+    setIsSubmitting(false);
 
-      // Success shape
-      const wasCompleted = profileCompleted;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setProfileCompleted(Boolean((result as any).profile_completed));
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (!wasCompleted && (result as any).profile_completed) {
-        setSuccess("Profile completed successfully!");
-      } else {
-        setSuccess("Profile updated successfully!");
-      }
-      startTransition(() => router.refresh());
-    } finally {
-      setIsSubmitting(false);
+    if ("error" in result && result.error) {
+      setError(toErrorString(result.error)); // <-- coerce to string
+      return;
     }
+
+    const wasCompleted = profileCompleted;
+    setProfileCompleted(result.profile_completed ?? false);
+
+    if (!wasCompleted && result.profile_completed) {
+      setSuccess("Profile completed successfully!");
+      setEditMode(false); // lock after first completion
+    } else {
+      setSuccess("Profile updated successfully!");
+      setEditMode(false); // lock again after update
+    }
+
+    router.refresh();
   };
 
   const handleDelete = async () => {
@@ -105,29 +107,45 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
     setError(null);
     setSuccess(null);
 
-    try {
-      const result = await deleteDonorProfile(userId);
+    const result = await deleteDonorProfile(userId);
 
-      if (hasError(result)) {
-        setError(String(result.error ?? "Failed to delete profile"));
-        return;
-      }
+    setIsSubmitting(false);
 
-      setSuccess("Profile deleted successfully!");
-      setProfileCompleted(false);
-      setFormData({
-        first_name: "",
-        last_name: "",
-        phone: "",
-        address: "",
-        city: "",
-        state: "",
-        country: "",
-      });
-      startTransition(() => router.refresh());
-    } finally {
-      setIsSubmitting(false);
+    if ("error" in result && result.error) {
+      setError(toErrorString(result.error)); // <-- coerce to string
+      return;
     }
+
+    setSuccess("Profile deleted successfully!");
+    setProfileCompleted(false);
+    setEditMode(true); // allow editing to re-create the profile
+    setFormData({
+      first_name: "",
+      last_name: "",
+      phone: "",
+      address: "",
+      city: "",
+      state: "",
+      country: "",
+    });
+
+    router.refresh();
+  };
+
+  // Cancel editing: discard changes and lock again
+  const handleCancel = () => {
+    setError(null);
+    setSuccess(null);
+    setFormData({
+      first_name: initial.first_name ?? "",
+      last_name: initial.last_name ?? "",
+      phone: initial.phone ?? "",
+      address: initial.address ?? "",
+      city: initial.city ?? "",
+      state: initial.state ?? "",
+      country: initial.country ?? "",
+    });
+    setEditMode(false);
   };
 
   return (
@@ -144,6 +162,24 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
         </Alert>
       )}
 
+      {/* Toolbar: Edit / Cancel */}
+      <div className="flex items-center gap-3">
+        {!editMode && profileCompleted && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setEditMode(true)}
+          >
+            Edit profile
+          </Button>
+        )}
+        {editMode && profileCompleted && (
+          <Button type="button" variant="ghost" onClick={handleCancel}>
+            Cancel
+          </Button>
+        )}
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -154,6 +190,7 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
               value={formData.first_name}
               onChange={handleChange}
               required
+              disabled={!editMode}
             />
           </div>
 
@@ -165,6 +202,7 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
               value={formData.last_name}
               onChange={handleChange}
               required
+              disabled={!editMode}
             />
           </div>
         </div>
@@ -177,6 +215,7 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
             type="tel"
             value={formData.phone}
             onChange={handleChange}
+            disabled={!editMode}
           />
         </div>
 
@@ -188,6 +227,7 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
             value={formData.address}
             onChange={handleChange}
             required
+            disabled={!editMode}
           />
         </div>
 
@@ -200,6 +240,7 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
               value={formData.city}
               onChange={handleChange}
               required
+              disabled={!editMode}
             />
           </div>
 
@@ -210,6 +251,7 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
               name="state"
               value={formData.state}
               onChange={handleChange}
+              disabled={!editMode}
             />
           </div>
         </div>
@@ -222,30 +264,32 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
             value={formData.country}
             onChange={handleChange}
             required
+            disabled={!editMode}
           />
         </div>
 
         <div className="flex gap-3 pt-4">
-          {!profileCompleted && (
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Complete Profile"}
-            </Button>
-          )}
+          {/* Primary action */}
+          <Button type="submit" disabled={isSubmitting || !editMode}>
+            {isSubmitting
+              ? profileCompleted
+                ? "Updating..."
+                : "Saving..."
+              : profileCompleted
+              ? "Update Profile"
+              : "Complete Profile"}
+          </Button>
 
+          {/* Destructive action (only when a profile exists) */}
           {profileCompleted && (
-            <>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Updating..." : "Update Profile"}
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={isSubmitting}
-              >
-                Delete Profile
-              </Button>
-            </>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isSubmitting}
+            >
+              Delete Profile
+            </Button>
           )}
         </div>
       </form>
