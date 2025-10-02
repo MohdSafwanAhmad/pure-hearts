@@ -28,6 +28,7 @@ export function EditableOrganizationLogo({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Reset preview when dialog is closed
   useEffect(() => {
@@ -72,6 +73,7 @@ export function EditableOrganizationLogo({
         const formData = new FormData();
         formData.append("file", selectedFile);
 
+        setIsUploading(true);
         // Call the server action
         const result = await updateOrganizationLogo(formData);
 
@@ -82,6 +84,8 @@ export function EditableOrganizationLogo({
         }
       } catch {
         toast.error("Oops! Something went wrong during the upload.");
+      } finally {
+        setIsUploading(false);
       }
 
       // Close the dialog
@@ -207,9 +211,9 @@ export function EditableOrganizationLogo({
               <Button
                 type="button"
                 onClick={handleUploadClick}
-                disabled={!selectedFile}
+                disabled={!selectedFile || isUploading}
               >
-                Upload Logo
+                {isUploading ? "Uploading..." : "Upload Logo"}
               </Button>
             </DialogFooter>
           </div>
