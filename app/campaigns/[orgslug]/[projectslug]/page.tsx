@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
-import { getProjectByIdWithTotals } from "@/src/api/project";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Progress } from "@/src/components/ui/progress";
 import { DonationBox } from "@/src/components/page/project/donationbox";
+import { getProjectBySlugs, getProjects } from "@/src/api/project";
+import ProjectCard from "@/src/components/global/project-card";
 
 export const revalidate = 0;
 export const dynamic = "force-dynamic";
@@ -13,48 +13,30 @@ export const dynamic = "force-dynamic";
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n || 0);
 
-export default async function ProjectBySlugsPage({
-  params,
-}: {
+export default async function ProjectBySlugsPage(props: {
   params: { orgslug: string; projectslug: string };
 }) {
-  const supabase = await createServerSupabaseClient();
+  const { params } = await Promise.resolve(props);
 
-  // 1) find org by slug
-  const { data: org, error: orgErr } = await supabase
-    .from("organizations")
-    .select("user_id, organization_name")
-    .eq("slug", params.orgslug)
-    .maybeSingle();
+  const project = await getProjectBySlugs(
+    params.orgslug,
+    params.projectslug
+  );
 
-  if (orgErr || !org) {
-    console.error("org fetch error:", orgErr?.message ?? "not found");
-    return <div className="container mx-auto px-4 py-20">Project not found.</div>;
-  }
-
-  // 2) find project by (org, slug) to get the canonical ID
-  const { data: proj, error: projErr } = await supabase
-    .from("projects")
-    .select("id, project_background_image, title")
-    .eq("organization_user_id", org.user_id)
-    .eq("slug", params.projectslug)
-    .maybeSingle();
-
-  if (projErr || !proj) {
-    console.error("project fetch error:", projErr?.message ?? "not found");
-    return <div className="container mx-auto px-4 py-20">Project not found.</div>;
-  }
-
-  // 3) reuse the same data builder you already have
-  const project = await getProjectByIdWithTotals(proj.id);
   if (!project) {
+    console.error("project fetch error: not found");
     return <div className="container mx-auto px-4 py-20">Project not found.</div>;
   }
 
-  // Always show a cover (fallback to placeholder)
   const cover = project.project_background_image || "/placeholder.jpg";
 
+  // Related projects (excluding current)
+  const relatedProjects = (await getProjects(8, 0))
+    .filter((p) => p.id !== project.id)
+    .slice(0, 4);
+
   return (
+    <>
     <div className="container mx-auto px-4 py-10">
       <div className="grid gap-8 lg:grid-cols-12">
         {/* LEFT */}
@@ -67,29 +49,53 @@ export default async function ProjectBySlugsPage({
               className="object-cover"
               priority
             />
+            {/* Overlay gradient for readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            {/* Title + subheading on image */}
+            <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+              <h1 className="text-white text-2xl sm:text-3xl md:text-4xl font-bold drop-shadow-sm line-clamp-2">
+                {project.title}
+              </h1>
+              <p className="mt-2 text-white/90 text-sm sm:text-base line-clamp-1">
+                {project.organization?.name ?? ""}
+                {project.beneficiary?.label ? ` • ${project.beneficiary.label}` : ""}
+              </p>
+            </div>
           </div>
 
           <CardHeader>
-            <CardTitle className="text-2xl">{project.title}</CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              <CardTitle className="text-2xl">{project.title}</CardTitle>
+              {project.beneficiary?.label && (
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  {project.beneficiary.label}
+                </span>
+              )}
+            </div>
           </CardHeader>
 
           <CardContent className="space-y-6">
-            <p className="text-muted-foreground">{project.description}</p>
+            {project.description && (
+              <p className="text-muted-foreground">{project.description}</p>
+            )}
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="rounded-lg bg-muted p-4 text-center">
-                <div className="text-xs text-muted-foreground">Collected</div>
+            {/* KPI Row */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="rounded-md bg-muted p-3 text-center">
+                <div className="text-[11px] text-muted-foreground">Raised</div>
                 <div className="font-semibold">${fmt(project.collected)}</div>
               </div>
-              <div className="rounded-lg bg-muted p-4 text-center">
-                <div className="text-xs text-muted-foreground">Remaining</div>
+              <div className="rounded-md bg-muted p-3 text-center">
+                <div className="text-[11px] text-muted-foreground">Goal</div>
+                <div className="font-semibold">${fmt(project.goal_amount)}</div>
+              </div>
+              <div className="rounded-md bg-muted p-3 text-center">
+                <div className="text-[11px] text-muted-foreground">Remaining</div>
                 <div className="font-semibold">${fmt(project.remaining)}</div>
               </div>
-              <div className="rounded-lg bg-muted p-4 text-center">
-                <div className="text-xs text-muted-foreground">Beneficiaries</div>
-                <div className="font-semibold">
-                  {project.beneficiary_count ?? "—"}
-                </div>
+              <div className="rounded-md bg-muted p-3 text-center">
+                <div className="text-[11px] text-muted-foreground">Progress</div>
+                <div className="font-semibold">{project.percent}%</div>
               </div>
             </div>
 
@@ -100,7 +106,7 @@ export default async function ProjectBySlugsPage({
                   ${fmt(project.collected)} / ${fmt(project.goal_amount ?? 0)}
                 </span>
               </div>
-              <Progress value={project.percent} />
+              <Progress className="h-3" value={project.percent} />
               <div className="mt-1 text-right text-xs text-muted-foreground">
                 {project.percent}%
               </div>
@@ -114,7 +120,7 @@ export default async function ProjectBySlugsPage({
 
         {/* RIGHT: Donate box + Organization */}
         <div className="space-y-6 lg:col-span-5">
-          <Card>
+          <Card className="lg:sticky lg:top-24">
             <CardHeader>
               <CardTitle>Donate</CardTitle>
             </CardHeader>
@@ -125,16 +131,36 @@ export default async function ProjectBySlugsPage({
 
           {project.organization && (
             <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Organization</CardTitle>
+              <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                {project.organization.logo && (
+                  <Image
+                    src={project.organization.logo}
+                    alt={project.organization.name ?? "Organization logo"}
+                    width={48}
+                    height={48}
+                    className="rounded-full border bg-white object-cover"
+                  />
+                )}
+                <div>
+                  <CardTitle className="text-xl">{project.organization.name}</CardTitle>
+                  {project.organization.mission_statement && (
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                      {project.organization.mission_statement}
+                    </p>
+                  )}
+                  {project.organization.description && (
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                      {project.organization.description}
+                    </p>
+                  )}
+                </div>
               </CardHeader>
-              <CardContent className="flex h-full flex-col gap-3">
-                <div className="font-medium">{project.organization.name}</div>
+              <CardContent className="flex flex-col gap-3 pt-0">
                 <Button
                   asChild
                   variant="outline"
                   size="sm"
-                  className="mt-auto self-start"
+                  className="self-start"
                 >
                   <Link href={`/organizations/${project.organization.slug}`}>
                     Visit organization
@@ -145,6 +171,36 @@ export default async function ProjectBySlugsPage({
           )}
         </div>
       </div>
+
+      {/* Related projects - NOW USING ProjectCard COMPONENT */}
+      {relatedProjects.length > 0 && (
+        <section className="mt-14">
+          <h2 className="mb-6 text-2xl font-semibold">Other causes you can support</h2>
+          <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {relatedProjects.map((p) => {
+              const orgSlug = p.organization?.slug;
+              const href = orgSlug ? `/campaigns/${orgSlug}/${p.slug}` : `/campaigns/_/${p.slug}`;
+              return (
+                <li key={p.id}>
+                  <ProjectCard
+                    href={href}
+                    title={p.title}
+                    description={p.description}
+                    imageUrl={p.project_background_image}
+                    organizationName={p.organization?.name ?? null}
+                    beneficiaryLabel={p.beneficiary?.label ?? null}
+                    collected={p.collected}
+                    goalAmount={p.goal_amount}
+                    percent={p.percent}
+                    ctaLabel="View Details"
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
     </div>
+    </>
   );
 }

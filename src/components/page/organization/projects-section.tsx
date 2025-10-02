@@ -48,7 +48,8 @@ export function ProjectsSection({ projects }: Props) {
 
   const [activeProjectType, setActiveProjectType] =
     useState<ProjectType>("completed");
-  const [displayCount, setDisplayCount] = useState<number>(3);
+  const projectsPerPage = 4; // Number of projects to show per "page"
+  const [displayCount, setDisplayCount] = useState<number>(projectsPerPage);
 
   const currentProjects =
     activeProjectType === "completed" ? completedProjects : existingProjects;
@@ -59,7 +60,7 @@ export function ProjectsSection({ projects }: Props) {
   // Reset display count when switching project types
   const handleProjectTypeChange = (type: ProjectType) => {
     setActiveProjectType(type);
-    setDisplayCount(3);
+    setDisplayCount(projectsPerPage);
   };
 
   const handleShowMore = () => {
@@ -120,24 +121,23 @@ export function ProjectsSection({ projects }: Props) {
           </span>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-section">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-section">
           {visibleProjects.map((project) => (
             <ProjectCard
               key={project.id}
-              project={{
-                title: project.title,
-                description: project.description,
-                goal_amount: project.goal_amount,
-                collected: project.collected,
-                percent: project.percent,
-                beneficiary_count: project.beneficiaryCount,
-                project_background_image: project.projectBackgroundImage,
-                organization: {
-                  name: project.organization.name,
-                  organizationSlug: project.organization.organizationSlug,
-                },
-                slug: project.slug,
-              }}
+              href={`/campaigns/${project.organizationSlug}/${project.slug}`}
+              title={project.title}
+              description={project.description}
+              imageUrl={project.projectBackgroundImage}
+              organizationName={project.organization.name}
+              beneficiaryLabel={
+                project.beneficiaryCount
+                  ? `${project.beneficiaryCount} beneficiaries`
+                  : undefined
+              }
+              collected={project.collected}
+              goalAmount={project.goal_amount}
+              percent={project.percent}
             />
           ))}
         </div>
