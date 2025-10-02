@@ -4,7 +4,6 @@ import { Heading } from "@/src/components/global/heading";
 import { Button } from "@/src/components/ui/button";
 import { useState } from "react";
 import { OrganizationProjectCard } from "./project-card";
-
 import { FolderOpen } from "lucide-react";
 
 type ProjectType = "completed" | "existing";
@@ -80,7 +79,7 @@ export function ProjectsSection({ projects }: Props) {
           </span>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-section">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-section">
           {currentProjects.map((project) => (
             <OrganizationProjectCard
               key={project.projectId}

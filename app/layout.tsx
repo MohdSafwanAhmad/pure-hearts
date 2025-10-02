@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import Navbar from "@/src/components/global/navbar";
+import Footer from "@/src/components/global/footer";
 import { Toaster } from "@/src/components/ui/sonner";
 
 export const metadata: Metadata = {
@@ -16,8 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Navbar /> {/* ✅ Navbar will appear on all pages */}
+        <Navbar />
         <main>{children}</main>
+        <Footer />
         <Toaster position="top-center" richColors />
       </body>
     </html>
