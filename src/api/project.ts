@@ -23,7 +23,6 @@ export interface ProjectDetail {
     slug: string;
     name: string | null;
     logo?: string | null;
-    description?: string | null;
     mission_statement?: string | null;
   };
 }
