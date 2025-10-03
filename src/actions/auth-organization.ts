@@ -3,8 +3,8 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
 import { generateUniqueSlug } from "@/src/lib/slugifier";
+import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 
 const signupAsOrganizationAuthSchema = z.object({
   organizationEmail: z.email("Please enter a valid organization email address"),
@@ -97,7 +97,7 @@ export async function signupAsOrganization(
     _form?: string[];
   };
 }> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   // Parse project areas from form data
   const projectAreas = formData

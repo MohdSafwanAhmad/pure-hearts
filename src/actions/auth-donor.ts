@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 
 // Define the validation schema
 const signupAsDonorAuthSchema = z.object({
@@ -25,7 +25,7 @@ export async function signupAsDonor(
     _form?: string[];
   };
 }> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   // Parse donation preferences from form data
   const donationPreferences = formData
