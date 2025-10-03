@@ -1,6 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/src/components/ui/card";
 import { Progress } from "@/src/components/ui/progress";
 import { Button } from "@/src/components/ui/button";
 
@@ -18,7 +23,9 @@ interface ProjectCardProps {
 }
 
 const fmt = (n: number | null | undefined) =>
-  new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Number(n ?? 0));
+  new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(
+    Number(n ?? 0)
+  );
 
 export default function ProjectCard({
   href,
@@ -73,7 +80,9 @@ export default function ProjectCard({
 
       <CardContent className="space-y-4 flex flex-col flex-1 pt-0">
         {description && (
-          <p className="line-clamp-3 text-sm text-muted-foreground">{description}</p>
+          <p className="line-clamp-3 text-sm text-muted-foreground">
+            {description}
+          </p>
         )}
 
         {typeof percent === "number" && (
@@ -85,7 +94,9 @@ export default function ProjectCard({
               </span>
             </div>
             <Progress value={percent} className="h-2" />
-            <div className="mt-1 text-right text-[11px] text-muted-foreground">{percent}%</div>
+            <div className="mt-1 text-right text-[11px] text-muted-foreground">
+              {percent}%
+            </div>
           </div>
         )}
 

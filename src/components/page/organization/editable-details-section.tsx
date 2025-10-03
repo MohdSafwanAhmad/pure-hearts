@@ -3,25 +3,39 @@
 import { Organization } from "@/src/api/organization";
 import { useState } from "react";
 import { Heading } from "@/src/components/global/heading";
-interface OrganizationDetailsProps {
+import { UseFormReturn } from "react-hook-form";
+import { TOrganizationSchema } from "@/src/schemas/organization";
+import { FormControl, FormField, FormItem, FormMessage } from "../../ui/form";
+import { Textarea } from "../../ui/textarea";
+import { EditableOverviewSection } from "./editable-overview-section";
+import { EditableContactSection } from "./editable-contact-section";
+import { EditablePrivateSection } from "./editable-private-section";
+
+interface Props {
   organization: Organization;
+  form: UseFormReturn<TOrganizationSchema>;
+  isEditing: boolean;
 }
 
-type TabKey = "contact" | "overview";
+type TabKey = "contact" | "overview" | "private";
 
 interface Tab {
   key: TabKey;
   label: string;
+  visibleOnlyInEditMode?: boolean;
 }
 
 const tabs: Tab[] = [
   { key: "contact", label: "Contact Data" },
   { key: "overview", label: "Overview" },
+  { key: "private", label: "Private Information", visibleOnlyInEditMode: true },
 ];
 
-export function OrganizationDetails({
+export function EditableDetailsSection({
   organization,
-}: OrganizationDetailsProps) {
+  form,
+  isEditing,
+}: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
 
   const projectAreas = Array.isArray(organization.project_areas)
@@ -91,7 +105,9 @@ export function OrganizationDetails({
   const renderTabContent = () => {
     switch (activeTab) {
       case "contact":
-        return (
+        return isEditing ? (
+          <EditableContactSection form={form} />
+        ) : (
           <div className="grid gap-x-6 grid-cols-1 sm:grid-cols-2 divide-y">
             {contactItems.map((item, index) => (
               <div key={index} className="py-4">
@@ -122,9 +138,21 @@ export function OrganizationDetails({
           </div>
         );
 
+      case "private":
+        // Only show this tab in edit mode
+        return isEditing ? (
+          <EditablePrivateSection form={form} />
+        ) : (
+          <div className="py-4 text-center text-gray-500">
+            Private information is only available in edit mode.
+          </div>
+        );
+
       case "overview":
       default:
-        return (
+        return isEditing ? (
+          <EditableOverviewSection form={form} />
+        ) : (
           <div className="grid gap-x-6 grid-cols-1 sm:grid-cols-2 divide-y">
             {overviewItems.map((item, index) => (
               <div key={index} className="py-4">
@@ -144,25 +172,59 @@ export function OrganizationDetails({
         <Heading level={2} className="mb-element">
           About {organization.organization_name}
         </Heading>
-        <p className="text-gray-700 leading-relaxed">
-          {organization.mission_statement}
-        </p>
+        {isEditing ? (
+          <FormField
+            control={form.control}
+            name="missionStatement"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    placeholder="Describe your organization's mission and goals..."
+                    className={
+                      form.formState.errors?.missionStatement
+                        ? "border-red-500"
+                        : ""
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ) : (
+          <p className="text-gray-700 leading-relaxed">
+            {organization.mission_statement}
+          </p>
+        )}
       </div>
       <div className="border-b border-gray-200">
         <nav className="flex space-x-8 px-0">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`py-2 px-1 border-b-4 ${
-                activeTab === tab.key
-                  ? "border-primary text-primary font-medium"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {tabs
+            .filter(
+              (tab) =>
+                !tab.visibleOnlyInEditMode ||
+                (tab.visibleOnlyInEditMode && isEditing)
+            )
+            .map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setActiveTab(tab.key);
+                }}
+                className={`py-2 px-1 border-b-4 ${
+                  activeTab === tab.key
+                    ? "border-primary text-primary font-medium"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
         </nav>
       </div>
       <div className="space-y-6">

@@ -1,6 +1,6 @@
 "use client";
 
-import { updateOrganization } from "@/src/actions/update-organization";
+import { updateOrganization } from "@/src/actions/organization";
 import { BasicInformationSection } from "@/src/components/page/organization-dashboard/profile/sections/basic-information-section";
 import { LocationSection } from "@/src/components/page/organization-dashboard/profile/sections/location-section";
 import { MissionProjectsSection } from "@/src/components/page/organization-dashboard/profile/sections/mission-projects-section";

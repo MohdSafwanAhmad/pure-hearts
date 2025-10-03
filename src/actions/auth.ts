@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 
 const loginAuthSchema = z.object({
   email: z.email("Please enter a valid email address"),
@@ -26,7 +26,7 @@ export async function login(
     _form?: string[];
   };
 }> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   const result = loginAuthSchema.safeParse({
     email: formData.get("email"),
@@ -65,7 +65,7 @@ export async function verifyOtp(
     _form?: string[];
   };
 }> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   const result = verifyOtpSchema.safeParse({
     email: formData.get("email"),
