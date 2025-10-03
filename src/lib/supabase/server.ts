@@ -4,8 +4,10 @@ import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 
 /**
- * Creates a Supabase client for server-side use.
- * @returns A Supabase client instance.
+ * Creates a Supabase client for server-side use. With Admin privileges using the Service Role Key.
+ * Cannot manage user sessions and cookies.
+ * Do not expose this to the client!
+ * @returns A Supabase client instance. with Admin privileges using the Service Role Key.
  */
 export async function createServerSupabaseClient() {
   return createClient<Database>(
@@ -21,7 +23,12 @@ export async function createServerSupabaseClient() {
   );
 }
 
-async function createAnonymousServerSupabaseClient() {
+/**
+ * Creates a Supabase client for server-side use. With Anonymous privileges.
+ * Can manage user sessions using cookies.
+ * @returns A Supabase client instance. with Anonymous privileges.
+ */
+export async function createAnonymousServerSupabaseClient() {
   const cookieStore = await cookies();
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

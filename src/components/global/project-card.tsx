@@ -27,7 +27,7 @@ const fmt = (n: number | null | undefined) =>
     Number(n ?? 0)
   );
 
-export function ProjectCard({
+export default function ProjectCard({
   href,
   title,
   description,
@@ -40,20 +40,30 @@ export function ProjectCard({
   ctaLabel = "View Details",
 }: ProjectCardProps) {
   return (
-    <Card className="relative h-full overflow-hidden flex flex-col group cursor-pointer">
+    <Card
+      className="
+        relative h-full overflow-hidden flex flex-col group cursor-pointer
+        transition duration-200
+        hover:-translate-y-0.5 hover:shadow-lg hover:border-primary/30
+        focus-within:shadow-lg
+      "
+    >
+      {/* Full-card click target */}
       <Link
         href={href}
         aria-label={`View ${title}`}
         className="absolute inset-0 z-10"
+        tabIndex={-1}
       />
 
-      <div className="relative aspect-video">
+      <div className="relative aspect-video overflow-hidden">
         <Image
           src={imageUrl || "/placeholder.jpg"}
           alt={title}
           fill
-          className="object-cover"
           sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+          priority={false}
         />
       </div>
 
@@ -95,7 +105,15 @@ export function ProjectCard({
         </div>
 
         <div className="pt-2">
-          <Button className="w-full" variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            className="
+              w-full transition
+              group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary
+              focus-visible:ring-2 focus-visible:ring-primary
+            "
+          >
             {ctaLabel}
           </Button>
         </div>
@@ -103,5 +121,3 @@ export function ProjectCard({
     </Card>
   );
 }
-
-export default ProjectCard;

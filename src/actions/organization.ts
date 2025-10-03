@@ -161,7 +161,13 @@ export async function updateOrganizationLogo(
       });
 
     if (error) {
-      console.error("Error uploading file to Supabase:", error);
+      const optimizedBufferSizeKB = Math.round(optimizedBuffer.length / 1024);
+      console.error(
+        "Error uploading file to Supabase:",
+        error,
+        optimizedBufferSizeKB,
+        "KB"
+      );
       return { error: "Failed to upload logo", success: false };
     }
 

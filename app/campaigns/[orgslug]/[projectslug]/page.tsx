@@ -14,15 +14,13 @@ const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n || 0);
 
 export default async function ProjectBySlugsPage(props: {
-  params: { orgslug: string; projectslug: string };
+  params: Promise<{ orgslug: string; projectslug: string }>;
 }) {
-  const { params } = await Promise.resolve(props);
+  // ✅ Treat params as a Promise (removes Next warning)
+  const { orgslug, projectslug } = await props.params;
 
-  const project = await getProjectBySlugs(
-    params.orgslug,
-    params.projectslug
-  );
-
+  // ✅ Single API call handles: find org → find project → compute totals
+  const project = await getProjectBySlugs(orgslug, projectslug);
   if (!project) {
     console.error("project fetch error: not found");
     return <div className="container mx-auto px-4 py-20">Project not found.</div>;
@@ -36,7 +34,6 @@ export default async function ProjectBySlugsPage(props: {
     .slice(0, 4);
 
   return (
-    <>
     <div className="container mx-auto px-4 py-10">
       <div className="grid gap-8 lg:grid-cols-12">
         {/* LEFT */}
@@ -148,11 +145,6 @@ export default async function ProjectBySlugsPage(props: {
                       {project.organization.mission_statement}
                     </p>
                   )}
-                  {project.organization.description && (
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                      {project.organization.description}
-                    </p>
-                  )}
                 </div>
               </CardHeader>
               <CardContent className="flex flex-col gap-3 pt-0">
@@ -172,7 +164,7 @@ export default async function ProjectBySlugsPage(props: {
         </div>
       </div>
 
-      {/* Related projects - NOW USING ProjectCard COMPONENT */}
+      {/* Related projects */}
       {relatedProjects.length > 0 && (
         <section className="mt-14">
           <h2 className="mb-6 text-2xl font-semibold">Other causes you can support</h2>
@@ -201,6 +193,5 @@ export default async function ProjectBySlugsPage(props: {
         </section>
       )}
     </div>
-    </>
   );
 }
