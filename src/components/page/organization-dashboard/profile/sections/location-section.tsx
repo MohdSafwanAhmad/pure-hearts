@@ -19,12 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
-import { TOrganizationSchema } from "@/src/schemas/organization";
+import { TUpdateOrganizationSchema } from "@/src/schemas/organization";
 import { canadianProvinces } from "@/src/types/auth-organizations-types";
 import { UseFormReturn } from "react-hook-form";
 
 interface LocationSectionProps {
-  form: UseFormReturn<TOrganizationSchema>;
+  form: UseFormReturn<TUpdateOrganizationSchema>;
 }
 
 export function LocationSection({ form }: LocationSectionProps) {

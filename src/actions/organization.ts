@@ -4,7 +4,7 @@ import {
   createServerSupabaseClient,
   getOrganizationProfile,
 } from "@/src/lib/supabase/server";
-import { organizationSchema } from "@/src/schemas/organization";
+import { updateOrganizationSchema } from "@/src/schemas/organization";
 import { revalidatePath } from "next/cache";
 import { v4 as uuidv4 } from "uuid";
 import { PUBLIC_IMAGE_BUCKET_NAME } from "@/src/lib/constants";
@@ -48,7 +48,7 @@ export async function updateOrganization(
     }
   }
 
-  const result = organizationSchema.safeParse(dataObj);
+  const result = updateOrganizationSchema.safeParse(dataObj);
 
   if (!result.success) {
     const errors: Record<string, string[]> = {};

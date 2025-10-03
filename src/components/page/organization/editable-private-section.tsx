@@ -8,11 +8,11 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
-import { TOrganizationSchema } from "@/src/schemas/organization";
+import { TUpdateOrganizationSchema } from "@/src/schemas/organization";
 import { UseFormReturn } from "react-hook-form";
 
 interface EditablePrivateSectionProps {
-  form: UseFormReturn<TOrganizationSchema>;
+  form: UseFormReturn<TUpdateOrganizationSchema>;
 }
 
 export function EditablePrivateSection({ form }: EditablePrivateSectionProps) {

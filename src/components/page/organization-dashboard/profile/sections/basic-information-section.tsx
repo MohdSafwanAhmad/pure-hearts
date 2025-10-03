@@ -14,10 +14,10 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
-import { TOrganizationSchema } from "@/src/schemas/organization";
+import { TUpdateOrganizationSchema } from "@/src/schemas/organization";
 
 interface BasicInformationSectionProps {
-  form: UseFormReturn<TOrganizationSchema>;
+  form: UseFormReturn<TUpdateOrganizationSchema>;
 }
 
 export function BasicInformationSection({

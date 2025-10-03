@@ -21,7 +21,7 @@ import {
 import { Badge } from "@/src/components/ui/badge";
 import { projectAreaOptions } from "@/src/types/auth-organizations-types";
 import { UseFormReturn } from "react-hook-form";
-import { TOrganizationSchema } from "@/src/schemas/organization";
+import { TUpdateOrganizationSchema } from "@/src/schemas/organization";
 import {
   FormControl,
   FormItem,
@@ -30,7 +30,7 @@ import {
 } from "@/src/components/ui/form";
 
 interface ProjectAreasComboboxProps {
-  form: UseFormReturn<TOrganizationSchema>;
+  form: UseFormReturn<TUpdateOrganizationSchema>;
 }
 
 export function ProjectAreasCombobox({ form }: ProjectAreasComboboxProps) {

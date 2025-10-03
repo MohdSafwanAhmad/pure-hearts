@@ -1,5 +1,11 @@
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
-import { Label } from "@/src/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -7,97 +13,108 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
-import {
-  SectionProps,
-  canadianProvinces,
-} from "@/src/types/auth-organizations-types";
+import { TCreateOrganizationSchema } from "@/src/schemas/organization";
+import { canadianProvinces } from "@/src/types/auth-organizations-types";
+import { UseFormReturn } from "react-hook-form";
 
-export function LocationSection({
-  formData,
-  errors,
-  onUpdateFormData,
-}: SectionProps) {
-  const handleInputChange =
-    (field: keyof typeof formData) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      onUpdateFormData({ [field]: e.target.value });
-    };
+type Props = {
+  form: UseFormReturn<TCreateOrganizationSchema>;
+};
 
-  const handleSelectChange =
-    (field: keyof typeof formData) => (value: string) => {
-      onUpdateFormData({ [field]: value });
-    };
-
+export function LocationSection({ form }: Props) {
   return (
     <div className="space-y-4">
-      <div className="grid gap-3">
-        <Label htmlFor="country">Country</Label>
-        <Input
-          id="country"
-          name="country"
-          type="text"
-          value={formData.country}
-          readOnly
-          className="bg-gray-100 dark:bg-gray-800"
-        />
-      </div>
-
-      <div className="grid gap-3">
-        <Label htmlFor="state">Province</Label>
-        <Select
-          name="state"
-          required
-          value={formData.state}
-          onValueChange={handleSelectChange("state")}
-        >
-          <SelectTrigger className={errors?.state ? "border-red-500" : ""}>
-            <SelectValue placeholder="Select province" />
-          </SelectTrigger>
-          <SelectContent>
-            {canadianProvinces.map((province) => (
-              <SelectItem key={province.value} value={province.value}>
-                {province.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors?.state && (
-          <p className="text-sm text-red-500">{errors.state[0]}</p>
+      <FormField
+        control={form.control}
+        name="country"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Country
+            </FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                type="text"
+                readOnly
+                className="bg-gray-100 dark:bg-gray-800"
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
         )}
-      </div>
+      />
 
-      <div className="grid gap-3">
-        <Label htmlFor="city">City</Label>
-        <Input
-          id="city"
-          name="city"
-          type="text"
-          placeholder="Toronto"
-          required
-          value={formData.city}
-          onChange={handleInputChange("city")}
-          className={errors?.city ? "border-red-500" : ""}
-        />
-        {errors?.city && (
-          <p className="text-sm text-red-500">{errors.city[0]}</p>
+      <FormField
+        control={form.control}
+        name="state"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              State/Province *
+            </FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger className="w-full text-black">
+                  <SelectValue placeholder="Select your state or province" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {canadianProvinces.map((province) => (
+                  <SelectItem key={province.value} value={province.value}>
+                    {province.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
         )}
-      </div>
+      />
 
-      <div className="grid gap-3">
-        <Label htmlFor="address">Address</Label>
-        <Input
-          id="address"
-          name="address"
-          placeholder="123 Main Street"
-          required
-          value={formData.address}
-          onChange={handleInputChange("address")}
-          className={errors?.address ? "border-red-500" : ""}
-        />
-        {errors?.address && (
-          <p className="text-sm text-red-500">{errors.address[0]}</p>
+      <FormField
+        control={form.control}
+        name="city"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              City *
+            </FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                type="text"
+                placeholder="Montreal"
+                className={form.formState.errors?.city ? "border-red-500" : ""}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
         )}
-      </div>
+      />
+
+      <FormField
+        control={form.control}
+        name="address"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Street Address *
+            </FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                type="text"
+                placeholder="123 Main Street"
+                className={
+                  form.formState.errors?.address ? "border-red-500" : ""
+                }
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 }

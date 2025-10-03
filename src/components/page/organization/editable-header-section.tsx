@@ -8,13 +8,13 @@ import {
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { EditableOrganizationLogo } from "@/src/components/page/organization/editable-organization-logo";
-import { TOrganizationSchema } from "@/src/schemas/organization";
+import { TUpdateOrganizationSchema } from "@/src/schemas/organization";
 import { MapPin } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 
 interface Props {
   organization: Organization;
-  form: UseFormReturn<TOrganizationSchema>;
+  form: UseFormReturn<TUpdateOrganizationSchema>;
   isEditing: boolean;
 }
 

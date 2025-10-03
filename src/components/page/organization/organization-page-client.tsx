@@ -9,8 +9,8 @@ import { ProjectsSection } from "@/src/components/page/organization/projects-sec
 import { Button } from "@/src/components/ui/button";
 import { Form } from "@/src/components/ui/form";
 import {
-  organizationSchema,
-  TOrganizationSchema,
+  updateOrganizationSchema,
+  TUpdateOrganizationSchema,
 } from "@/src/schemas/organization";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit2, Save, X } from "lucide-react";
@@ -72,8 +72,8 @@ export function OrganizationPageClient({
 }: OrganizationPageClientProps) {
   const [isEditing, setIsEditing] = useState(false);
 
-  const form = useForm<TOrganizationSchema>({
-    resolver: zodResolver(organizationSchema),
+  const form = useForm<TUpdateOrganizationSchema>({
+    resolver: zodResolver(updateOrganizationSchema),
     defaultValues: {
       organizationName: organization.organization_name || "",
       organizationPhone: organization.organization_phone || "",
@@ -103,7 +103,7 @@ export function OrganizationPageClient({
     setIsEditing(false);
   };
 
-  const onSubmit = async (data: TOrganizationSchema) => {
+  const onSubmit = async (data: TUpdateOrganizationSchema) => {
     const formData = new FormData();
 
     Object.entries(data).forEach(([key, value]) => {

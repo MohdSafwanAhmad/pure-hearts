@@ -1,114 +1,175 @@
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
-import { SectionProps } from "@/src/types/auth-organizations-types";
+import { TCreateOrganizationSchema } from "@/src/schemas/organization";
+import { UseFormReturn } from "react-hook-form";
 
-export function BasicInformationSection({
-  formData,
-  errors,
-  onUpdateFormData,
-}: SectionProps) {
-  const handleInputChange =
-    (field: keyof typeof formData) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      onUpdateFormData({ [field]: e.target.value });
-    };
-
+type Props = {
+  form: UseFormReturn<TCreateOrganizationSchema>;
+};
+export function BasicInformationSection({ form }: Props) {
   return (
     <div className="space-y-4">
-      <div className="grid gap-3">
-        <Label htmlFor="organizationName">Organization Name</Label>
-        <Input
-          id="organizationName"
-          name="organizationName"
-          type="text"
-          placeholder="Your Organization Name"
-          required
-          value={formData.organizationName}
-          onChange={handleInputChange("organizationName")}
-          className={errors?.organizationName ? "border-red-500" : ""}
-        />
-        {errors?.organizationName && (
-          <p className="text-sm text-red-500">{errors.organizationName[0]}</p>
+      <FormField
+        control={form.control}
+        name="organizationName"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Organization Name *
+            </FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                type="text"
+                placeholder="Your Organization Name"
+                className={
+                  form.formState.errors?.organizationName
+                    ? "border-red-500"
+                    : ""
+                }
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
         )}
-      </div>
+      />
 
-      <div className="grid gap-3">
-        <Label htmlFor="organizationEmail">Organization Email</Label>
-        <Input
-          id="organizationEmail"
-          name="organizationEmail"
-          type="email"
-          placeholder="contact@organization.org"
-          required
-          value={formData.organizationEmail}
-          onChange={handleInputChange("organizationEmail")}
-          className={errors?.organizationEmail ? "border-red-500" : ""}
-        />
-        {errors?.organizationEmail && (
-          <p className="text-sm text-red-500">{errors.organizationEmail[0]}</p>
+      <FormField
+        control={form.control}
+        name="organizationEmail"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Organization Email *
+            </FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                type="text"
+                placeholder="Your Organization Email"
+                className={
+                  form.formState.errors?.organizationEmail
+                    ? "border-red-500"
+                    : ""
+                }
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
         )}
-      </div>
+      />
 
-      <div className="grid gap-3">
-        <Label htmlFor="organizationPhone">Organization Phone</Label>
-        <Input
-          id="organizationPhone"
-          name="organizationPhone"
-          type="tel"
-          placeholder="+15554443333"
-          required
-          value={formData.organizationPhone}
-          onChange={handleInputChange("organizationPhone")}
-          className={errors?.organizationPhone ? "border-red-500" : ""}
-        />
-        {errors?.organizationPhone && (
-          <p className="text-sm text-red-500">{errors.organizationPhone[0]}</p>
+      <FormField
+        control={form.control}
+        name="organizationPhone"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Organization Phone *
+            </FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                type="tel"
+                placeholder="+15554443333"
+                className={
+                  form.formState.errors?.organizationPhone
+                    ? "border-red-500"
+                    : ""
+                }
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
         )}
-      </div>
+      />
 
-      <div className="space-y-3">
-        <Label>Contact Person</Label>
-        <div className="grid gap-3">
-          <Input
+      <div className="space-y-4">
+        <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          Contact Person Information *
+        </Label>
+        <div className="space-y-4 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+          <FormField
+            control={form.control}
             name="contactPersonName"
-            placeholder="Contact person name"
-            required
-            value={formData.contactPersonName}
-            onChange={handleInputChange("contactPersonName")}
-            className={errors?.contactPersonName ? "border-red-500" : ""}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Contact Person Name *
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="text"
+                    placeholder="Your Organization Name"
+                    className={
+                      form.formState.errors?.contactPersonName
+                        ? "border-red-500"
+                        : ""
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors?.contactPersonName && (
-            <p className="text-sm text-red-500">
-              {errors.contactPersonName[0]}
-            </p>
-          )}
-          <Input
+
+          <FormField
+            control={form.control}
             name="contactPersonEmail"
-            type="email"
-            placeholder="Contact person email"
-            required
-            value={formData.contactPersonEmail}
-            onChange={handleInputChange("contactPersonEmail")}
-            className={errors?.contactPersonEmail ? "border-red-500" : ""}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Email Address *
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="email"
+                    placeholder="Contact person email"
+                    className={
+                      form.formState.errors?.contactPersonEmail
+                        ? "border-red-500"
+                        : ""
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors?.contactPersonEmail && (
-            <p className="text-sm text-red-500">
-              {errors.contactPersonEmail[0]}
-            </p>
-          )}
-          <Input
+
+          <FormField
+            control={form.control}
             name="contactPersonPhone"
-            type="tel"
-            required
-            placeholder="+15554443333"
-            value={formData.contactPersonPhone}
-            onChange={handleInputChange("contactPersonPhone")}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Phone Number *
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="tel"
+                    placeholder="+15554443333"
+                    className={
+                      form.formState.errors?.contactPersonPhone
+                        ? "border-red-500"
+                        : ""
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors?.contactPersonPhone && (
-            <p className="text-sm text-red-500">
-              {errors.contactPersonPhone[0]}
-            </p>
-          )}
         </div>
       </div>
     </div>

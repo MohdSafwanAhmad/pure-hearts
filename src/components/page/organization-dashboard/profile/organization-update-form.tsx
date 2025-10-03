@@ -7,8 +7,8 @@ import { MissionProjectsSection } from "@/src/components/page/organization-dashb
 import { Button } from "@/src/components/ui/button";
 import { Form } from "@/src/components/ui/form";
 import {
-  organizationSchema,
-  TOrganizationSchema,
+  updateOrganizationSchema,
+  TUpdateOrganizationSchema,
 } from "@/src/schemas/organization";
 import { Database } from "@/src/types/database-types";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,8 +41,8 @@ function parseProjectAreas(projectAreas: unknown): string[] {
 export function OrganizationUpdateForm({
   initialData,
 }: OrganizationUpdateFormProps) {
-  const form = useForm<TOrganizationSchema>({
-    resolver: zodResolver(organizationSchema),
+  const form = useForm<TUpdateOrganizationSchema>({
+    resolver: zodResolver(updateOrganizationSchema),
     defaultValues: {
       organizationName: initialData.organization_name || "",
       organizationPhone: initialData.organization_phone || "",
@@ -63,7 +63,7 @@ export function OrganizationUpdateForm({
     },
   });
 
-  const onSubmit = async (data: TOrganizationSchema) => {
+  const onSubmit = async (data: TUpdateOrganizationSchema) => {
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       if (key === "projectAreas") {

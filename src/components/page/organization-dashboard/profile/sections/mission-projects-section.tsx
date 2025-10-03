@@ -19,10 +19,10 @@ import { projectAreaOptions } from "@/src/types/auth-organizations-types";
 
 import { UseFormReturn } from "react-hook-form";
 
-import { TOrganizationSchema } from "@/src/schemas/organization";
+import { TUpdateOrganizationSchema } from "@/src/schemas/organization";
 
 interface MissionProjectsSectionProps {
-  form: UseFormReturn<TOrganizationSchema>;
+  form: UseFormReturn<TUpdateOrganizationSchema>;
 }
 
 export function MissionProjectsSection({ form }: MissionProjectsSectionProps) {

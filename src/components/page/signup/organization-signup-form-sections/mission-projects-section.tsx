@@ -6,6 +6,12 @@ import {
   SectionProps,
   projectAreaOptions,
 } from "@/src/types/auth-organizations-types";
+import { TCreateOrganizationSchema } from "@/src/schemas/organization";
+import { UseFormReturn } from "react-hook-form";
+
+type Props = {
+  form: UseFormReturn<TCreateOrganizationSchema>;
+};
 
 export function MissionProjectsSection({
   formData,

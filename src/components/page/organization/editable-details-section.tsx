@@ -4,7 +4,7 @@ import { Organization } from "@/src/api/organization";
 import { useState } from "react";
 import { Heading } from "@/src/components/global/heading";
 import { UseFormReturn } from "react-hook-form";
-import { TOrganizationSchema } from "@/src/schemas/organization";
+import { TUpdateOrganizationSchema } from "@/src/schemas/organization";
 import { FormControl, FormField, FormItem, FormMessage } from "../../ui/form";
 import { Textarea } from "../../ui/textarea";
 import { EditableOverviewSection } from "./editable-overview-section";
@@ -13,7 +13,7 @@ import { EditablePrivateSection } from "./editable-private-section";
 
 interface Props {
   organization: Organization;
-  form: UseFormReturn<TOrganizationSchema>;
+  form: UseFormReturn<TUpdateOrganizationSchema>;
   isEditing: boolean;
 }
 
