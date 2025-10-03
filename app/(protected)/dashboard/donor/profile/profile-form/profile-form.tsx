@@ -1,13 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-//import { upsertDonorProfile } from "@/src/actions/upsert-donor-profile";
-import { createBrowserSupabaseClient } from "@/src/lib/supabase/client";
-//import { deleteDonorProfile } from "@/src/api/donor";
 import {
   upsertDonorProfile,
   deleteDonorProfile,
@@ -26,7 +23,6 @@ const ProfileSchema = z.object({
   city: z.string().min(1, "City / Province is required"),
   state: z.string().optional().nullable(),
   country: z.string().min(1, "Country is required"),
-  profile_image: z.string().url().optional().nullable(),
 });
 
 type ProfileValues = z.infer<typeof ProfileSchema>;
@@ -41,14 +37,12 @@ type Props = {
     city: string | null;
     state: string | null;
     country: string | null;
-    profile_image?: string | null; // ⬅️ NEW
     profile_completed: boolean;
   };
 };
 
 export default function ProfileForm({ userId, initial }: Props) {
   const router = useRouter();
-  const supabase = useMemo(() => createBrowserSupabaseClient(), []);
 
   const defaultValues: ProfileValues = {
     first_name: initial.first_name ?? "",
@@ -58,7 +52,6 @@ export default function ProfileForm({ userId, initial }: Props) {
     city: initial.city ?? "",
     state: initial.state ?? "",
     country: initial.country ?? "",
-    //  profile_image: initial.profile_image ?? "",
   };
 
   const [editMode, setEditMode] = useState(!initial.profile_completed);
@@ -71,38 +64,8 @@ export default function ProfileForm({ userId, initial }: Props) {
     mode: "onChange",
   });
 
-  const { register, handleSubmit, reset, setValue, formState } = form;
+  const { register, handleSubmit, reset, formState } = form;
   const { isDirty, isValid, isSubmitting } = formState;
-
-  async function uploadImage(file: File): Promise<string | null> {
-    const key = `donors/${userId}/${Date.now()}-${file.name}`;
-    const { data, error } = await supabase.storage
-      .from("avatars") // make sure this bucket exists and is public
-      .upload(key, file, { upsert: true });
-
-    if (error) {
-      setServerError(error.message);
-      return null;
-    }
-
-    const { data: urlData } = supabase.storage
-      .from("avatars")
-      .getPublicUrl(data.path);
-    return urlData.publicUrl ?? null;
-  }
-
-  async function onSelectFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    const url = await uploadImage(f);
-    if (url) {
-      setValue("profile_image", url, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-      setServerSuccess("Profile image uploaded.");
-    }
-  }
 
   async function onSubmit(values: ProfileValues) {
     setServerError(null);
@@ -111,7 +74,7 @@ export default function ProfileForm({ userId, initial }: Props) {
     const res = await upsertDonorProfile({
       user_id: userId,
       ...values,
-      profile_completed: true, // once submitted, consider completed
+      profile_completed: true,
     });
 
     if ("error" in res) {
@@ -125,7 +88,7 @@ export default function ProfileForm({ userId, initial }: Props) {
         : "Profile completed successfully!"
     );
     setEditMode(false);
-    reset(values); // keep form clean and locked
+    reset(values);
     router.refresh();
   }
 
@@ -149,7 +112,6 @@ export default function ProfileForm({ userId, initial }: Props) {
       city: "",
       state: "",
       country: "",
-      //  profile_image: "",
     });
     router.refresh();
   }
@@ -166,25 +128,6 @@ export default function ProfileForm({ userId, initial }: Props) {
           <AlertDescription>{serverSuccess}</AlertDescription>
         </Alert>
       )}
-
-      {/* PROFILE IMAGE 
-      <div className="flex items-center gap-4">
-        <img
-          src={form.getValues("profile_image") || "/placeholder.jpg"}
-          alt="avatar"
-          className="h-16 w-16 rounded-full object-cover border"
-        />
-        <div className="space-y-1">
-          <Label htmlFor="profile_image">Profile image</Label>
-          <Input
-            id="profile_image"
-            type="file"
-            accept="image/*"
-            disabled={!editMode || isSubmitting}
-            onChange={onSelectFile}
-          />
-        </div>
-      </div>*/}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
