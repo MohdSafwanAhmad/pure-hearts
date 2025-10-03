@@ -24,7 +24,7 @@ export default async function ProfilePage() {
           city: donor?.city ?? null,
           state: donor?.state ?? null,
           country: donor?.country ?? null,
-          profile_image: donor?.profile_image ?? null,
+          // profile_image: donor?.profile_image ?? null,
           profile_completed: Boolean(donor?.profile_completed),
         }}
       />
