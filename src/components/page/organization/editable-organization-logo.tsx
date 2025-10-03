@@ -29,12 +29,16 @@ export function EditableOrganizationLogo({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [fileSizeError, setFileSizeError] = useState<string | null>(null);
+
+  const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB in bytes
 
   // Reset preview when dialog is closed
   useEffect(() => {
     if (!isDialogOpen) {
       setSelectedFile(null);
       setPreviewUrl(null);
+      setFileSizeError(null);
 
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -62,7 +66,21 @@ export function EditableOrganizationLogo({
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      setSelectedFile(file);
+
+      // Check file size
+      if (file.size > MAX_FILE_SIZE) {
+        setFileSizeError(
+          "File size exceeds 1MB. Please choose a smaller file."
+        );
+        setSelectedFile(null);
+        setPreviewUrl(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      } else {
+        setFileSizeError(null);
+        setSelectedFile(file);
+      }
     }
   };
 
@@ -136,7 +154,7 @@ export function EditableOrganizationLogo({
             <DialogTitle>Upload Organization Logo</DialogTitle>
             <DialogDescription>
               Upload a new logo for your organization. Recommended size is
-              1024*1024 pixels.
+              1024*1024 pixels. Maximum file size is 1MB.
             </DialogDescription>
           </DialogHeader>
 
@@ -191,6 +209,13 @@ export function EditableOrganizationLogo({
                 />
               </label>
             </div>
+
+            {/* File size error message */}
+            {fileSizeError && (
+              <p className="text-sm text-center text-red-600 font-medium">
+                {fileSizeError}
+              </p>
+            )}
 
             {selectedFile && (
               <p className="text-sm text-center">

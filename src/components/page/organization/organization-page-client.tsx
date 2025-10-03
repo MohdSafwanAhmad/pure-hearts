@@ -134,7 +134,7 @@ export function OrganizationPageClient({
         <form onSubmit={form.handleSubmit(onSubmit)}>
           {/* Global Edit Button (only shown to organization owners) */}
           {isOwner && !isEditing && (
-            <div className="container mx-auto px-4 py-4 flex justify-end sticky top-0 z-10 bg-white bg-opacity-90 dark:bg-gray-900 dark:bg-opacity-90 shadow-sm">
+            <div className="container mx-auto px-4 py-4 flex justify-end sticky top-0 ">
               <Button
                 onClick={startEditing}
                 variant="outline"
@@ -148,7 +148,7 @@ export function OrganizationPageClient({
 
           {/* Form Action Buttons (only shown when editing) */}
           {isOwner && isEditing && (
-            <div className="container mx-auto px-4 py-4 flex justify-end gap-2 sticky top-0 z-10 bg-white bg-opacity-90 dark:bg-gray-900 dark:bg-opacity-90 shadow-sm">
+            <div className="container mx-auto px-4 py-4 flex justify-end gap-2 sticky top-0 ">
               <Button
                 type="submit"
                 className="bg-green-600 hover:bg-green-700"

@@ -7,19 +7,20 @@ import { Button } from "@/src/components/ui/button";
 export const revalidate = 0;
 export const dynamic = "force-dynamic";
 
-// fmt removed; not needed here
+export default async function CampaignsIndexPage(props: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  // ✅ Treat searchParams as a Promise (Next 15 friendly)
+  const { page: pageParam } = await props.searchParams;
 
-export default async function CampaignsIndexPage({
-  searchParams,
-}: { searchParams?: { page?: string } }) {
-  const page = Math.max(1, Number(searchParams?.page ?? 1));
+  // Robust page parsing
+  const page = Math.max(1, Number.parseInt(pageParam ?? "1", 10) || 1);
   const pageSize = 24;
   const offset = (page - 1) * pageSize;
 
   const projects = await getProjects(pageSize, offset);
 
   return (
-    <>
     <main className="container mx-auto px-4 py-10">
       <h1 className="mb-6 text-3xl font-bold">Campaigns</h1>
 
@@ -50,7 +51,7 @@ export default async function CampaignsIndexPage({
         </ul>
       )}
 
-      <div className="mt-10 flex items-center justify-center gap-3">
+      <nav aria-label="Pagination" className="mt-10 flex items-center justify-center gap-3">
         <Button asChild variant="outline" disabled={page <= 1}>
           <Link href={`/campaigns?page=${page - 1}`}>Previous</Link>
         </Button>
@@ -58,8 +59,7 @@ export default async function CampaignsIndexPage({
         <Button asChild variant="outline" disabled={projects.length < pageSize}>
           <Link href={`/campaigns?page=${page + 1}`}>Next</Link>
         </Button>
-      </div>
+      </nav>
     </main>
-    </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { Heading } from "@/src/components/global/heading";
-import { ProjectCard } from "@/src/components/global/project-card";
+import ProjectCard from "@/src/components/global/project-card";
 import { Button } from "@/src/components/ui/button";
 import { FolderOpen } from "lucide-react";
 import { useState } from "react";
@@ -70,7 +70,7 @@ export function ProjectsSection({ projects }: Props) {
   return (
     <section className="mb-section">
       <Heading level={2} className="mb-subtitle">
-        The list of projects
+        Projects
       </Heading>
 
       {/* Project Toggle */}
