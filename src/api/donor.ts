@@ -1,16 +1,41 @@
 // server-only APIs (Node runtime)
-import "server-only";
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import fs from "node:fs";
+import path from "node:path";
 // Standalone build: embeds AFM data so no disk reads for Helvetica
 // @ts-expect-error: pdfkit standalone build does not have type definitions
 import PDFDocument from "pdfkit/js/pdfkit.standalone.js";
-
 import { createServerSupabaseClient } from "@/src/lib/supabase/server";
-import type { Donation, DonationReceiptData } from "@/src/types/donation-types";
+import { Donation, DonationReceiptData } from "@/src/types/donation-types";
 
-/* ----------------------------------------------------------------------------
-   Donor profile (from donor-profile.ts, unchanged in behavior)
----------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------ */
+/* Helpers                                                            */
+/* ------------------------------------------------------------------ */
+
+function safeIsoDate(v: string | null | undefined): string {
+  if (!v) return "";
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+}
+
+function findInterFont(): string | null {
+  const tries = [
+    ["public", "fonts", "Inter", "static", "Inter-Regular.ttf"],
+    ["public", "fonts", "Inter", "Inter-VariableFont_opsz,wght.ttf"],
+    ["public", "fonts", "Inter", "Inter-Italic-VariableFont_opsz,wght.ttf"],
+    ["public", "fonts", "Inter-Regular.ttf"],
+  ];
+  for (const parts of tries) {
+    const p = path.join(process.cwd(), ...parts);
+    if (fs.existsSync(p)) return p;
+  }
+  return null;
+}
+
+/* ------------------------------------------------------------------ */
+/* Donor Profile (merged here)                                        */
+/* ------------------------------------------------------------------ */
 
 export type DonorProfile = {
   user_id: string;
@@ -21,6 +46,7 @@ export type DonorProfile = {
   city: string | null;
   state: string | null; // keep if you created this column
   country: string | null;
+  profile_image: string | null; // ⬅️ NEW
   profile_completed: boolean | null;
 };
 
@@ -31,10 +57,11 @@ export async function getMyDonorProfile(
 
   const { data, error } = await supabase
     .from("donors")
-    // if your DB is still missing some of these, we’ll fall back below
+    // If your DB is still missing some columns, the fallback below will handle it
+
     .select(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      "user_id, first_name, last_name, phone, address, city, state, country, profile_completed" as any
+      "user_id, first_name, last_name, phone, address, city, state, country, profile_image, profile_completed" as any
     )
     .eq("user_id", userId)
     .maybeSingle();
@@ -59,6 +86,7 @@ export async function getMyDonorProfile(
       city: null,
       state: null,
       country: null,
+      profile_image: null, // ⬅️ NEW default
       profile_completed: basic.profile_completed ?? false,
     };
   }
@@ -67,15 +95,9 @@ export async function getMyDonorProfile(
   return data as unknown as DonorProfile;
 }
 
-/* ----------------------------------------------------------------------------
-   Donations (from donations.ts, unchanged in behavior)
----------------------------------------------------------------------------- */
-
-function safeIsoDate(v: string | null | undefined): string {
-  if (!v) return "";
-  const d = new Date(v);
-  return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
-}
+/* ------------------------------------------------------------------ */
+/* Donations                                                          */
+/* ------------------------------------------------------------------ */
 
 export async function getDonationReceiptData(
   donationId: string,
@@ -142,7 +164,7 @@ export async function generateReceiptPdf(
     doc.on("end", () => resolve(Buffer.concat(chunks)))
   );
 
-  // ✅ No disk reads; use built-in Helvetica
+  // ✅ No disk reads, no Inter, just use built-in Helvetica
   doc.font("Helvetica");
   doc.addPage();
 
@@ -180,4 +202,56 @@ export async function getDonationsByUserId(
   }
 
   return data || [];
+}
+// src/api/donors.ts
+
+// shape you write into "donors" (adjust fields to match your columns)
+export type DonorUpsert = {
+  user_id: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
+  profile_image?: string | null;
+  profile_completed?: boolean | null;
+};
+
+export type UpsertDonorResult =
+  | { ok: true; profile_completed: boolean }
+  | { error: string };
+
+export type DeleteDonorResult = { ok: true } | { error: string };
+
+export async function upsertDonorProfile(
+  row: DonorUpsert
+): Promise<UpsertDonorResult> {
+  const supabase = await createServerSupabaseClient();
+
+  // If your generated types are behind, cast to any to avoid TS “column doesn’t exist” noise.
+  const { error } = await supabase
+    .from("donors")
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .upsert(row as any, { onConflict: "user_id" });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { ok: true, profile_completed: !!row.profile_completed };
+}
+
+export async function deleteDonorProfile(
+  userId: string
+): Promise<DeleteDonorResult> {
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("donors")
+    .delete()
+    .eq("user_id", userId);
+
+  if (error) return { error: error.message };
+  return { ok: true };
 }

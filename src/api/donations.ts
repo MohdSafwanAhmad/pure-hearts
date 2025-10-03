@@ -4,10 +4,7 @@ import path from "node:path";
 // @ts-expect-error: pdfkit standalone build does not have type definitions
 import PDFDocument from "pdfkit/js/pdfkit.standalone.js";
 import { createServerSupabaseClient } from "@/src/lib/supabase/server";
-import { 
-  Donation, 
-  DonationReceiptData, 
-} from "@/src/types/donation-types";
+import { Donation, DonationReceiptData } from "@/src/types/donation-types";
 
 function safeIsoDate(v: string | null | undefined): string {
   if (!v) return "";
@@ -60,8 +57,10 @@ export async function getDonationReceiptData(
 
   if (!data) return null;
 
-  const { data: { user } } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const donorName =
     [data.donors?.first_name, data.donors?.last_name]
       .filter(Boolean)
@@ -80,16 +79,20 @@ export async function getDonationReceiptData(
   };
 }
 
-export async function generateReceiptPdf(receiptData: DonationReceiptData): Promise<Buffer> {
+export async function generateReceiptPdf(
+  receiptData: DonationReceiptData
+): Promise<Buffer> {
   const doc = new PDFDocument({ margin: 50, autoFirstPage: false });
 
   // Stream -> Buffer
   const chunks: Buffer[] = [];
   doc.on("data", (b: Buffer) => chunks.push(b));
-  const done = new Promise<Buffer>((resolve) => doc.on("end", () => resolve(Buffer.concat(chunks))));
+  const done = new Promise<Buffer>((resolve) =>
+    doc.on("end", () => resolve(Buffer.concat(chunks)))
+  );
 
   // ✅ No disk reads, no Inter, just use built-in Helvetica
-  doc.font("Helvetica");     // or "Times-Roman", "Courier"
+  doc.font("Helvetica"); // or "Times-Roman", "Courier"
   doc.addPage();
 
   const dateIso = safeIsoDate(receiptData.created_at);
@@ -109,8 +112,9 @@ export async function generateReceiptPdf(receiptData: DonationReceiptData): Prom
   return await done;
 }
 
-
-export async function getDonationsByUserId(userId: string): Promise<Donation[]> {
+export async function getDonationsByUserId(
+  userId: string
+): Promise<Donation[]> {
   const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase

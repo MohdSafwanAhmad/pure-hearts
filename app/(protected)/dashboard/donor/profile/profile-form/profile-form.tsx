@@ -1,17 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+//import { upsertDonorProfile } from "@/src/actions/upsert-donor-profile";
+import { createBrowserSupabaseClient } from "@/src/lib/supabase/client";
+//import { deleteDonorProfile } from "@/src/api/donor";
 import {
   upsertDonorProfile,
   deleteDonorProfile,
 } from "@/src/actions/upsert-donor-profile";
+
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
 import { Alert, AlertDescription } from "@/src/components/ui/alert";
 
-type ProfileFormProps = {
+const ProfileSchema = z.object({
+  first_name: z.string().min(1, "First name is required"),
+  last_name: z.string().min(1, "Last name is required"),
+  phone: z.string().optional().nullable(),
+  address: z.string().min(1, "Address is required"),
+  city: z.string().min(1, "City / Province is required"),
+  state: z.string().optional().nullable(),
+  country: z.string().min(1, "Country is required"),
+  profile_image: z.string().url().optional().nullable(),
+});
+
+type ProfileValues = z.infer<typeof ProfileSchema>;
+
+type Props = {
   userId: string;
   initial: {
     first_name: string | null;
@@ -21,19 +41,16 @@ type ProfileFormProps = {
     city: string | null;
     state: string | null;
     country: string | null;
+    profile_image?: string | null; // ⬅️ NEW
     profile_completed: boolean;
   };
 };
 
-// helper to always get a string out of unknown/any error shapes
-const toErrorString = (e: unknown) =>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  typeof e === "string" ? e : (e as any)?.message ?? "Something went wrong";
-
-export default function ProfileForm({ userId, initial }: ProfileFormProps) {
+export default function ProfileForm({ userId, initial }: Props) {
   const router = useRouter();
+  const supabase = useMemo(() => createBrowserSupabaseClient(), []);
 
-  const [formData, setFormData] = useState({
+  const defaultValues: ProfileValues = {
     first_name: initial.first_name ?? "",
     last_name: initial.last_name ?? "",
     phone: initial.phone ?? "",
@@ -41,85 +58,90 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
     city: initial.city ?? "",
     state: initial.state ?? "",
     country: initial.country ?? "",
+    //  profile_image: initial.profile_image ?? "",
+  };
+
+  const [editMode, setEditMode] = useState(!initial.profile_completed);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [serverSuccess, setServerSuccess] = useState<string | null>(null);
+
+  const form = useForm<ProfileValues>({
+    resolver: zodResolver(ProfileSchema),
+    defaultValues,
+    mode: "onChange",
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const { register, handleSubmit, reset, setValue, formState } = form;
+  const { isDirty, isValid, isSubmitting } = formState;
 
-  // When profile is already completed, start locked (not editable).
-  // When not completed yet, start editable.
-  const [profileCompleted, setProfileCompleted] = useState(
-    initial.profile_completed
-  );
-  const [editMode, setEditMode] = useState(!initial.profile_completed); // <-- only ONE declaration
+  async function uploadImage(file: File): Promise<string | null> {
+    const key = `donors/${userId}/${Date.now()}-${file.name}`;
+    const { data, error } = await supabase.storage
+      .from("avatars") // make sure this bucket exists and is public
+      .upload(key, file, { upsert: true });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!editMode) return; // ignore edits while locked
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+    if (error) {
+      setServerError(error.message);
+      return null;
+    }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editMode) return; // should never happen, but prevents accidental submits when locked
+    const { data: urlData } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(data.path);
+    return urlData.publicUrl ?? null;
+  }
 
-    setIsSubmitting(true);
-    setError(null);
-    setSuccess(null);
+  async function onSelectFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const url = await uploadImage(f);
+    if (url) {
+      setValue("profile_image", url, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      setServerSuccess("Profile image uploaded.");
+    }
+  }
 
-    const result = await upsertDonorProfile({
+  async function onSubmit(values: ProfileValues) {
+    setServerError(null);
+    setServerSuccess(null);
+
+    const res = await upsertDonorProfile({
       user_id: userId,
-      ...formData,
+      ...values,
+      profile_completed: true, // once submitted, consider completed
     });
 
-    setIsSubmitting(false);
-
-    if ("error" in result && result.error) {
-      setError(toErrorString(result.error)); // <-- coerce to string
+    if ("error" in res) {
+      setServerError(res.error ?? "Something went wrong");
       return;
     }
 
-    const wasCompleted = profileCompleted;
-    setProfileCompleted(result.profile_completed ?? false);
-
-    if (!wasCompleted && result.profile_completed) {
-      setSuccess("Profile completed successfully!");
-      setEditMode(false); // lock after first completion
-    } else {
-      setSuccess("Profile updated successfully!");
-      setEditMode(false); // lock again after update
-    }
-
+    setServerSuccess(
+      initial.profile_completed
+        ? "Profile updated successfully!"
+        : "Profile completed successfully!"
+    );
+    setEditMode(false);
+    reset(values); // keep form clean and locked
     router.refresh();
-  };
+  }
 
-  const handleDelete = async () => {
-    if (
-      !confirm(
-        "Are you sure you want to delete your profile? This action cannot be undone."
-      )
-    ) {
+  async function onDelete() {
+    if (!confirm("Delete your profile? This cannot be undone.")) return;
+    setServerError(null);
+    setServerSuccess(null);
+
+    const res = await deleteDonorProfile(userId);
+    if ("error" in res) {
+      setServerError(res.error ?? "Failed to delete profile");
       return;
     }
-
-    setIsSubmitting(true);
-    setError(null);
-    setSuccess(null);
-
-    const result = await deleteDonorProfile(userId);
-
-    setIsSubmitting(false);
-
-    if ("error" in result && result.error) {
-      setError(toErrorString(result.error)); // <-- coerce to string
-      return;
-    }
-
-    setSuccess("Profile deleted successfully!");
-    setProfileCompleted(false);
-    setEditMode(true); // allow editing to re-create the profile
-    setFormData({
+    setServerSuccess("Profile deleted");
+    setEditMode(true);
+    reset({
       first_name: "",
       last_name: "",
       phone: "",
@@ -127,82 +149,59 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
       city: "",
       state: "",
       country: "",
+      //  profile_image: "",
     });
-
     router.refresh();
-  };
-
-  // Cancel editing: discard changes and lock again
-  const handleCancel = () => {
-    setError(null);
-    setSuccess(null);
-    setFormData({
-      first_name: initial.first_name ?? "",
-      last_name: initial.last_name ?? "",
-      phone: initial.phone ?? "",
-      address: initial.address ?? "",
-      city: initial.city ?? "",
-      state: initial.state ?? "",
-      country: initial.country ?? "",
-    });
-    setEditMode(false);
-  };
+  }
 
   return (
     <div className="space-y-6">
-      {error && (
+      {serverError && (
         <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{serverError}</AlertDescription>
         </Alert>
       )}
-
-      {success && (
+      {serverSuccess && (
         <Alert>
-          <AlertDescription>{success}</AlertDescription>
+          <AlertDescription>{serverSuccess}</AlertDescription>
         </Alert>
       )}
 
-      {/* Toolbar: Edit / Cancel */}
-      <div className="flex items-center gap-3">
-        {!editMode && profileCompleted && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setEditMode(true)}
-          >
-            Edit profile
-          </Button>
-        )}
-        {editMode && profileCompleted && (
-          <Button type="button" variant="ghost" onClick={handleCancel}>
-            Cancel
-          </Button>
-        )}
-      </div>
+      {/* PROFILE IMAGE 
+      <div className="flex items-center gap-4">
+        <img
+          src={form.getValues("profile_image") || "/placeholder.jpg"}
+          alt="avatar"
+          className="h-16 w-16 rounded-full object-cover border"
+        />
+        <div className="space-y-1">
+          <Label htmlFor="profile_image">Profile image</Label>
+          <Input
+            id="profile_image"
+            type="file"
+            accept="image/*"
+            disabled={!editMode || isSubmitting}
+            onChange={onSelectFile}
+          />
+        </div>
+      </div>*/}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="first_name">First name</Label>
             <Input
               id="first_name"
-              name="first_name"
-              value={formData.first_name}
-              onChange={handleChange}
-              required
-              disabled={!editMode}
+              disabled={!editMode || isSubmitting}
+              {...register("first_name")}
             />
           </div>
-
           <div>
             <Label htmlFor="last_name">Last name</Label>
             <Input
               id="last_name"
-              name="last_name"
-              value={formData.last_name}
-              onChange={handleChange}
-              required
-              disabled={!editMode}
+              disabled={!editMode || isSubmitting}
+              {...register("last_name")}
             />
           </div>
         </div>
@@ -211,11 +210,9 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
           <Label htmlFor="phone">Phone</Label>
           <Input
             id="phone"
-            name="phone"
             type="tel"
-            value={formData.phone}
-            onChange={handleChange}
-            disabled={!editMode}
+            disabled={!editMode || isSubmitting}
+            {...register("phone")}
           />
         </div>
 
@@ -223,11 +220,8 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
           <Label htmlFor="address">Address</Label>
           <Input
             id="address"
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-            required
-            disabled={!editMode}
+            disabled={!editMode || isSubmitting}
+            {...register("address")}
           />
         </div>
 
@@ -236,22 +230,16 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
             <Label htmlFor="city">City / Province</Label>
             <Input
               id="city"
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-              required
-              disabled={!editMode}
+              disabled={!editMode || isSubmitting}
+              {...register("city")}
             />
           </div>
-
           <div>
             <Label htmlFor="state">State</Label>
             <Input
               id="state"
-              name="state"
-              value={formData.state}
-              onChange={handleChange}
-              disabled={!editMode}
+              disabled={!editMode || isSubmitting}
+              {...register("state")}
             />
           </div>
         </div>
@@ -260,36 +248,57 @@ export default function ProfileForm({ userId, initial }: ProfileFormProps) {
           <Label htmlFor="country">Country</Label>
           <Input
             id="country"
-            name="country"
-            value={formData.country}
-            onChange={handleChange}
-            required
-            disabled={!editMode}
+            disabled={!editMode || isSubmitting}
+            {...register("country")}
           />
         </div>
 
-        <div className="flex gap-3 pt-4">
-          {/* Primary action */}
-          <Button type="submit" disabled={isSubmitting || !editMode}>
-            {isSubmitting
-              ? profileCompleted
-                ? "Updating..."
-                : "Saving..."
-              : profileCompleted
-              ? "Update Profile"
-              : "Complete Profile"}
-          </Button>
-
-          {/* Destructive action (only when a profile exists) */}
-          {profileCompleted && (
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isSubmitting}
-            >
-              Delete Profile
+        {/* ACTIONS */}
+        <div className="flex flex-wrap gap-3 pt-4">
+          {!editMode && (
+            <Button type="button" onClick={() => setEditMode(true)}>
+              Edit profile
             </Button>
+          )}
+
+          {editMode && (
+            <>
+              <Button
+                type="submit"
+                disabled={!isDirty || !isValid || isSubmitting}
+              >
+                {initial.profile_completed
+                  ? isSubmitting
+                    ? "Updating..."
+                    : "Update Profile"
+                  : isSubmitting
+                  ? "Saving..."
+                  : "Complete Profile"}
+              </Button>
+
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  reset();
+                  setEditMode(!initial.profile_completed ? true : false);
+                }}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+
+              {initial.profile_completed && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={onDelete}
+                  disabled={isSubmitting}
+                >
+                  Delete Profile
+                </Button>
+              )}
+            </>
           )}
         </div>
       </form>
