@@ -60,6 +60,23 @@ export async function upsertDonorProfile(
 
   const supabase = await createServerSupabaseClient();
 
+  // Verify the authenticated user matches the user_id in the payload
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return { ok: false, error: "Not authenticated" };
+  }
+
+  if (user.id !== payload.user_id) {
+    return {
+      ok: false,
+      error: "Unauthorized: You can only update your own profile",
+    };
+  }
+
   try {
     const row = buildInsertRow(payload);
 
@@ -90,6 +107,23 @@ export async function deleteDonorProfile(
   }
 
   const supabase = await createServerSupabaseClient();
+
+  // Verify the authenticated user matches the userId
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return { ok: false, error: "Not authenticated" };
+  }
+
+  if (user.id !== userId) {
+    return {
+      ok: false,
+      error: "Unauthorized: You can only delete your own profile",
+    };
+  }
 
   const { error } = await supabase
     .from("donors")
