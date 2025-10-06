@@ -1,20 +1,45 @@
 "use client";
 
-import { Organization } from "@/src/api/organization";
-import { useState } from "react";
 import { Heading } from "@/src/components/global/heading";
-import { UseFormReturn } from "react-hook-form";
 import { TUpdateOrganizationSchema } from "@/src/schemas/organization";
-import { FormControl, FormField, FormItem, FormMessage } from "../../ui/form";
-import { Textarea } from "../../ui/textarea";
-import { EditableOverviewSection } from "./editable-overview-section";
+import { useState } from "react";
+import { UseFormReturn } from "react-hook-form";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/src/components/ui/form";
+import { Textarea } from "@/src/components/ui/textarea";
 import { EditableContactSection } from "./editable-contact-section";
+import { EditableOverviewSection } from "./editable-overview-section";
 import { EditablePrivateSection } from "./editable-private-section";
 
 interface Props {
-  organization: Organization;
+  organization: {
+    organization_name: string;
+    organization_phone: string;
+    contact_person_name: string;
+    contact_person_email: string;
+    contact_person_phone: string;
+    country: string;
+    state: string;
+    city: string;
+    address: string;
+    mission_statement: string;
+    website_url: string | null;
+    facebook_url: string | null;
+    twitter_url: string | null;
+    instagram_url: string | null;
+    linkedin_url: string | null;
+    project_areas: {
+      id: number;
+      label: string;
+    }[];
+  };
   form: UseFormReturn<TUpdateOrganizationSchema>;
   isEditing: boolean;
+  projectAreas: { value: number; label: string }[];
 }
 
 type TabKey = "contact" | "overview" | "private";
@@ -35,12 +60,13 @@ export function EditableDetailsSection({
   organization,
   form,
   isEditing,
+  projectAreas,
 }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
 
-  const projectAreas = Array.isArray(organization.project_areas)
-    ? (organization.project_areas as string[])
-    : [];
+  const projectAreasLabels = organization.project_areas.map(
+    (area) => area.label
+  );
 
   const overviewItems = [
     {
@@ -49,7 +75,7 @@ export function EditableDetailsSection({
     },
     {
       label: "Organization Area",
-      value: projectAreas.length > 0 ? projectAreas.join(", ") : "Social",
+      value: projectAreasLabels.join(", "),
     },
     {
       label: "Street Address",
@@ -151,7 +177,7 @@ export function EditableDetailsSection({
       case "overview":
       default:
         return isEditing ? (
-          <EditableOverviewSection form={form} />
+          <EditableOverviewSection form={form} projectAreas={projectAreas} />
         ) : (
           <div className="grid gap-x-6 grid-cols-1 sm:grid-cols-2 divide-y">
             {overviewItems.map((item, index) => (

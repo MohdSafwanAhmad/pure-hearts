@@ -1,16 +1,15 @@
 "use client";
 
 import { updateOrganization } from "@/src/actions/organization";
-import { Organization } from "@/src/api/organization";
-import { EditableHeaderSection } from "@/src/components/page/organization/editable-header-section";
 import { EditableDetailsSection } from "@/src/components/page/organization/editable-details-section";
-import { OrganizationStats } from "@/src/components/page/organization/stats-section";
+import { EditableHeaderSection } from "@/src/components/page/organization/editable-header-section";
 import { ProjectsSection } from "@/src/components/page/organization/projects-section";
+import { OrganizationStats } from "@/src/components/page/organization/stats-section";
 import { Button } from "@/src/components/ui/button";
 import { Form } from "@/src/components/ui/form";
 import {
-  updateOrganizationSchema,
   TUpdateOrganizationSchema,
+  updateOrganizationSchema,
 } from "@/src/schemas/organization";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit2, Save, X } from "lucide-react";
@@ -19,7 +18,30 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface OrganizationPageClientProps {
-  organization: Organization;
+  organization: {
+    user_id: string;
+    organization_name: string;
+    organization_phone: string;
+    contact_person_name: string;
+    contact_person_email: string;
+    contact_person_phone: string;
+    country: string;
+    state: string;
+    city: string;
+    address: string;
+    mission_statement: string;
+    project_areas: {
+      id: number;
+      label: string;
+    }[];
+    website_url: string | null;
+    facebook_url: string | null;
+    twitter_url: string | null;
+    instagram_url: string | null;
+    linkedin_url: string | null;
+    logo: string | null;
+    slug: string | null;
+  };
   isOwner: boolean;
   stats: {
     title: string;
@@ -45,23 +67,7 @@ interface OrganizationPageClientProps {
       organizationSlug: string;
     };
   }[];
-}
-
-function parseProjectAreas(projectAreas: unknown): string[] {
-  if (Array.isArray(projectAreas)) {
-    return projectAreas.filter((v) => typeof v === "string");
-  }
-  if (typeof projectAreas === "string") {
-    try {
-      const parsed = JSON.parse(projectAreas);
-      if (Array.isArray(parsed)) {
-        return parsed.filter((v) => typeof v === "string");
-      }
-    } catch {
-      return [];
-    }
-  }
-  return [];
+  projectAreas: { value: number; label: string }[];
 }
 
 export function OrganizationPageClient({
@@ -69,8 +75,11 @@ export function OrganizationPageClient({
   isOwner,
   stats,
   projects,
+  projectAreas,
 }: OrganizationPageClientProps) {
   const [isEditing, setIsEditing] = useState(false);
+
+  const projectAreasIds = organization.project_areas.map((area) => area.id);
 
   const form = useForm<TUpdateOrganizationSchema>({
     resolver: zodResolver(updateOrganizationSchema),
@@ -85,7 +94,7 @@ export function OrganizationPageClient({
       city: organization.city || "",
       address: organization.address || "",
       missionStatement: organization.mission_statement || "",
-      projectAreas: parseProjectAreas(organization.project_areas),
+      projectAreas: projectAreasIds,
       websiteUrl: organization.website_url || "",
       facebookUrl: organization.facebook_url || "",
       twitterUrl: organization.twitter_url || "",
@@ -107,11 +116,8 @@ export function OrganizationPageClient({
     const formData = new FormData();
 
     Object.entries(data).forEach(([key, value]) => {
-      if (key === "projectAreas") {
-        formData.append(key, JSON.stringify(value));
-      } else {
-        if (!Array.isArray(value)) formData.append(key, value ?? "");
-      }
+      if (Array.isArray(value)) formData.append(key, JSON.stringify(value));
+      else formData.append(key, value);
     });
 
     const res = await updateOrganization(formData);
@@ -185,9 +191,10 @@ export function OrganizationPageClient({
               organization={organization}
               isEditing={isEditing}
               form={form}
+              projectAreas={projectAreas}
             />
 
-            {/* Projects Section - This doesn't need to be editable */}
+            {/* Projects Section - This is not editable */}
             <ProjectsSection projects={projects} />
           </div>
         </form>

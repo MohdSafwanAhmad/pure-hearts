@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import { TCreateOrganizationSchema } from "@/src/schemas/organization";
-import { canadianProvinces } from "@/src/types/auth-organizations-types";
+import { canadianProvinces } from "@/src/lib/constants";
 import { UseFormReturn } from "react-hook-form";
 
 type Props = {

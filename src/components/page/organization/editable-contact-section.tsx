@@ -54,7 +54,7 @@ const contactFields = [
 
 export function EditableContactSection({ form }: EditableContactSectionProps) {
   return (
-    <div className="grid gap-x-6 grid-cols-1 sm:grid-cols-2 divide-y">
+    <div className="grid gap-x-6 grid-cols-1 sm:grid-cols-2 ">
       {contactFields.map((field) => (
         <div key={field.name} className="py-4">
           <FormField
@@ -62,12 +62,14 @@ export function EditableContactSection({ form }: EditableContactSectionProps) {
             name={field.name as keyof TUpdateOrganizationSchema}
             render={({ field: formField }) => (
               <FormItem>
-                <FormLabel>{field.label}</FormLabel>
+                <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {field.label}
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...formField}
                     type={field.type}
-                    value={formField.value || ""}
+                    value={(formField.value as string) || ""}
                     placeholder={field.placeholder}
                   />
                 </FormControl>

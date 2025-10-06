@@ -3,6 +3,7 @@ import {
   getOrganizationBySlug,
   getOrganizationStats,
   getOrganizationProjects,
+  getProjectAreas,
 } from "@/src/api/organization";
 import { OrganizationPageClient } from "@/src/components/page/organization/organization-page-client";
 import { getOrganizationProfile } from "@/src/lib/supabase/server";
@@ -17,9 +18,10 @@ export default async function OrganizationPage({
   params,
 }: OrganizationPageProps) {
   const { slug } = await params;
-  const [organization, organizationProfile] = await Promise.all([
+  const [organization, organizationProfile, projectAreas] = await Promise.all([
     getOrganizationBySlug(slug),
     getOrganizationProfile(),
+    getProjectAreas(),
   ]);
 
   if (!organization) {
@@ -88,6 +90,7 @@ export default async function OrganizationPage({
       isOwner={isOwner}
       stats={stats}
       projects={projects}
+      projectAreas={projectAreas}
     />
   );
 }

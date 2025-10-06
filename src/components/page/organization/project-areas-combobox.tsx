@@ -3,6 +3,7 @@
 import { Badge } from "@/src/components/ui/badge";
 import {
   FormControl,
+  FormField,
   FormItem,
   FormLabel,
   FormMessage,
@@ -62,38 +63,46 @@ export function ProjectAreasCombobox({
   };
 
   return (
-    <FormItem>
-      <FormLabel>Project Areas</FormLabel>
-      <FormControl>
-        <div className="flex flex-col gap-4">
-          <MultiSelectCombobox
-            options={projectAreas}
-            selectedValues={selectedAreas}
-            onSelect={handleSelect}
-            placeholder="Click to select project areas..."
-            searchPlaceholder="Type to search areas..."
-            emptyText="No matching areas found."
-          />
+    <FormField
+      control={form.control}
+      name="projectAreas"
+      render={() => (
+        <FormItem>
+          <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Project Areas
+          </FormLabel>
+          <FormControl>
+            <div className="flex flex-col gap-4">
+              <MultiSelectCombobox
+                options={projectAreas}
+                selectedValues={selectedAreas}
+                onSelect={handleSelect}
+                placeholder="Click to select project areas..."
+                searchPlaceholder="Type to search areas..."
+                emptyText="No matching areas found."
+              />
 
-          {selectedAreas.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {selectedAreas.map((value) => (
-                <Badge
-                  key={value}
-                  variant="secondary"
-                  className="text-sm py-1 pl-2 pr-2 flex items-center gap-1 cursor-pointer hover:bg-muted/80 transition-colors duration-200 group relative"
-                  onClick={() => handleRemove(value)}
-                  title="Click to remove"
-                >
-                  {getLabel(value)}
-                  <X className="h-3 w-3 group-hover:text-foreground/80" />
-                </Badge>
-              ))}
+              {selectedAreas.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {selectedAreas.map((value) => (
+                    <Badge
+                      key={value}
+                      variant="secondary"
+                      className="text-sm py-1 pl-2 pr-2 flex items-center gap-1 cursor-pointer hover:bg-muted/80 transition-colors duration-200 group relative"
+                      onClick={() => handleRemove(value)}
+                      title="Click to remove"
+                    >
+                      {getLabel(value)}
+                      <X className="h-3 w-3 group-hover:text-foreground/80" />
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </FormControl>
-      <FormMessage />
-    </FormItem>
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   );
 }

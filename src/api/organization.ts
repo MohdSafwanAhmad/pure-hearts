@@ -1,12 +1,5 @@
 import { PUBLIC_IMAGE_BUCKET_NAME } from "@/src/lib/constants";
 import { createServerSupabaseClient } from "@/src/lib/supabase/server";
-import { Tables } from "@/src/types/database-types";
-
-export type Organization = Tables<"organizations">;
-export type Project = Tables<"projects"> & {
-  beneficiary_count: number;
-  collected: number;
-};
 
 export interface OrganizationStats {
   completedProjects: number;
@@ -15,9 +8,7 @@ export interface OrganizationStats {
   donorsCount: number;
 }
 
-export async function getOrganizationBySlug(
-  slug: string
-): Promise<Organization | null> {
+export async function getOrganizationBySlug(slug: string) {
   const supabase = await createServerSupabaseClient();
 
   const { data: organization, error } = await supabase
@@ -28,6 +19,19 @@ export async function getOrganizationBySlug(
 
   if (!organization?.is_verified) return null;
 
+  // 2. Fetch project areas via join table
+  const { data: projectAreas, error: areasError } = await supabase
+    .from("organization_project_areas")
+    .select("project_areas(id, label)")
+    .eq("organization_id", organization.user_id);
+
+  // 3. Map to array of { id, label }
+  const areas =
+    projectAreas?.map(
+      (row: { project_areas: { id: number; label: string } }) =>
+        row.project_areas
+    ) ?? [];
+
   if (organization?.logo) {
     const dataUrl = supabase.storage
       .from(PUBLIC_IMAGE_BUCKET_NAME)
@@ -35,12 +39,12 @@ export async function getOrganizationBySlug(
     organization.logo = dataUrl.data.publicUrl;
   }
 
-  if (error) {
+  if (error || areasError) {
     console.error("Error fetching organization:", error);
     return null;
   }
 
-  return organization as Organization;
+  return { ...organization, project_areas: areas };
 }
 
 export async function getOrganizationStats(
@@ -149,14 +153,7 @@ export async function getOrganizationStats(
  * @param organizationUserId The user_id of the organization
  * @returns Array of projects with enhanced data (slug, default background image, beneficiary count, collected amount)
  */
-export async function getOrganizationProjects(
-  organizationUserId: string
-): Promise<
-  (Project & {
-    beneficiary_count: number;
-    collected: number;
-  })[]
-> {
+export async function getOrganizationProjects(organizationUserId: string) {
   const supabase = await createServerSupabaseClient();
   const defaultBackgroundImage = "/project-background.webp";
 

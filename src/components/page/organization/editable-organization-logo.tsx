@@ -1,5 +1,4 @@
 import { updateOrganizationLogo } from "@/src/actions/organization";
-import { Organization } from "@/src/api/organization";
 import { Heading } from "@/src/components/global/heading";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -16,7 +15,10 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface OrganizationLogoProps {
-  organization: Organization;
+  organization: {
+    organization_name: string;
+    logo: string | null;
+  };
   isEditing: boolean;
 }
 
