@@ -220,3 +220,27 @@ export async function getOrganizationProjects(
 
   return enhancedProjects;
 }
+
+/**
+ * Fetches all project areas from the database and returns them in a format suitable for select inputs.
+ * Each project area is represented as an object with 'label' and 'value' properties.
+ *
+ * @returns {Promise<{ label: string; value: number }[]>} An array of project areas.
+ */
+export async function getProjectAreas(): Promise<
+  { label: string; value: number }[]
+> {
+  const supabase = await createServerSupabaseClient();
+
+  const { data, error } = await supabase
+    .from("project_areas")
+    .select("id, label")
+    .order("label", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching project areas:", error);
+    return [];
+  }
+
+  return data.map(({ id, label }) => ({ label, value: id }));
+}

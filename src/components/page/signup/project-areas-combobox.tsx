@@ -8,12 +8,12 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { MultiSelectCombobox } from "@/src/components/ui/multi-select-combobox";
-import { TUpdateOrganizationSchema } from "@/src/schemas/organization";
+import { TCreateOrganizationSchema } from "@/src/schemas/organization";
 import { X } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 
 interface ProjectAreasComboboxProps {
-  form: UseFormReturn<TUpdateOrganizationSchema>;
+  form: UseFormReturn<TCreateOrganizationSchema>;
   projectAreas: { label: string; value: number }[];
 }
 
@@ -46,6 +46,8 @@ export function ProjectAreasCombobox({
         shouldDirty: true,
       });
     }
+
+    console.log("Current Values:", form.getValues("projectAreas"));
   };
 
   const handleRemove = (value: number) => {

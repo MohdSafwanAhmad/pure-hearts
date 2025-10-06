@@ -44,7 +44,7 @@ export const createOrganizationSchema = z.object({
     .min(10, "Please provide a mission statement with at least 10 characters")
     .max(1000, "Mission statement must be less than 1000 characters"),
   projectAreas: z
-    .array(z.string())
+    .array(z.number())
     .min(1, "Please select at least one area your organization works in"),
   websiteUrl: z
     .string()
@@ -124,7 +124,7 @@ export const updateOrganizationSchema = z.object({
     .min(10, "Please provide a mission statement with at least 10 characters")
     .max(1000, "Mission statement must be less than 1000 characters"),
   projectAreas: z
-    .array(z.string())
+    .array(z.number())
     .min(1, "Please select at least one area your organization works in"),
   websiteUrl: z
     .string()

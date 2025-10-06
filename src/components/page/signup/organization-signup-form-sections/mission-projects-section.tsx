@@ -1,132 +1,164 @@
-import { Input } from "@/src/components/ui/input";
-import { Label } from "@/src/components/ui/label";
-import { Textarea } from "@/src/components/ui/textarea";
-import { Checkbox } from "@/src/components/ui/checkbox";
+import { ProjectAreasCombobox } from "@/src/components/page/signup/project-areas-combobox";
 import {
-  SectionProps,
-  projectAreaOptions,
-} from "@/src/types/auth-organizations-types";
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/src/components/ui/form";
+import { Input } from "@/src/components/ui/input";
+import { Textarea } from "@/src/components/ui/textarea";
 import { TCreateOrganizationSchema } from "@/src/schemas/organization";
 import { UseFormReturn } from "react-hook-form";
 
-type Props = {
+interface Props {
   form: UseFormReturn<TCreateOrganizationSchema>;
-};
+  projectAreas: { label: string; value: number }[];
+}
 
-export function MissionProjectsSection({
-  formData,
-  errors,
-  onUpdateFormData,
-}: SectionProps) {
-  const handleInputChange =
-    (field: keyof typeof formData) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      onUpdateFormData({ [field]: e.target.value });
-    };
-
-  const handleProjectAreaChange = (area: string, checked: boolean) => {
-    const currentAreas = formData.projectAreas || [];
-    if (checked) {
-      onUpdateFormData({ projectAreas: [...currentAreas, area] });
-    } else {
-      onUpdateFormData({
-        projectAreas: currentAreas.filter((p) => p !== area),
-      });
-    }
-  };
-
+export function MissionProjectsSection({ form, projectAreas }: Props) {
   return (
     <div className="space-y-4">
-      <div className="grid gap-3">
-        <Label htmlFor="missionStatement">Mission Statement</Label>
-        <Textarea
-          id="missionStatement"
-          name="missionStatement"
-          placeholder="Describe your organization's mission and goals..."
-          required
-          value={formData.missionStatement}
-          onChange={handleInputChange("missionStatement")}
-          className={errors?.missionStatement ? "border-red-500" : ""}
-        />
-        {errors?.missionStatement && (
-          <p className="text-sm text-red-500">{errors.missionStatement[0]}</p>
-        )}
-      </div>
-
-      <div className="space-y-3">
-        <Label>Project Areas</Label>
-        <p className="text-xs text-muted-foreground">
-          Select the areas your organization works in
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          {projectAreaOptions.map((area) => (
-            <div key={area} className="flex items-center space-x-2">
-              <Checkbox
-                id={area}
-                checked={formData.projectAreas?.includes(area) || false}
-                onCheckedChange={(checked) =>
-                  handleProjectAreaChange(area, checked as boolean)
+      <FormField
+        control={form.control}
+        name="missionStatement"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Mission Statement *
+            </FormLabel>
+            <FormControl>
+              <Textarea
+                {...field}
+                placeholder="Describe your organization's mission and goals..."
+                className={
+                  form.formState.errors?.missionStatement
+                    ? "border-red-500"
+                    : ""
                 }
               />
-              <Label htmlFor={area} className="text-sm">
-                {area}
-              </Label>
-            </div>
-          ))}
-        </div>
-        {formData.projectAreas?.map((area) => (
-          <input key={area} type="hidden" name="projectAreas" value={area} />
-        ))}
-        {errors?.projectAreas && (
-          <p className="text-sm text-red-500">{errors.projectAreas[0]}</p>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
         )}
-      </div>
+      />
 
-      <div className="grid gap-3">
-        <Label htmlFor="websiteUrl">Website URL (Optional)</Label>
-        <Input
-          id="websiteUrl"
-          name="websiteUrl"
-          type="url"
-          placeholder="https://www.yourorganization.org"
-          value={formData.websiteUrl}
-          onChange={handleInputChange("websiteUrl")}
-        />
-      </div>
+      <ProjectAreasCombobox form={form} projectAreas={projectAreas} />
 
-      <div className="space-y-3">
-        <Label>Social Media Links (Optional)</Label>
-        <div className="grid gap-3">
-          <Input
-            name="facebookUrl"
-            type="url"
-            placeholder="Facebook URL"
-            value={formData.facebookUrl}
-            onChange={handleInputChange("facebookUrl")}
-          />
-          <Input
-            name="twitterUrl"
-            type="url"
-            placeholder="Twitter URL"
-            value={formData.twitterUrl}
-            onChange={handleInputChange("twitterUrl")}
-          />
-          <Input
-            name="instagramUrl"
-            type="url"
-            placeholder="Instagram URL"
-            value={formData.instagramUrl}
-            onChange={handleInputChange("instagramUrl")}
-          />
-          <Input
-            name="linkedinUrl"
-            type="url"
-            placeholder="LinkedIn URL"
-            value={formData.linkedinUrl}
-            onChange={handleInputChange("linkedinUrl")}
-          />
-        </div>
-      </div>
+      <FormField
+        control={form.control}
+        name="websiteUrl"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Website URL
+            </FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                type="url"
+                placeholder="https://www.yourorganization.org"
+                className={
+                  form.formState.errors?.websiteUrl ? "border-red-500" : ""
+                }
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="facebookUrl"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Facebook URL
+            </FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                type="url"
+                placeholder="https://www.facebook.com/yourorganization"
+                className={
+                  form.formState.errors?.facebookUrl ? "border-red-500" : ""
+                }
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="twitterUrl"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Twitter URL
+            </FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                type="url"
+                placeholder="https://twitter.com/yourorganization"
+                className={
+                  form.formState.errors?.twitterUrl ? "border-red-500" : ""
+                }
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="instagramUrl"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Instagram URL
+            </FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                type="url"
+                placeholder="https://www.instagram.com/yourorganization"
+                className={
+                  form.formState.errors?.instagramUrl ? "border-red-500" : ""
+                }
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="linkedinUrl"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              LinkedIn URL
+            </FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                type="url"
+                placeholder="https://www.linkedin.com/company/yourorganization"
+                className={
+                  form.formState.errors?.linkedinUrl ? "border-red-500" : ""
+                }
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 }

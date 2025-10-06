@@ -1,57 +1,5 @@
 import { Database } from "@/src/types/database-types";
 
-export interface OrganizationFormData {
-  // Basic Information
-  organizationName: string;
-  organizationEmail: string;
-  organizationPhone: string;
-  contactPersonName: string;
-  contactPersonEmail: string;
-  contactPersonPhone: string;
-
-  // Location
-  country: string;
-  state: string;
-  city: string;
-  address: string;
-
-  // Mission & Projects
-  missionStatement: string;
-  projectAreas: string[];
-  websiteUrl: string;
-  facebookUrl: string;
-  twitterUrl: string;
-  instagramUrl: string;
-  linkedinUrl: string;
-}
-
-export interface FormErrors {
-  organizationName?: string[];
-  organizationEmail?: string[];
-  organizationPhone?: string[];
-  contactPersonName?: string[];
-  contactPersonEmail?: string[];
-  contactPersonPhone?: string[];
-  country?: string[];
-  state?: string[];
-  city?: string[];
-  address?: string[];
-  missionStatement?: string[];
-  projectAreas?: string[];
-  websiteUrl?: string[];
-  facebookUrl?: string[];
-  twitterUrl?: string[];
-  instagramUrl?: string[];
-  linkedinUrl?: string[];
-  _form?: string[];
-}
-
-export interface SectionProps {
-  formData: OrganizationFormData;
-  errors: FormErrors;
-  onUpdateFormData: (updates: Partial<OrganizationFormData>) => void;
-}
-
 export const canadianProvinces = [
   { value: "Alberta", label: "Alberta" },
   { value: "British Columbia", label: "British Columbia" },

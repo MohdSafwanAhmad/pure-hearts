@@ -1,135 +1,53 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { z } from "zod";
 
 import { generateUniqueSlug } from "@/src/lib/slugifier";
 import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
-
-const signupAsOrganizationAuthSchema = z.object({
-  organizationEmail: z.email("Please enter a valid organization email address"),
-  organizationName: z
-    .string()
-    .min(2, "Organization name must be at least 2 characters long")
-    .max(100, "Organization name must be less than 100 characters"),
-  organizationPhone: z
-    .string()
-    .min(1, "Organization phone number is required")
-    .regex(
-      /^\+\d{11}$/,
-      "Please enter a valid phone number in format +15554443333"
-    ),
-  country: z.string().min(1, "Country selection is required"),
-  city: z
-    .string()
-    .min(2, "City name must be at least 2 characters long")
-    .max(50, "City name must be less than 50 characters"),
-  address: z
-    .string()
-    .min(5, "Please provide your complete street address")
-    .max(200, "Address must be less than 200 characters"),
-  state: z.string().min(1, "Please select your province or territory"),
-  contactPersonName: z
-    .string()
-    .min(2, "Contact person's name must be at least 2 characters long")
-    .max(100, "Contact person's name must be less than 100 characters"),
-  contactPersonEmail: z.email(
-    "Please enter a valid email address for the contact person"
-  ),
-  contactPersonPhone: z
-    .string()
-    .min(1, "Contact phone number is required")
-    .regex(
-      /^\+\d{11}$/,
-      "Please enter a valid phone number in format +15554443333"
-    ),
-  missionStatement: z
-    .string()
-    .min(10, "Please provide a mission statement with at least 10 characters")
-    .max(1000, "Mission statement must be less than 1000 characters"),
-  projectAreas: z
-    .array(z.string())
-    .min(1, "Please select at least one area your organization works in"),
-  websiteUrl: z
-    .string()
-    .optional()
-    .refine((val) => !val || z.url().safeParse(val).success, {
-      message:
-        "Please enter a valid website URL (must start with http:// or https://)",
-    }),
-  facebookUrl: z
-    .string()
-    .optional()
-    .refine((val) => !val || z.url().safeParse(val).success, {
-      message:
-        "Please enter a valid Facebook URL (must start with http:// or https://)",
-    }),
-  twitterUrl: z
-    .string()
-    .optional()
-    .refine((val) => !val || z.url().safeParse(val).success, {
-      message:
-        "Please enter a valid Twitter URL (must start with http:// or https://)",
-    }),
-  instagramUrl: z
-    .string()
-    .optional()
-    .refine((val) => !val || z.url().safeParse(val).success, {
-      message:
-        "Please enter a valid Instagram URL (must start with http:// or https://)",
-    }),
-  linkedinUrl: z
-    .string()
-    .optional()
-    .refine((val) => !val || z.url().safeParse(val).success, {
-      message:
-        "Please enter a valid LinkedIn URL (must start with http:// or https://)",
-    }),
-});
+import { createOrganizationSchema } from "@/src/schemas/organization";
+import { ActionResponse } from "@/src/types/actions-types";
 
 export async function signupAsOrganization(
-  prevState: unknown,
   formData: FormData
-): Promise<{
-  errors: Partial<
-    Record<keyof z.infer<typeof signupAsOrganizationAuthSchema>, string[]>
-  > & {
-    _form?: string[];
-  };
-}> {
+): Promise<ActionResponse> {
+  // 1) Create supabase anonymous server side client, like that it can handle the cookies
   const supabase = await createAnonymousServerSupabaseClient();
 
-  // Parse project areas from form data
-  const projectAreas = formData
-    .getAll("projectAreas")
-    .filter(Boolean) as string[];
+  // 2) Validate form data
+  const dataObj = Object.fromEntries(formData.entries()) as Record<
+    string,
+    string | string[] | undefined
+  >;
+  if (typeof dataObj.projectAreas === "string") {
+    try {
+      dataObj.projectAreas = JSON.parse(dataObj.projectAreas);
+    } catch {
+      dataObj.projectAreas = [];
+    }
+  }
 
-  const result = signupAsOrganizationAuthSchema.safeParse({
-    organizationEmail: formData.get("organizationEmail"),
-    organizationName: formData.get("organizationName"),
-    organizationPhone: formData.get("organizationPhone"),
-    country: formData.get("country"),
-    city: formData.get("city"),
-    address: formData.get("address"),
-    state: formData.get("state"),
-    contactPersonName: formData.get("contactPersonName"),
-    contactPersonEmail: formData.get("contactPersonEmail"),
-    contactPersonPhone: formData.get("contactPersonPhone"),
-    missionStatement: formData.get("missionStatement"),
-    projectAreas: projectAreas.length > 0 ? projectAreas : [],
-    websiteUrl: formData.get("websiteUrl") || undefined,
-    facebookUrl: formData.get("facebookUrl") || undefined,
-    twitterUrl: formData.get("twitterUrl") || undefined,
-    instagramUrl: formData.get("instagramUrl") || undefined,
-    linkedinUrl: formData.get("linkedinUrl") || undefined,
-  });
+  const result = createOrganizationSchema.safeParse(dataObj);
 
   if (!result.success) {
+    const errors: Record<string, string[]> = {};
+    result.error.issues.forEach((issue) => {
+      const path = issue.path.join(".");
+      if (!errors[path]) {
+        errors[path] = [];
+      }
+      errors[path].push(issue.message);
+    });
+
+    console.error("Validation errors:", errors);
+
     return {
-      errors: result.error.flatten().fieldErrors,
+      error:
+        "There were validation errors. Please check your input and try again.",
+      success: false,
     };
   }
 
+  // 3) Create unique slug
   let slug: string;
   try {
     slug = await generateUniqueSlug(
@@ -138,14 +56,13 @@ export async function signupAsOrganization(
     );
   } catch {
     return {
-      errors: {
-        organizationName: [
-          "An organization with this name already exists. Please choose a different name.",
-        ],
-      },
+      error:
+        "An organization with this name already exists. Please try again with a different name.",
+      success: false,
     };
   }
 
+  // 4) Sign up the user (this will send the OTP email)
   const { error } = await supabase.auth.signInWithOtp({
     email: result.data.organizationEmail,
     options: {
@@ -174,13 +91,12 @@ export async function signupAsOrganization(
 
   if (error) {
     return {
-      errors: {
-        _form: ["Oops! Something went wrong. Please try again."],
-      },
+      error: "An error occurred while sending the OTP email. Please try again.",
+      success: false,
     };
   }
 
-  // Redirect with email data
+  // 5) Redirect with email data
   return redirect(
     `/otp?email=${encodeURIComponent(result.data.organizationEmail)}`
   );

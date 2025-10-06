@@ -118,6 +118,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      organization_project_areas: {
+        Row: {
+          organization_id: string;
+          project_area_id: number;
+        };
+        Insert: {
+          organization_id: string;
+          project_area_id: number;
+        };
+        Update: {
+          organization_id?: string;
+          project_area_id?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fk_organization";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "fk_project_area";
+            columns: ["project_area_id"];
+            isOneToOne: false;
+            referencedRelation: "project_areas";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       organizations: {
         Row: {
           address: string;
@@ -134,7 +164,6 @@ export type Database = {
           mission_statement: string;
           organization_name: string;
           organization_phone: string;
-          project_areas: Json | null;
           slug: string;
           state: string;
           twitter_url: string | null;
@@ -156,7 +185,6 @@ export type Database = {
           mission_statement: string;
           organization_name: string;
           organization_phone: string;
-          project_areas?: Json | null;
           slug: string;
           state: string;
           twitter_url?: string | null;
@@ -178,12 +206,26 @@ export type Database = {
           mission_statement?: string;
           organization_name?: string;
           organization_phone?: string;
-          project_areas?: Json | null;
           slug?: string;
           state?: string;
           twitter_url?: string | null;
           user_id?: string;
           website_url?: string | null;
+        };
+        Relationships: [];
+      };
+      project_areas: {
+        Row: {
+          id: number;
+          label: string;
+        };
+        Insert: {
+          id?: never;
+          label: string;
+        };
+        Update: {
+          id?: never;
+          label?: string;
         };
         Relationships: [];
       };

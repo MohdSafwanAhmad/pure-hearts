@@ -1,7 +1,6 @@
 "use client";
 import { signupAsOrganization } from "@/src/actions/auth-organization";
 import { BasicInformationSection } from "@/src/components/page/signup/organization-signup-form-sections/basic-information-section";
-import { FieldErrorsSummary } from "@/src/components/page/signup/organization-signup-form-sections/field-errors-summary";
 import { LocationSection } from "@/src/components/page/signup/organization-signup-form-sections/location-section";
 import { MissionProjectsSection } from "@/src/components/page/signup/organization-signup-form-sections/mission-projects-section";
 import { Button } from "@/src/components/ui/button";
@@ -16,20 +15,18 @@ import {
   TCreateOrganizationSchema,
   createOrganizationSchema,
 } from "@/src/schemas/organization";
-import { OrganizationFormData } from "@/src/types/auth-organizations-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Form } from "../../ui/form";
+import { Form } from "@/src/components/ui/form";
+import { toast } from "sonner";
 
-export function OrganizationSignupForm() {
-  const [signupState, signupAction, isSignupPending] = useActionState(
-    signupAsOrganization,
-    { errors: {} }
-  );
-
+interface Props {
+  projectAreas: { label: string; value: number }[];
+}
+export function OrganizationSignupForm({ projectAreas }: Props) {
   const form = useForm<TCreateOrganizationSchema>({
     resolver: zodResolver(createOrganizationSchema),
     defaultValues: {
@@ -54,44 +51,40 @@ export function OrganizationSignupForm() {
   });
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<OrganizationFormData>({
-    // Basic Information
-    organizationName: "",
-    organizationEmail: "",
-    organizationPhone: "",
-    contactPersonName: "",
-    contactPersonEmail: "",
-    contactPersonPhone: "",
-
-    // Location
-    country: "Canada",
-    state: "",
-    city: "",
-    address: "",
-
-    // Mission & Projects
-    missionStatement: "",
-    projectAreas: [],
-    websiteUrl: "",
-    facebookUrl: "",
-    twitterUrl: "",
-    instagramUrl: "",
-    linkedinUrl: "",
-  });
 
   const totalSteps = 3;
   const progress = (currentStep / totalSteps) * 100;
 
-  const handleUpdateFormData = (updates: Partial<OrganizationFormData>) => {
-    setFormData((prev) => ({ ...prev, ...updates }));
+  const stepFields: Record<number, (keyof TCreateOrganizationSchema)[]> = {
+    1: [
+      "organizationName",
+      "organizationEmail",
+      "organizationPhone",
+      "contactPersonName",
+      "contactPersonEmail",
+      "contactPersonPhone",
+    ],
+    2: ["country", "state", "city", "address"],
+    3: [
+      "missionStatement",
+      "projectAreas",
+      "websiteUrl",
+      "facebookUrl",
+      "twitterUrl",
+      "instagramUrl",
+      "linkedinUrl",
+    ],
   };
 
-  const nextStep = () => {
-    if (currentStep < totalSteps) {
+  const nextStep = async () => {
+    const fields = stepFields[currentStep];
+    const valid = await form.trigger(
+      fields as (keyof TCreateOrganizationSchema)[]
+    );
+    if (valid && currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }
   };
-
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
@@ -99,40 +92,33 @@ export function OrganizationSignupForm() {
   };
 
   const renderStep = () => {
-    const sectionProps = {
-      formData,
-      errors: signupState?.errors || {},
-      onUpdateFormData: handleUpdateFormData,
-    };
-
     switch (currentStep) {
       case 1:
         return <BasicInformationSection form={form} />;
       case 2:
         return <LocationSection form={form} />;
       case 3:
-        return <MissionProjectsSection {...sectionProps} />;
+        return (
+          <MissionProjectsSection projectAreas={projectAreas} form={form} />
+        );
       default:
         return null;
     }
   };
 
-  const onSubmit = async (data: TCreateOrganizationSchema) => {};
+  const onSubmit = async (data: TCreateOrganizationSchema) => {
+    const formData = new FormData();
 
-  // Helper function to serialize form data for submission
-  const prepareFormData = () => {
-    const formDataToSubmit = new FormData();
-
-    // Add all form fields
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key === "projectAreas" && Array.isArray(value)) {
-        value.forEach((area) => formDataToSubmit.append("projectAreas", area));
-      } else if (value !== null && value !== undefined) {
-        formDataToSubmit.append(key, String(value));
-      }
+    Object.entries(data).forEach(([key, value]) => {
+      if (Array.isArray(value)) formData.append(key, JSON.stringify(value));
+      else formData.append(key, value);
     });
 
-    return formDataToSubmit;
+    const res = await signupAsOrganization(formData);
+
+    if (res?.error) {
+      toast.error(res.error);
+    }
   };
 
   return (
@@ -161,13 +147,7 @@ export function OrganizationSignupForm() {
                   <Progress value={progress} className="w-full" />
                 </div>
 
-                {signupState?.errors?._form && (
-                  <div className="text-sm text-red-500">
-                    {signupState.errors._form.map((error, i) => (
-                      <p key={i}>{error}</p>
-                    ))}
-                  </div>
-                )}
+                {/* Step Content */}
 
                 <Card>
                   <CardHeader>
@@ -177,18 +157,7 @@ export function OrganizationSignupForm() {
                       {currentStep === 3 && "Mission & Projects"}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    {renderStep()}
-
-                    {/* Show field errors summary on the final step */}
-                    {currentStep === totalSteps && (
-                      <div className="mt-4">
-                        <FieldErrorsSummary
-                          errors={signupState?.errors || {}}
-                        />
-                      </div>
-                    )}
-                  </CardContent>
+                  <CardContent>{renderStep()}</CardContent>
                 </Card>
 
                 <div className="flex justify-between">
@@ -206,7 +175,11 @@ export function OrganizationSignupForm() {
                   {currentStep < totalSteps ? (
                     <Button
                       type="button"
-                      onClick={nextStep}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        nextStep();
+                      }}
                       className="flex items-center gap-2"
                     >
                       Next
@@ -215,10 +188,10 @@ export function OrganizationSignupForm() {
                   ) : (
                     <Button
                       type="submit"
-                      disabled={isSignupPending}
+                      disabled={form.formState.isSubmitting}
                       className="flex items-center gap-2"
                     >
-                      {isSignupPending
+                      {form.formState.isSubmitting
                         ? "Submitting..."
                         : "Complete Registration"}
                     </Button>
