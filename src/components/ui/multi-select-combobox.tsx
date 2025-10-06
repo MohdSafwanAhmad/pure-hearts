@@ -32,6 +32,7 @@ interface MultiSelectComboboxProps {
   searchPlaceholder?: string;
   emptyText?: string;
   disabled?: boolean;
+  className?: string;
 }
 
 export function MultiSelectCombobox({
@@ -42,6 +43,7 @@ export function MultiSelectCombobox({
   searchPlaceholder = "Type to search...",
   emptyText = "No matching items found.",
   disabled = false,
+  className,
 }: MultiSelectComboboxProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -54,7 +56,8 @@ export function MultiSelectCombobox({
           aria-expanded={open}
           className={cn(
             "w-full justify-between text-left",
-            selectedValues.length === 0 ? "text-muted-foreground" : ""
+            selectedValues.length === 0 ? "text-muted-foreground" : "",
+            className
           )}
           disabled={disabled}
         >
