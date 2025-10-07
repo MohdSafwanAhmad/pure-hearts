@@ -15,4 +15,9 @@ export const createDonorSchema = z.object({
     .min(1, "Please select at least one donation preference"),
 });
 
-export type TCreateDonor = z.infer<typeof createDonorSchema>;
+export const loginDonorSchema = z.object({
+  email: z.email("Please enter a valid email address"),
+});
+
+export type TCreateDonorSchema = z.infer<typeof createDonorSchema>;
+export type TLoginDonorSchema = z.infer<typeof loginDonorSchema>;

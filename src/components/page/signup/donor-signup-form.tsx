@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
-import { createDonorSchema, TCreateDonor } from "@/src/schemas/donor";
+import { createDonorSchema, TCreateDonorSchema } from "@/src/schemas/donor";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,7 +29,7 @@ const donationOptions = [
 ];
 
 export function DonorSignupForm() {
-  const form = useForm<TCreateDonor>({
+  const form = useForm<TCreateDonorSchema>({
     resolver: zodResolver(createDonorSchema),
     defaultValues: {
       first_name: "",
@@ -39,7 +39,7 @@ export function DonorSignupForm() {
     },
   });
 
-  const onSubmit = async (data: TCreateDonor) => {
+  const onSubmit = async (data: TCreateDonorSchema) => {
     const formData = new FormData();
     formData.append("first_name", data.first_name);
     formData.append("last_name", data.last_name);

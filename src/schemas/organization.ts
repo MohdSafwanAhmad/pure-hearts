@@ -163,9 +163,16 @@ export const updateOrganizationSchema = z.object({
     }),
 });
 
+export const loginOrganizationSchema = z.object({
+  email: z.email("Please enter a valid email address"),
+});
+
 export type TCreateOrganizationSchema = z.infer<
   typeof createOrganizationSchema
 >;
+
 export type TUpdateOrganizationSchema = z.infer<
   typeof updateOrganizationSchema
 >;
+
+export type TLoginOrganizationSchema = z.infer<typeof loginOrganizationSchema>;

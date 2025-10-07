@@ -6,6 +6,7 @@ import { generateUniqueSlug } from "@/src/lib/slugifier";
 import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 import { createOrganizationSchema } from "@/src/schemas/organization";
 import { ActionResponse } from "@/src/types/actions-types";
+import { loginOrganizationSchema } from "@/src/schemas/organization";
 
 export async function signupAsOrganization(
   formData: FormData
@@ -100,4 +101,37 @@ export async function signupAsOrganization(
   return redirect(
     `/otp?email=${encodeURIComponent(result.data.organizationEmail)}`
   );
+}
+
+export async function login(formData: FormData): Promise<ActionResponse> {
+  const supabase = await createAnonymousServerSupabaseClient();
+
+  const result = loginOrganizationSchema.safeParse({
+    email: formData.get("email"),
+  });
+
+  if (!result.success) {
+    return {
+      error:
+        "There were validation errors. Please check your input and try again.",
+      success: false,
+    };
+  }
+
+  const { error } = await supabase.auth.signInWithOtp({
+    email: result.data.email,
+    options: {
+      shouldCreateUser: false,
+    },
+  });
+
+  if (error) {
+    return {
+      error: "Oops, something went wrong. Please try again.",
+      success: false,
+    };
+  }
+
+  // Redirect with email data
+  return redirect(`/otp?email=${encodeURIComponent(result.data.email)}`);
 }
