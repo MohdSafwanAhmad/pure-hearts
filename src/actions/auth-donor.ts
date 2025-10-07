@@ -1,30 +1,14 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { z } from "zod";
 
 import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
-
-// Define the validation schema
-const signupAsDonorAuthSchema = z.object({
-  email: z.email("Please enter a valid email address"),
-  first_name: z
-    .string()
-    .min(2, "First name must be at least 2 characters long"),
-  last_name: z.string().min(2, "Last name must be at least 2 characters long"),
-  donation_preferences: z.array(z.string()).optional(),
-});
+import { ActionResponse } from "@/src/types/actions-types";
+import { createDonorSchema } from "@/src/schemas/donor";
 
 export async function signupAsDonor(
-  prevState: unknown,
   formData: FormData
-): Promise<{
-  errors: Partial<
-    Record<keyof z.infer<typeof signupAsDonorAuthSchema>, string[]>
-  > & {
-    _form?: string[];
-  };
-}> {
+): Promise<ActionResponse> {
   const supabase = await createAnonymousServerSupabaseClient();
 
   // Parse donation preferences from form data
@@ -32,7 +16,7 @@ export async function signupAsDonor(
     .getAll("donation_preferences")
     .filter(Boolean) as string[];
 
-  const result = signupAsDonorAuthSchema.safeParse({
+  const result = createDonorSchema.safeParse({
     email: formData.get("email"),
     first_name: formData.get("first_name"),
     last_name: formData.get("last_name"),
@@ -42,7 +26,9 @@ export async function signupAsDonor(
 
   if (!result.success) {
     return {
-      errors: result.error.flatten().fieldErrors,
+      error:
+        "There were validation errors. Please check your input and try again.",
+      success: false,
     };
   }
 
@@ -60,9 +46,8 @@ export async function signupAsDonor(
 
   if (error) {
     return {
-      errors: {
-        _form: ["Oops! Something went wrong. Please try again."],
-      },
+      error: "Oops, something went wrong. Please try again.",
+      success: false,
     };
   }
 
