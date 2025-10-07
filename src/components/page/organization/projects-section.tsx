@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 import { Heading } from "@/src/components/global/heading";
 import { Button } from "@/src/components/ui/button";
@@ -65,6 +66,11 @@ export function ProjectsSection({ projects }: Props) {
           >
             Existing Projects
           </button>
+        </div>
+        <div className="flex justify-between items-center mb-4">
+          <Link href="/organizations/[slug]/add-project">
+            <Button>+ Add New Project</Button>
+          </Link>
         </div>
       </div>
 
