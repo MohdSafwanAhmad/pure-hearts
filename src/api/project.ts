@@ -1,4 +1,6 @@
+// src/api/project.ts
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import "server-only"; // Add this line to enforce server-only usage
 import { createServerSupabaseClient } from "@/src/lib/supabase/server";
 import { PUBLIC_IMAGE_BUCKET_NAME } from "@/src/lib/constants";
 import { getOrganizationBySlug } from "@/src/api/organization";
@@ -62,11 +64,15 @@ export async function getProjectBySlugs(
 
   if (dErr) console.error("donations fetch error:", dErr.message);
 
-  const collected = (donations ?? []).reduce((sum, r: any) => sum + Number(r?.amount ?? 0), 0);
+  const collected = (donations ?? []).reduce(
+    (sum, r: any) => sum + Number(r?.amount ?? 0),
+    0
+  );
 
   const goal = Number(project.goal_amount ?? 0);
   const remaining = Math.max(goal - collected, 0);
-  const percent = goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
+  const percent =
+    goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
 
   // 4. Get public image URL for project background
   let project_background_image: string | null = null;
@@ -81,14 +87,16 @@ export async function getProjectBySlugs(
 
   // 5. Return all details
   const beneficiary = project.beneficiary_type_id
-    ? (await (async () => {
+    ? await (async () => {
         const { data: bt } = await supabase
           .from("beneficiary_types")
           .select("id, label")
           .eq("id", project.beneficiary_type_id as string)
           .maybeSingle();
-        return bt ? { beneficiary_type_id: bt.id as string, label: bt.label as string } : null;
-      })())
+        return bt
+          ? { beneficiary_type_id: bt.id as string, label: bt.label as string }
+          : null;
+      })()
     : null;
 
   return {
@@ -136,14 +144,12 @@ export async function getRecentProjects(limit = 8): Promise<ProjectDetail[]> {
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  const candidates = (data as Row[] | null ?? []).filter(
+  const candidates = ((data as Row[] | null) ?? []).filter(
     (r) => r.organization?.is_verified
   );
 
   const details = await Promise.all(
-    candidates.map((r) =>
-      getProjectBySlugs(r.organization!.slug, r.slug)
-    )
+    candidates.map((r) => getProjectBySlugs(r.organization!.slug, r.slug))
   );
 
   return details.filter(Boolean) as ProjectDetail[];
@@ -201,7 +207,7 @@ export async function getProjects(
     return [];
   }
 
-  const projects = (rows as ProjectRow[] | null ?? []).filter(
+  const projects = ((rows as ProjectRow[] | null) ?? []).filter(
     (r) => r.organization?.is_verified
   );
 
@@ -217,9 +223,13 @@ export async function getProjects(
     console.error("getProjects: error fetching donations", dErr.message);
   }
 
-  type DonationRow = { amount: number | null; donor_id: string | null; project_id: string };
+  type DonationRow = {
+    amount: number | null;
+    donor_id: string | null;
+    project_id: string;
+  };
   const donationsByProject = new Map<string, DonationRow[]>();
-  for (const row of (donations as DonationRow[] | null ?? [])) {
+  for (const row of (donations as DonationRow[] | null) ?? []) {
     const list = donationsByProject.get(row.project_id) ?? [];
     list.push(row);
     donationsByProject.set(row.project_id, list);
@@ -238,7 +248,8 @@ export async function getProjects(
     uniqueDonors.delete("");
 
     const goal = Number(p.goal_amount ?? 0);
-    const percent = goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
+    const percent =
+      goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
 
     let project_background_image: string | null = "/placeholder.jpg";
     if (p.project_background_image) {
@@ -270,6 +281,134 @@ export async function getProjects(
         slug: p.organization!.slug,
         name: p.organization!.organization_name,
       },
+    };
+  });
+
+  return results;
+}
+
+/**
+ * SERVER ACTION: Fetch projects for a specific organization
+ * Use this in Server Components or Server Actions only
+ */
+export async function getOrganizationProjects(
+  organizationUserId: string
+): Promise<ProjectDetail[]> {
+  const supabase = await createServerSupabaseClient();
+
+  type ProjectRow = {
+    id: string;
+    title: string | null;
+    description: string | null;
+    goal_amount: number | null;
+    project_background_image: string | null;
+    organization_user_id: string;
+    slug: string;
+    beneficiary_type: { id: string; label: string } | null;
+  };
+
+  const { data: rows, error } = await supabase
+    .from("projects")
+    .select(
+      `
+      id,
+      title,
+      description,
+      goal_amount,
+      project_background_image,
+      organization_user_id,
+      slug,
+      beneficiary_type:beneficiary_types(id, label)
+    `
+    )
+    .eq("organization_user_id", organizationUserId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("getOrganizationProjects: error", error.message);
+    return [];
+  }
+
+  const projects = (rows as ProjectRow[] | null) ?? [];
+  const projectIds = projects.map((p) => p.id);
+
+  if (projectIds.length === 0) return [];
+
+  const { data: donations, error: dErr } = await supabase
+    .from("donations")
+    .select("amount, project_id")
+    .in("project_id", projectIds);
+
+  if (dErr) {
+    console.error("getOrganizationProjects: donations error", dErr.message);
+  }
+
+  type DonationRow = {
+    amount: number | null;
+    project_id: string;
+  };
+
+  const donationsByProject = new Map<string, DonationRow[]>();
+  for (const row of (donations as DonationRow[] | null) ?? []) {
+    const list = donationsByProject.get(row.project_id) ?? [];
+    list.push(row);
+    donationsByProject.set(row.project_id, list);
+  }
+
+  // Get organization info
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("user_id, slug, organization_name")
+    .eq("user_id", organizationUserId)
+    .single();
+
+  const results: ProjectDetail[] = projects.map((p) => {
+    const donationList = donationsByProject.get(p.id) ?? [];
+    const collected = donationList.reduce(
+      (sum, r) => sum + Number(r.amount ?? 0),
+      0
+    );
+
+    const goal = Number(p.goal_amount ?? 0);
+    const percent =
+      goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
+
+    let project_background_image: string | null = "/placeholder.jpg";
+    if (p.project_background_image) {
+      const { data } = supabase.storage
+        .from(PUBLIC_IMAGE_BUCKET_NAME)
+        .getPublicUrl(p.project_background_image);
+      project_background_image = data.publicUrl ?? "/placeholder.jpg";
+    }
+
+    return {
+      id: p.id,
+      title: p.title ?? "",
+      description: p.description,
+      goal_amount: goal,
+      collected,
+      remaining: Math.max(goal - collected, 0),
+      percent,
+      project_background_image,
+      organization_user_id: p.organization_user_id,
+      beneficiary: p.beneficiary_type
+        ? {
+            beneficiary_type_id: p.beneficiary_type.id,
+            label: p.beneficiary_type.label,
+          }
+        : null,
+      slug: p.slug,
+      organization: org
+        ? {
+            user_id: org.user_id,
+            slug: org.slug,
+            name: org.organization_name,
+          }
+        : {
+            user_id: organizationUserId,
+            slug: "",
+            name: null,
+          },
     };
   });
 
