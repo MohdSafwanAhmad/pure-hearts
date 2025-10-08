@@ -3,7 +3,7 @@ import path from "node:path";
 // Standalone build: embeds AFM data so no disk reads for Helvetica
 // @ts-expect-error: pdfkit standalone build does not have type definitions
 import PDFDocument from "pdfkit/js/pdfkit.standalone.js";
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 import { Donation, DonationReceiptData } from "@/src/types/donation-types";
 
 function safeIsoDate(v: string | null | undefined): string {
@@ -30,7 +30,7 @@ export async function getDonationReceiptData(
   donationId: string,
   userId: string
 ): Promise<DonationReceiptData | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("donations")
@@ -115,7 +115,7 @@ export async function generateReceiptPdf(
 export async function getDonationsByUserId(
   userId: string
 ): Promise<Donation[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("donations")

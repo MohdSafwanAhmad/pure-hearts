@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 import type { Database } from "@/src/types/database-types";
 
 /** DB helpers (typed from your generated Database type) */
@@ -58,7 +58,7 @@ export async function upsertDonorProfile(
     return { ok: false, error: "Missing user_id" };
   }
 
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   // Verify the authenticated user matches the user_id in the payload
   const {
@@ -106,7 +106,7 @@ export async function deleteDonorProfile(
     return { ok: false, error: "Missing user_id" };
   }
 
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   // Verify the authenticated user matches the userId
   const {

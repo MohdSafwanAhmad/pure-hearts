@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 
 // Narrow row type for our select
 type DonationSlim = Pick<
@@ -30,7 +30,7 @@ const DAILY_MS = 24 * 60 * 60 * 1000;
 const MONTHLY_MS = 31 * DAILY_MS;
 
 async function fetchDonationsForUser(): Promise<DonationSlim[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   const {
     data: { user },

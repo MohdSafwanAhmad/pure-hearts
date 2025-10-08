@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { redirect } from "next/navigation";
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 import { getDonorProfile } from "@/src/lib/supabase/server";
 import ProfileForm from "./profile-form/profile-form";
 
 export default async function ProfilePage() {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

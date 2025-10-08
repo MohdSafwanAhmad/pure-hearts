@@ -1,7 +1,7 @@
 "use server";
 
 import {
-  createServerSupabaseClient,
+  createAnonymousServerSupabaseClient,
   getOrganizationProfile,
 } from "@/src/lib/supabase/server";
 import { organizationSchema } from "@/src/schemas/organization";
@@ -23,7 +23,7 @@ type Response = {
 export async function updateOrganization(
   formData: FormData
 ): Promise<Response> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   // 1) Get current user
   const organization = await getOrganizationProfile();
@@ -153,7 +153,7 @@ export async function updateOrganizationLogo(
     const filename = `${uuidv4()}-${organization.slug}-logo.${"webp"}`;
 
     // 3) Get the public URL of the uploaded file
-    const supabase = await createServerSupabaseClient();
+    const supabase = await createAnonymousServerSupabaseClient();
     const { data, error } = await supabase.storage
       .from(PUBLIC_IMAGE_BUCKET_NAME)
       .upload(filename, optimizedBuffer, {

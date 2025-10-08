@@ -1,5 +1,5 @@
 import { PUBLIC_IMAGE_BUCKET_NAME } from "@/src/lib/constants";
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 import { Tables } from "@/src/types/database-types";
 
 export type Organization = Tables<"organizations">;
@@ -18,7 +18,7 @@ export interface OrganizationStats {
 export async function getOrganizationBySlug(
   slug: string
 ): Promise<Organization | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   const { data: organization, error } = await supabase
     .from("organizations")
@@ -46,7 +46,7 @@ export async function getOrganizationBySlug(
 export async function getOrganizationStats(
   organizationUserId: string
 ): Promise<OrganizationStats> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
   const today = new Date().toISOString();
 
   interface DonorData {
@@ -157,7 +157,7 @@ export async function getOrganizationProjects(
     collected: number;
   })[]
 > {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
   const defaultBackgroundImage = "/project-background.webp";
 
   // Fetch projects and related donation data

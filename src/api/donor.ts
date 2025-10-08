@@ -6,7 +6,7 @@ import path from "node:path";
 // Standalone build: embeds AFM data so no disk reads for Helvetica
 // @ts-expect-error: pdfkit standalone build does not have type definitions
 import PDFDocument from "pdfkit/js/pdfkit.standalone.js";
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 import { Donation, DonationReceiptData } from "@/src/types/donation-types";
 
 /* ------------------------------------------------------------------ */
@@ -52,7 +52,7 @@ export type DonorProfile = {
 export async function getMyDonorProfile(
   userId: string
 ): Promise<DonorProfile | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("donors")
@@ -99,7 +99,7 @@ export async function getDonationReceiptData(
   donationId: string,
   userId: string
 ): Promise<DonationReceiptData | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("donations")
@@ -184,7 +184,7 @@ export async function generateReceiptPdf(
 export async function getDonationsByUserId(
   userId: string
 ): Promise<Donation[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   const { data, error } = await supabase
     .from("donations")
@@ -222,7 +222,7 @@ export type DeleteDonorResult = { ok: true } | { error: string };
 export async function upsertDonorProfile(
   row: DonorUpsert
 ): Promise<UpsertDonorResult> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   // If your generated types are behind, cast to any to avoid TS "column doesn't exist" noise.
   const { error } = await supabase
@@ -240,7 +240,7 @@ export async function upsertDonorProfile(
 export async function deleteDonorProfile(
   userId: string
 ): Promise<DeleteDonorResult> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
   const { error } = await supabase
     .from("donors")
     .delete()
