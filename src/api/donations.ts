@@ -1,9 +1,7 @@
-import fs from "node:fs";
-import path from "node:path";
 // Standalone build: embeds AFM data so no disk reads for Helvetica
 // @ts-expect-error: pdfkit standalone build does not have type definitions
 import PDFDocument from "pdfkit/js/pdfkit.standalone.js";
-import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
+import { createAnonymousServerSupabaseClient, getDonorProfile } from "@/src/lib/supabase/server";
 import { Donation, DonationReceiptData } from "@/src/types/donation-types";
 
 function safeIsoDate(v: string | null | undefined): string {
@@ -12,25 +10,17 @@ function safeIsoDate(v: string | null | undefined): string {
   return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
 }
 
-function findInterFont(): string | null {
-  const tries = [
-    ["public", "fonts", "Inter", "static", "Inter-Regular.ttf"],
-    ["public", "fonts", "Inter", "Inter-VariableFont_opsz,wght.ttf"],
-    ["public", "fonts", "Inter", "Inter-Italic-VariableFont_opsz,wght.ttf"],
-    ["public", "fonts", "Inter-Regular.ttf"],
-  ];
-  for (const parts of tries) {
-    const p = path.join(process.cwd(), ...parts);
-    if (fs.existsSync(p)) return p;
-  }
-  return null;
-}
 
 export async function getDonationReceiptData(
   donationId: string,
   userId: string
 ): Promise<DonationReceiptData | null> {
   const supabase = await createAnonymousServerSupabaseClient();
+  const donorProfile = await getDonorProfile();
+
+  if (!donorProfile) {
+    return null;
+  }
 
   const { data, error } = await supabase
     .from("donations")
@@ -57,15 +47,11 @@ export async function getDonationReceiptData(
 
   if (!data) return null;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   const donorName =
     [data.donors?.first_name, data.donors?.last_name]
       .filter(Boolean)
       .join(" ") ||
-    user?.email ||
+    donorProfile.email ||
     "—";
 
   return {
@@ -73,7 +59,7 @@ export async function getDonationReceiptData(
     amount: Number(data.amount ?? 0),
     created_at: data.created_at ?? "",
     donorName,
-    donorEmail: user?.email ?? "—",
+    donorEmail: donorProfile.email ?? "—",
     organizationName: data.projects?.organizations?.organization_name ?? "—",
     projectTitle: data.projects?.title ?? "—",
   };
@@ -116,6 +102,11 @@ export async function getDonationsByUserId(
   userId: string
 ): Promise<Donation[]> {
   const supabase = await createAnonymousServerSupabaseClient();
+  const donorProfile = await getDonorProfile();
+
+  if (!donorProfile) {
+    return [];
+  }
 
   const { data, error } = await supabase
     .from("donations")

@@ -1,7 +1,6 @@
 "use server";
-
 import { revalidatePath } from "next/cache";
-import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
+import { createAnonymousServerSupabaseClient, getDonorProfile } from "@/src/lib/supabase/server";
 import type { Database } from "@/src/types/database-types";
 
 /** DB helpers (typed from your generated Database type) */
@@ -44,7 +43,6 @@ function buildInsertRow(payload: UpsertDonorPayload): DonorInsert {
     country: payload.country ?? null,
     profile_completed: payload.profile_completed ?? true,
   } satisfies Record<string, unknown>;
-
   return raw as unknown as DonorInsert;
 }
 
@@ -58,28 +56,21 @@ export async function upsertDonorProfile(
     return { ok: false, error: "Missing user_id" };
   }
 
+  // Check if user is actually logged in and matches the payload
+  const donorProfile = await getDonorProfile();
+  
+  if (!donorProfile) {
+    return { ok: false, error: "Unauthorized: No donor profile found" };
+  }
+
+  // Verify the authenticated user matches the payload user_id
+  if (donorProfile.user_id !== payload.user_id) {
+    return { ok: false, error: "Unauthorized: User ID mismatch" };
+  }
+
   const supabase = await createAnonymousServerSupabaseClient();
-
-  // Verify the authenticated user matches the user_id in the payload
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return { ok: false, error: "Not authenticated" };
-  }
-
-  if (user.id !== payload.user_id) {
-    return {
-      ok: false,
-      error: "Unauthorized: You can only update your own profile",
-    };
-  }
-
   try {
     const row = buildInsertRow(payload);
-
     const { data, error } = await supabase
       .from("donors")
       .upsert(row, { onConflict: "user_id" })
@@ -106,25 +97,19 @@ export async function deleteDonorProfile(
     return { ok: false, error: "Missing user_id" };
   }
 
+  // Check if user is actually logged in and matches the userId
+  const donorProfile = await getDonorProfile();
+  
+  if (!donorProfile) {
+    return { ok: false, error: "Unauthorized: No donor profile found" };
+  }
+
+  // Verify the authenticated user matches the userId being deleted
+  if (donorProfile.user_id !== userId) {
+    return { ok: false, error: "Unauthorized: User ID mismatch" };
+  }
+
   const supabase = await createAnonymousServerSupabaseClient();
-
-  // Verify the authenticated user matches the userId
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return { ok: false, error: "Not authenticated" };
-  }
-
-  if (user.id !== userId) {
-    return {
-      ok: false,
-      error: "Unauthorized: You can only delete your own profile",
-    };
-  }
-
   const { error } = await supabase
     .from("donors")
     .delete()
