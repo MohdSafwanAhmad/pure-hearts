@@ -74,6 +74,31 @@ function toPublicImageUrl(
   return data.publicUrl ?? "/placeholder.jpg";
 }
 
+/** ---------- helpers for adding project  ---------- */
+// src/lib/projects.ts
+export type MinimalProject = {
+  status?: string | null;
+  is_completed?: boolean | null;
+  end_date?: string | null; // ISO or YYYY-MM-DD
+};
+
+export function isProjectCompleted(p: MinimalProject): boolean {
+  // explicit completed via status/flag
+  const hasCompletedStatus =
+    (typeof p.status === "string" &&
+      p.status.toLowerCase().trim() === "completed") ||
+    p.is_completed === true;
+
+  // completed by date ONLY if strictly before today
+  const endDateIsPast =
+    !!p.end_date &&
+    !Number.isNaN(Date.parse(p.end_date)) &&
+    new Date(p.end_date).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
+
+  // Treat null/undefined as NOT completed
+  return hasCompletedStatus || endDateIsPast;
+}
+
 /** ---------- featured projects + totals ---------- */
 export async function getFeaturedProjectsWithTotals(
   limit = 8

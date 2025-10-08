@@ -8,6 +8,7 @@ import { OrganizationHeader } from "@/src/components/page/organization/header-se
 import { OrganizationStats } from "@/src/components/page/organization/stats-section";
 import { OrganizationDetails } from "@/src/components/page/organization/details-section";
 import { ProjectsSection } from "@/src/components/page/organization/projects-section";
+import { createServerSupabaseClient } from "@/src/lib/supabase/server";
 
 interface OrganizationPageProps {
   params: Promise<{
@@ -24,7 +25,11 @@ export default async function OrganizationPage({
   if (!organization) {
     notFound();
   }
-
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isOwnOrganization = user?.id === organization.user_id;
   const organizationStats = await getOrganizationStats(organization.user_id);
   const organizationProjects = await getOrganizationProjects(
     organization.user_id
@@ -79,7 +84,11 @@ export default async function OrganizationPage({
 
         {/* Organization Details Tabs */}
         <OrganizationDetails organization={organization} />
-        <ProjectsSection projects={projects} />
+        <ProjectsSection
+          projects={projects}
+          organizationSlug={organization.slug}
+          isOwnOrganization={isOwnOrganization}
+        />
       </div>
     </div>
   );
