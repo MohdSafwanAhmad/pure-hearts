@@ -165,7 +165,6 @@ export default function ProfileForm({ userId, initial }: Props) {
     setServerSuccess(null);
 
     const res = await upsertDonorProfile({
-      user_id: userId,
       ...values,
       profile_completed: true,
     });
@@ -190,7 +189,7 @@ export default function ProfileForm({ userId, initial }: Props) {
     setServerError(null);
     setServerSuccess(null);
 
-    const res = await deleteDonorProfile(userId);
+    const res = await deleteDonorProfile();
     if ("error" in res) {
       setServerError(res.error ?? "Failed to delete profile");
       return;

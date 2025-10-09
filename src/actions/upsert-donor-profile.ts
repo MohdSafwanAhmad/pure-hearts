@@ -10,9 +10,8 @@ type DonorInsert = Database["public"]["Tables"]["donors"]["Insert"];
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type DonorUpdate = Database["public"]["Tables"]["donors"]["Update"];
 
-/** Payload your UI sends to upsert */
+/** Payload your UI sends to upsert - user_id removed for security */
 export type UpsertDonorPayload = {
-  user_id: string;
   first_name?: string | null;
   last_name?: string | null;
   phone?: string | null;
@@ -31,9 +30,9 @@ export type ActionResult =
 /**
  * Build an Insert object safely.
  */
-function buildInsertRow(payload: UpsertDonorPayload): DonorInsert {
+function buildInsertRow(userId: string, payload: UpsertDonorPayload): DonorInsert {
   const raw = {
-    user_id: payload.user_id,
+    user_id: userId,
     first_name: payload.first_name ?? null,
     last_name: payload.last_name ?? null,
     phone: payload.phone ?? null,
@@ -52,25 +51,16 @@ function buildInsertRow(payload: UpsertDonorPayload): DonorInsert {
 export async function upsertDonorProfile(
   payload: UpsertDonorPayload
 ): Promise<ActionResult> {
-  if (!payload.user_id) {
-    return { ok: false, error: "Missing user_id" };
-  }
-
-  // Check if user is actually logged in and matches the payload
+  // Check if user is actually logged in
   const donorProfile = await getDonorProfile();
   
   if (!donorProfile) {
     return { ok: false, error: "Unauthorized: No donor profile found" };
   }
 
-  // Verify the authenticated user matches the payload user_id
-  if (donorProfile.user_id !== payload.user_id) {
-    return { ok: false, error: "Unauthorized: User ID mismatch" };
-  }
-
   const supabase = await createAnonymousServerSupabaseClient();
   try {
-    const row = buildInsertRow(payload);
+    const row = buildInsertRow(donorProfile.user_id, payload);
     const { data, error } = await supabase
       .from("donors")
       .upsert(row, { onConflict: "user_id" })
@@ -88,32 +78,21 @@ export async function upsertDonorProfile(
 }
 
 /**
- * Delete the donor's profile row (by user_id).
+ * Delete the donor's profile row.
  */
-export async function deleteDonorProfile(
-  userId: string
-): Promise<ActionResult> {
-  if (!userId) {
-    return { ok: false, error: "Missing user_id" };
-  }
-
-  // Check if user is actually logged in and matches the userId
+export async function deleteDonorProfile(): Promise<ActionResult> {
+  // Check if user is actually logged in
   const donorProfile = await getDonorProfile();
   
   if (!donorProfile) {
     return { ok: false, error: "Unauthorized: No donor profile found" };
   }
 
-  // Verify the authenticated user matches the userId being deleted
-  if (donorProfile.user_id !== userId) {
-    return { ok: false, error: "Unauthorized: User ID mismatch" };
-  }
-
   const supabase = await createAnonymousServerSupabaseClient();
   const { error } = await supabase
     .from("donors")
     .delete()
-    .eq("user_id", userId);
+    .eq("user_id", donorProfile.user_id);
 
   if (error) return { ok: false, error: error.message };
 
