@@ -1,14 +1,15 @@
 "use server";
+
 import { revalidatePath } from "next/cache";
-import { createAnonymousServerSupabaseClient, getDonorProfile } from "@/src/lib/supabase/server";
+import {
+  createAnonymousServerSupabaseClient,
+  getDonorProfile,
+} from "@/src/lib/supabase/server";
 import type { Database } from "@/src/types/database-types";
+import { donorProfileSchema } from "@/src/schemas/donor";
 
 /** DB helpers (typed from your generated Database type) */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type DonorRow = Database["public"]["Tables"]["donors"]["Row"];
 type DonorInsert = Database["public"]["Tables"]["donors"]["Insert"];
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type DonorUpdate = Database["public"]["Tables"]["donors"]["Update"];
 
 /** Payload your UI sends to upsert - user_id removed for security */
 export type UpsertDonorPayload = {
@@ -30,7 +31,10 @@ export type ActionResult =
 /**
  * Build an Insert object safely.
  */
-function buildInsertRow(userId: string, payload: UpsertDonorPayload): DonorInsert {
+function buildInsertRow(
+  userId: string,
+  payload: UpsertDonorPayload
+): DonorInsert {
   const raw = {
     user_id: userId,
     first_name: payload.first_name ?? null,
@@ -53,9 +57,27 @@ export async function upsertDonorProfile(
 ): Promise<ActionResult> {
   // Check if user is actually logged in
   const donorProfile = await getDonorProfile();
-  
+
   if (!donorProfile) {
     return { ok: false, error: "Unauthorized: No donor profile found" };
+  }
+
+  // Validate data with Zod
+  const result = donorProfileSchema.safeParse(payload);
+
+  if (!result.success) {
+    const errors: Record<string, string[]> = {};
+    result.error.issues.forEach((issue) => {
+      const path = issue.path.join(".");
+      if (!errors[path]) {
+        errors[path] = [];
+      }
+      errors[path].push(issue.message);
+    });
+
+    // Return first error message
+    const firstError = Object.values(errors)[0]?.[0];
+    return { ok: false, error: firstError || "Validation failed" };
   }
 
   const supabase = await createAnonymousServerSupabaseClient();
@@ -83,7 +105,7 @@ export async function upsertDonorProfile(
 export async function deleteDonorProfile(): Promise<ActionResult> {
   // Check if user is actually logged in
   const donorProfile = await getDonorProfile();
-  
+
   if (!donorProfile) {
     return { ok: false, error: "Unauthorized: No donor profile found" };
   }
