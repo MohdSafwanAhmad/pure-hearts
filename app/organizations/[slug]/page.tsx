@@ -4,7 +4,7 @@ import {
   getOrganizationStats,
   getOrganizationProjects,
 } from "@/src/api/organization";
-import { OrganizationPageClient } from "@/src/components/page/organization/organization-page-client";
+import OrganizationPageClient from "@/src/components/page/organization/organization-page-client";
 import { getOrganizationProfile } from "@/src/lib/supabase/server";
 
 interface OrganizationPageProps {
