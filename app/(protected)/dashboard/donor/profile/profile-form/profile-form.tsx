@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -35,57 +34,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/src/components/ui/form";
-
-/* ------------------------------------------------------------------ */
-/* Canada provinces and a simple city list for each (extend as needed) */
-/* ------------------------------------------------------------------ */
-const CA_PROVINCES_TO_CITIES: Record<string, string[]> = {
-  Alberta: ["Calgary", "Edmonton", "Red Deer", "Lethbridge", "Medicine Hat"],
-  "British Columbia": ["Vancouver", "Victoria", "Kelowna", "Surrey", "Burnaby"],
-  Manitoba: ["Winnipeg", "Brandon", "Steinbach"],
-  "New Brunswick": ["Moncton", "Saint John", "Fredericton"],
-  "Newfoundland and Labrador": ["St. John's", "Corner Brook", "Gander"],
-  "Nova Scotia": ["Halifax", "Sydney", "Truro"],
-  Ontario: [
-    "Toronto",
-    "Ottawa",
-    "Mississauga",
-    "Brampton",
-    "Hamilton",
-    "London",
-  ],
-  "Prince Edward Island": ["Charlottetown", "Summerside"],
-  Quebec: ["Montreal", "Quebec City", "Laval", "Gatineau", "Longueuil"],
-  Saskatchewan: ["Saskatoon", "Regina", "Prince Albert"],
-  "Northwest Territories": ["Yellowknife", "Hay River"],
-  Nunavut: ["Iqaluit"],
-  Yukon: ["Whitehorse"],
-};
-
-const CANADIAN_PROVINCES = Object.keys(CA_PROVINCES_TO_CITIES);
-
-/* -------------------- */
-/* Validation (Zod)     */
-/* -------------------- */
-const ProfileSchema = z.object({
-  first_name: z.string().min(1, "First name is required").trim(),
-  last_name: z.string().min(1, "Last name is required").trim(),
-  phone: z.string().optional().nullable(),
-  address: z.string().min(1, "Address is required").trim(),
-  // Province/state required; must be one of our list
-  state: z
-    .string()
-    .min(1, "State/Province is required")
-    .refine((v) => CANADIAN_PROVINCES.includes(v), {
-      message: "Please select a valid province",
-    }),
-  // City required; we'll validate it belongs to selected province
-  city: z.string().min(1, "City is required"),
-  // Country fixed to Canada, but keep for type completeness
-  country: z.literal("Canada"),
-});
-
-type ProfileValues = z.infer<typeof ProfileSchema>;
+import {
+  donorProfileSchema,
+  TDonorProfileSchema,
+  CA_PROVINCES_TO_CITIES,
+  CANADIAN_PROVINCES,
+} from "@/src/schemas/donor";
 
 type Props = {
   userId: string;
@@ -111,7 +65,7 @@ export default function ProfileForm({ initial }: Props) {
   const [serverError, setServerError] = useState<string | null>(null);
   const [serverSuccess, setServerSuccess] = useState<string | null>(null);
 
-  const defaultValues: ProfileValues = {
+  const defaultValues: TDonorProfileSchema = {
     first_name: initial.first_name ?? "",
     last_name: initial.last_name ?? "",
     phone: initial.phone ?? "",
@@ -124,22 +78,8 @@ export default function ProfileForm({ initial }: Props) {
     country: "Canada",
   };
 
-  const form = useForm<ProfileValues>({
-    resolver: zodResolver(
-      ProfileSchema.superRefine((val, ctx) => {
-        // ensure city belongs to chosen province (if province chosen)
-        if (val.state) {
-          const allowed = CA_PROVINCES_TO_CITIES[val.state] ?? [];
-          if (allowed.length && !allowed.includes(val.city)) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              path: ["city"],
-              message: `Please select a valid city in ${val.state}`,
-            });
-          }
-        }
-      })
-    ),
+  const form = useForm<TDonorProfileSchema>({
+    resolver: zodResolver(donorProfileSchema),
     defaultValues,
     mode: "onChange",
   });
@@ -167,7 +107,7 @@ export default function ProfileForm({ initial }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProvince]);
 
-  async function onSubmit(values: ProfileValues) {
+  async function onSubmit(values: TDonorProfileSchema) {
     setServerError(null);
     setServerSuccess(null);
 
