@@ -1,7 +1,7 @@
 // src/api/project.ts
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import "server-only"; // Add this line to enforce server-only usage
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import "server-only";
+import { createServerSupabaseClient } from "@/src/lib/supabase/server-admin";
 import { PUBLIC_IMAGE_BUCKET_NAME } from "@/src/lib/constants";
 import { getOrganizationBySlug } from "@/src/api/organization";
 
@@ -15,10 +15,7 @@ export interface ProjectDetail {
   percent: number;
   project_background_image: string | null;
   organization_user_id: string;
-  beneficiary?: {
-    beneficiary_type_id: string;
-    label: string;
-  } | null;
+  beneficiary?: { beneficiary_type_id: string; label: string } | null;
   slug: string;
   organization: {
     user_id: string;
@@ -29,21 +26,15 @@ export interface ProjectDetail {
   };
 }
 
-/**
- * Fetch a project by org slug and project slug, including totals and full org info.
- * Returns null if not found or not verified.
- */
 export async function getProjectBySlugs(
   orgSlug: string,
   projectSlug: string
 ): Promise<ProjectDetail | null> {
-  // 1. Get organization (with logo, description, etc)
   const organization = await getOrganizationBySlug(orgSlug);
   if (!organization) return null;
 
-  const supabase = await createServerSupabaseClient();
+  const supabase = createServerSupabaseClient();
 
-  // 2. Get project by org user id and slug
   const { data: project, error: projErr } = await supabase
     .from("projects")
     .select("*")
@@ -51,21 +42,15 @@ export async function getProjectBySlugs(
     .eq("slug", projectSlug)
     .maybeSingle();
 
-  if (projErr || !project) {
-    if (projErr) console.error("project fetch error:", projErr.message);
-    return null;
-  }
+  if (projErr || !project) return null;
 
-  // 3. Get donations for totals and beneficiary count
-  const { data: donations, error: dErr } = await supabase
+  const { data: donations } = await supabase
     .from("donations")
     .select("amount, donor_id")
     .eq("project_id", project.id);
 
-  if (dErr) console.error("donations fetch error:", dErr.message);
-
   const collected = (donations ?? []).reduce(
-    (sum, r: any) => sum + Number(r?.amount ?? 0),
+    (sum: number, r: any) => sum + Number(r?.amount ?? 0),
     0
   );
 
@@ -74,18 +59,14 @@ export async function getProjectBySlugs(
   const percent =
     goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
 
-  // 4. Get public image URL for project background
-  let project_background_image: string | null = null;
+  let project_background_image: string | null = "/placeholder.jpg";
   if (project.project_background_image) {
     const { data } = supabase.storage
       .from(PUBLIC_IMAGE_BUCKET_NAME)
       .getPublicUrl(project.project_background_image);
     project_background_image = data.publicUrl ?? "/placeholder.jpg";
-  } else {
-    project_background_image = "/placeholder.jpg";
   }
 
-  // 5. Return all details
   const beneficiary = project.beneficiary_type_id
     ? await (async () => {
         const { data: bt } = await supabase
@@ -94,7 +75,7 @@ export async function getProjectBySlugs(
           .eq("id", project.beneficiary_type_id as string)
           .maybeSingle();
         return bt
-          ? { beneficiary_type_id: bt.id as string, label: bt.label as string }
+          ? { beneficiary_type_id: String(bt.id), label: String(bt.label) }
           : null;
       })()
     : null;
@@ -121,51 +102,11 @@ export async function getProjectBySlugs(
   };
 }
 
-/**
- * Fetch a small list of recent, verified projects for display sections.
- * Uses getProjectBySlugs to assemble full details per project.
- */
-export async function getRecentProjects(limit = 8): Promise<ProjectDetail[]> {
-  const supabase = await createServerSupabaseClient();
-
-  type Row = {
-    slug: string;
-    organization: { slug: string; is_verified: boolean | null } | null;
-  };
-
-  const { data } = await supabase
-    .from("projects")
-    .select(
-      `
-      slug,
-      organization:organizations!inner(slug, is_verified)
-    `
-    )
-    .order("created_at", { ascending: false })
-    .limit(limit);
-
-  const candidates = ((data as Row[] | null) ?? []).filter(
-    (r) => r.organization?.is_verified
-  );
-
-  const details = await Promise.all(
-    candidates.map((r) => getProjectBySlugs(r.organization!.slug, r.slug))
-  );
-
-  return details.filter(Boolean) as ProjectDetail[];
-}
-
-/**
- * Fetch multiple projects (cards) with totals and org info.
- * - limit/offset for pagination
- * - Only returns projects for verified organizations
- * - Designed for campaigns listing and featured sections
- */
 export async function getProjects(
   limit = 24,
   offset = 0
 ): Promise<ProjectDetail[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient(); // works for both async/sync exports
 
   type ProjectRow = {
     id: string;
@@ -184,7 +125,7 @@ export async function getProjects(
     } | null;
   };
 
-  const { data: rows, error } = await supabase
+  const { data: rows, error: projectsError } = await supabase
     .from("projects")
     .select(
       `
@@ -202,8 +143,11 @@ export async function getProjects(
     .order("created_at", { ascending: false })
     .range(offset, offset + Math.max(0, limit) - 1);
 
-  if (error) {
-    console.error("getProjects: error fetching projects", error.message);
+  if (projectsError) {
+    console.error(
+      "getProjects: error fetching projects",
+      projectsError.message
+    );
     return [];
   }
 
@@ -211,16 +155,19 @@ export async function getProjects(
     (r) => r.organization?.is_verified
   );
 
-  const projectIds = projects.map((p) => p.id);
-  if (projectIds.length === 0) return [];
+  const ids = projects.map((p) => p.id);
+  if (ids.length === 0) return [];
 
-  const { data: donations, error: dErr } = await supabase
+  const { data: donations, error: donationsError } = await supabase
     .from("donations")
     .select("amount, donor_id, project_id")
-    .in("project_id", projectIds);
+    .in("project_id", ids);
 
-  if (dErr) {
-    console.error("getProjects: error fetching donations", dErr.message);
+  if (donationsError) {
+    console.error(
+      "getProjects: error fetching donations",
+      donationsError.message
+    );
   }
 
   type DonationRow = {
@@ -235,17 +182,12 @@ export async function getProjects(
     donationsByProject.set(row.project_id, list);
   }
 
-  const results: ProjectDetail[] = projects.map((p) => {
+  return projects.map((p) => {
     const donationList = donationsByProject.get(p.id) ?? [];
     const collected = donationList.reduce(
       (sum, r) => sum + Number(r.amount ?? 0),
       0
     );
-
-    const uniqueDonors = new Set(
-      donationList.map((r) => (r.donor_id ? String(r.donor_id) : ""))
-    );
-    uniqueDonors.delete("");
 
     const goal = Number(p.goal_amount ?? 0);
     const percent =
@@ -283,134 +225,4 @@ export async function getProjects(
       },
     };
   });
-
-  return results;
-}
-
-/**
- * SERVER ACTION: Fetch projects for a specific organization
- * Use this in Server Components or Server Actions only
- */
-export async function getOrganizationProjects(
-  organizationUserId: string
-): Promise<ProjectDetail[]> {
-  const supabase = await createServerSupabaseClient();
-
-  type ProjectRow = {
-    id: string;
-    title: string | null;
-    description: string | null;
-    goal_amount: number | null;
-    project_background_image: string | null;
-    organization_user_id: string;
-    slug: string;
-    beneficiary_type: { id: string; label: string } | null;
-  };
-
-  const { data: rows, error } = await supabase
-    .from("projects")
-    .select(
-      `
-      id,
-      title,
-      description,
-      goal_amount,
-      project_background_image,
-      organization_user_id,
-      slug,
-      beneficiary_type:beneficiary_types(id, label)
-    `
-    )
-    .eq("organization_user_id", organizationUserId)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("getOrganizationProjects: error", error.message);
-    return [];
-  }
-
-  const projects = (rows as ProjectRow[] | null) ?? [];
-  const projectIds = projects.map((p) => p.id);
-
-  if (projectIds.length === 0) return [];
-
-  const { data: donations, error: dErr } = await supabase
-    .from("donations")
-    .select("amount, project_id")
-    .in("project_id", projectIds);
-
-  if (dErr) {
-    console.error("getOrganizationProjects: donations error", dErr.message);
-  }
-
-  type DonationRow = {
-    amount: number | null;
-    project_id: string;
-  };
-
-  const donationsByProject = new Map<string, DonationRow[]>();
-  for (const row of (donations as DonationRow[] | null) ?? []) {
-    const list = donationsByProject.get(row.project_id) ?? [];
-    list.push(row);
-    donationsByProject.set(row.project_id, list);
-  }
-
-  // Get organization info
-  const { data: org } = await supabase
-    .from("organizations")
-    .select("user_id, slug, organization_name")
-    .eq("user_id", organizationUserId)
-    .single();
-
-  const results: ProjectDetail[] = projects.map((p) => {
-    const donationList = donationsByProject.get(p.id) ?? [];
-    const collected = donationList.reduce(
-      (sum, r) => sum + Number(r.amount ?? 0),
-      0
-    );
-
-    const goal = Number(p.goal_amount ?? 0);
-    const percent =
-      goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
-
-    let project_background_image: string | null = "/placeholder.jpg";
-    if (p.project_background_image) {
-      const { data } = supabase.storage
-        .from(PUBLIC_IMAGE_BUCKET_NAME)
-        .getPublicUrl(p.project_background_image);
-      project_background_image = data.publicUrl ?? "/placeholder.jpg";
-    }
-
-    return {
-      id: p.id,
-      title: p.title ?? "",
-      description: p.description,
-      goal_amount: goal,
-      collected,
-      remaining: Math.max(goal - collected, 0),
-      percent,
-      project_background_image,
-      organization_user_id: p.organization_user_id,
-      beneficiary: p.beneficiary_type
-        ? {
-            beneficiary_type_id: p.beneficiary_type.id,
-            label: p.beneficiary_type.label,
-          }
-        : null,
-      slug: p.slug,
-      organization: org
-        ? {
-            user_id: org.user_id,
-            slug: org.slug,
-            name: org.organization_name,
-          }
-        : {
-            user_id: organizationUserId,
-            slug: "",
-            name: null,
-          },
-    };
-  });
-
-  return results;
 }

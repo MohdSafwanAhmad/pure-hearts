@@ -3,12 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-
 import { Heading } from "@/src/components/global/heading";
 import ProjectCard from "@/src/components/global/project-card";
 import { Button } from "@/src/components/ui/button";
 import { FolderOpen } from "lucide-react";
-import { isProjectCompleted } from "@/src/api/project";
+import { isProjectCompleted } from "@/src/lib/projects";
 
 type ProjectType = "completed" | "existing";
 
@@ -17,39 +16,33 @@ interface ProjectItem {
   title: string;
   description: string;
   startDate: Date;
-  completionDate: Date | undefined;
+  completionDate?: Date;
   projectId: string;
   projectBackgroundImage: string;
   slug: string;
   goal_amount: number | null;
   collected: number;
   percent: number;
-  organizationSlug: string; // needed for links
+  organizationSlug: string;
   beneficiaryCount: number;
-  organization: {
-    name: string;
-    organizationSlug: string;
-  };
-
-  // optional flags if you later add them
+  organization: { name: string; organizationSlug: string };
   status?: string | null;
   is_completed?: boolean | null;
 }
 
 export function ProjectsSection({
   projects,
-  organizationSlug, // pass org.slug from parent page
-  isOwnOrganization = false, // show "+ Add Project" if true
+  organizationSlug,
+  isOwnOrganization = false,
 }: {
   projects: ProjectItem[];
   organizationSlug: string;
   isOwnOrganization?: boolean;
 }) {
-  const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  // default to "existing", but read ?tab=existing|completed
   const tabParam = (searchParams.get("tab") as ProjectType) || "existing";
   const [activeProjectType, setActiveProjectType] =
     useState<ProjectType>(tabParam);
@@ -59,7 +52,6 @@ export function ProjectsSection({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabParam]);
 
-  // classify using the shared helper (end_date comes from completionDate)
   const toMinimal = (p: ProjectItem) => ({
     status: p.status ?? null,
     is_completed: p.is_completed ?? null,
@@ -70,6 +62,7 @@ export function ProjectsSection({
     () => projects.filter((p) => isProjectCompleted(toMinimal(p))),
     [projects]
   );
+
   const existingProjects = useMemo(
     () => projects.filter((p) => !isProjectCompleted(toMinimal(p))),
     [projects]
@@ -78,10 +71,10 @@ export function ProjectsSection({
   const currentProjects =
     activeProjectType === "completed" ? completedProjects : existingProjects;
 
-  // simple pagination within the section
   const projectsPerPage = 4;
   const [displayCount, setDisplayCount] = useState<number>(projectsPerPage);
   useEffect(() => setDisplayCount(projectsPerPage), [activeProjectType]);
+
   const visibleProjects = currentProjects.slice(0, displayCount);
   const hasMoreProjects = currentProjects.length > displayCount;
 
@@ -94,22 +87,13 @@ export function ProjectsSection({
 
   return (
     <section className="mb-section">
-      <div className="mb-title flex items-center justify-between">
-        <Heading level={2} className="mb-0">
-          Projects
-        </Heading>
-        {isOwnOrganization && (
-          <Button asChild>
-            <Link href={`/organizations/${organizationSlug}/add-project`}>
-              + Add Project
-            </Link>
-          </Button>
-        )}
-      </div>
+      <Heading level={2} className="mb-4">
+        Projects
+      </Heading>
 
-      {/* Toggle */}
-      <div className="flex mb-title">
-        <div className="rounded-lg border border-gray-200 bg-white p-1">
+      {/* Segmented control with inline “+ Add Project” */}
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <div className="rounded-lg border border-gray-200 bg-white p-1 flex items-center gap-1">
           <button
             type="button"
             onClick={() => setTab("existing")}
@@ -132,10 +116,20 @@ export function ProjectsSection({
           >
             Completed Projects
           </button>
+
+          {/* Inline + Add Project like a third tab (inactive style) */}
+          {isOwnOrganization && (
+            <Link
+              href={`/organizations/${organizationSlug}/add-project`}
+              className="px-4 py-2 text-sm font-medium rounded-md transition-colors text-gray-700 hover:text-gray-900"
+            >
+              + Add Project
+            </Link>
+          )}
         </div>
       </div>
 
-      {/* Grid / Empty */}
+      {/* Projects grid / empty state */}
       {currentProjects.length === 0 ? (
         <div className="flex flex-col items-center justify-center mb-section text-gray-500">
           <FolderOpen className="h-16 w-16 mb-subtitle text-gray-300" />
