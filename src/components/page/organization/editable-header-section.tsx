@@ -1,5 +1,5 @@
-import { Organization } from "@/src/api/organization";
 import { Heading } from "@/src/components/global/heading";
+import { EditableOrganizationLogo } from "@/src/components/page/organization/editable-organization-logo";
 import {
   FormControl,
   FormField,
@@ -7,14 +7,26 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
-import { EditableOrganizationLogo } from "@/src/components/page/organization/editable-organization-logo";
-import { TOrganizationSchema } from "@/src/schemas/organization";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/src/components/ui/select";
+import { canadianProvinces } from "@/src/lib/constants";
+import { TUpdateOrganizationSchema } from "@/src/schemas/organization";
 import { MapPin } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 
 interface Props {
-  organization: Organization;
-  form: UseFormReturn<TOrganizationSchema>;
+  organization: {
+    organization_name: string;
+    city: string;
+    state: string;
+    logo: string | null;
+  };
+  form: UseFormReturn<TUpdateOrganizationSchema>;
   isEditing: boolean;
 }
 
@@ -29,7 +41,10 @@ export function EditableHeaderSection({
         <div className="flex flex-col lg:flex-row gap-8 items-center text-white">
           {/* Organization Logo */}
           <EditableOrganizationLogo
-            organization={organization}
+            organization={{
+              organization_name: organization.organization_name,
+              logo: organization.logo,
+            }}
             isEditing={isEditing}
           />{" "}
           {/* Organization Info */}
@@ -86,18 +101,26 @@ export function EditableHeaderSection({
                     name="state"
                     render={({ field }) => (
                       <FormItem>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="text"
-                            placeholder="Your State"
-                            className={
-                              form.formState.errors?.state
-                                ? "border-red-500"
-                                : ""
-                            }
-                          />
-                        </FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select your state or province" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {canadianProvinces.map((province) => (
+                              <SelectItem
+                                key={province.value}
+                                value={province.value}
+                              >
+                                {province.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}

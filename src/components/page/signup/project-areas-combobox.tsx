@@ -9,12 +9,12 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { MultiSelectCombobox } from "@/src/components/ui/multi-select-combobox";
-import { TUpdateOrganizationSchema } from "@/src/schemas/organization";
+import { TCreateOrganizationSchema } from "@/src/schemas/organization";
 import { X } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 
 interface ProjectAreasComboboxProps {
-  form: UseFormReturn<TUpdateOrganizationSchema>;
+  form: UseFormReturn<TCreateOrganizationSchema>;
   projectAreas: { label: string; value: number }[];
 }
 
@@ -47,6 +47,8 @@ export function ProjectAreasCombobox({
         shouldDirty: true,
       });
     }
+
+    console.log("Current Values:", form.getValues("projectAreas"));
   };
 
   const handleRemove = (value: number) => {
@@ -69,7 +71,7 @@ export function ProjectAreasCombobox({
       render={() => (
         <FormItem>
           <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-            Project Areas
+            Mission Statement *
           </FormLabel>
           <FormControl>
             <div className="flex flex-col gap-4">
@@ -80,6 +82,11 @@ export function ProjectAreasCombobox({
                 placeholder="Click to select project areas..."
                 searchPlaceholder="Type to search areas..."
                 emptyText="No matching areas found."
+                className={
+                  form.formState.errors?.missionStatement
+                    ? "border-red-500"
+                    : ""
+                }
               />
 
               {selectedAreas.length > 0 && (

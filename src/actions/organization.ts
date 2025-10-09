@@ -4,25 +4,20 @@ import {
   createServerSupabaseClient,
   getOrganizationProfile,
 } from "@/src/lib/supabase/server";
-import { organizationSchema } from "@/src/schemas/organization";
+import { updateOrganizationSchema } from "@/src/schemas/organization";
 import { revalidatePath } from "next/cache";
 import { v4 as uuidv4 } from "uuid";
 import { PUBLIC_IMAGE_BUCKET_NAME } from "@/src/lib/constants";
 import { optimizeImageToWebp } from "@/src/lib/image-optimization";
-
-type Response = {
-  message?: string;
-  error?: string;
-  success: boolean;
-};
+import { ActionResponse } from "@/src/types/actions-types";
 
 /**
  * Server action to update organization information text fields
- * @param formData - FormData containing the organization information text fields
+ * @param data - Data containing the organization information text fields
  */
 export async function updateOrganization(
-  formData: FormData
-): Promise<Response> {
+  data: Record<string, unknown>
+): Promise<ActionResponse> {
   const supabase = await createServerSupabaseClient();
 
   // 1) Get current user
@@ -36,19 +31,7 @@ export async function updateOrganization(
   }
 
   // 2) Validate data
-  const dataObj = Object.fromEntries(formData.entries()) as Record<
-    string,
-    string | string[] | undefined
-  >;
-  if (typeof dataObj.projectAreas === "string") {
-    try {
-      dataObj.projectAreas = JSON.parse(dataObj.projectAreas);
-    } catch {
-      dataObj.projectAreas = [];
-    }
-  }
-
-  const result = organizationSchema.safeParse(dataObj);
+  const result = updateOrganizationSchema.safeParse(data);
 
   if (!result.success) {
     const errors: Record<string, string[]> = {};
@@ -83,7 +66,6 @@ export async function updateOrganization(
       contact_person_email: result.data.contactPersonEmail,
       contact_person_phone: result.data.contactPersonPhone,
       mission_statement: result.data.missionStatement,
-      project_areas: result.data.projectAreas,
       website_url: result.data.websiteUrl || null,
       facebook_url: result.data.facebookUrl || null,
       twitter_url: result.data.twitterUrl || null,
@@ -99,6 +81,45 @@ export async function updateOrganization(
         "An error occurred while updating the organization. Please try again.",
       success: false,
     };
+  }
+
+  // 4) Update organization_project_areas join table
+  // Remove all existing project areas for this org
+  const { error: deleteError } = await supabase
+    .from("organization_project_areas")
+    .delete()
+    .eq("organization_id", organization.user_id);
+
+  if (deleteError) {
+    console.error("Error deleting old project areas:", deleteError);
+    return {
+      error: "Failed to update project areas.",
+      success: false,
+    };
+  }
+
+  // Insert new project areas
+  const projectAreas = Array.isArray(result.data.projectAreas)
+    ? result.data.projectAreas
+    : [];
+
+  if (projectAreas.length > 0) {
+    const insertRows = projectAreas.map((projectAreaId: number) => ({
+      organization_id: organization.user_id,
+      project_area_id: projectAreaId,
+    }));
+
+    const { error: insertError } = await supabase
+      .from("organization_project_areas")
+      .insert(insertRows);
+
+    if (insertError) {
+      console.error("Error inserting new project areas:", insertError);
+      return {
+        error: "Failed to update project areas.",
+        success: false,
+      };
+    }
   }
 
   revalidatePath("/");
@@ -118,7 +139,7 @@ export async function updateOrganization(
  */
 export async function updateOrganizationLogo(
   formData: FormData
-): Promise<Response> {
+): Promise<ActionResponse> {
   try {
     // 1) Get current user
     const organization = await getOrganizationProfile();
