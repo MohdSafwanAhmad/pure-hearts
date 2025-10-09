@@ -40,17 +40,7 @@ export function DonorSignupForm() {
   });
 
   const onSubmit = async (data: TCreateDonorSchema) => {
-    const formData = new FormData();
-    formData.append("first_name", data.first_name);
-    formData.append("last_name", data.last_name);
-    formData.append("email", data.email);
-
-    // Append each donation preference separately
-    data.donation_preferences.forEach((pref) => {
-      formData.append("donation_preferences", pref);
-    });
-
-    const res = await signupAsDonor(formData);
+    const res = await signupAsDonor(data);
 
     if (res?.error) {
       toast.error(res.error);

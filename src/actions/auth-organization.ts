@@ -9,25 +9,13 @@ import { ActionResponse } from "@/src/types/actions-types";
 import { loginOrganizationSchema } from "@/src/schemas/organization";
 
 export async function signupAsOrganization(
-  formData: FormData
+  data: Record<string, unknown>
 ): Promise<ActionResponse> {
   // 1) Create supabase anonymous server side client, like that it can handle the cookies
   const supabase = await createAnonymousServerSupabaseClient();
 
   // 2) Validate form data
-  const dataObj = Object.fromEntries(formData.entries()) as Record<
-    string,
-    string | string[] | undefined
-  >;
-  if (typeof dataObj.projectAreas === "string") {
-    try {
-      dataObj.projectAreas = JSON.parse(dataObj.projectAreas);
-    } catch {
-      dataObj.projectAreas = [];
-    }
-  }
-
-  const result = createOrganizationSchema.safeParse(dataObj);
+  const result = createOrganizationSchema.safeParse(data);
 
   if (!result.success) {
     const errors: Record<string, string[]> = {};
@@ -103,12 +91,14 @@ export async function signupAsOrganization(
   );
 }
 
-export async function login(formData: FormData): Promise<ActionResponse> {
+export async function loginAsOrganization(
+  data: Record<string, unknown>
+): Promise<ActionResponse> {
+  // 1) Create anonymous supabase client
   const supabase = await createAnonymousServerSupabaseClient();
 
-  const result = loginOrganizationSchema.safeParse({
-    email: formData.get("email"),
-  });
+  // 2) Validate data
+  const result = loginOrganizationSchema.safeParse(data);
 
   if (!result.success) {
     return {

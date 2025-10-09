@@ -107,14 +107,7 @@ export function OrganizationSignupForm({ projectAreas }: Props) {
   };
 
   const onSubmit = async (data: TCreateOrganizationSchema) => {
-    const formData = new FormData();
-
-    Object.entries(data).forEach(([key, value]) => {
-      if (Array.isArray(value)) formData.append(key, JSON.stringify(value));
-      else formData.append(key, value);
-    });
-
-    const res = await signupAsOrganization(formData);
+    const res = await signupAsOrganization(data);
 
     if (res?.error) {
       toast.error(res.error);

@@ -1,5 +1,5 @@
 "use client";
-import { login } from "@/src/actions/auth-donor";
+import { loginAsDonor } from "@/src/actions/auth-donor";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
 import {
@@ -27,10 +27,7 @@ export function DonorLoginForm() {
   });
 
   const onSubmit = async (data: TLoginDonorSchema) => {
-    const formData = new FormData();
-    formData.append("email", data.email);
-
-    const res = await login(formData);
+    const res = await loginAsDonor(data);
 
     if (res?.error) {
       toast.error(res.error);

@@ -78,11 +78,7 @@ export function OTPForm({ email }: { email: string }) {
   };
 
   const onSubmit = async (data: TVerifyOtpSchema) => {
-    const formData = new FormData();
-    formData.append("email", data.email);
-    formData.append("token", data.token);
-
-    const res = await verifyOtp(formData);
+    const res = await verifyOtp(data);
 
     if (res?.error) {
       toast.error(res.error);

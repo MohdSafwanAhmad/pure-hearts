@@ -108,7 +108,7 @@ export function BasicInformationSection({ form }: Props) {
                   <Input
                     {...field}
                     type="text"
-                    placeholder="Your Organization Name"
+                    placeholder="Contact Person Name"
                     className={
                       form.formState.errors?.contactPersonName
                         ? "border-red-500"

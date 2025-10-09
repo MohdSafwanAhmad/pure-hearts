@@ -7,22 +7,13 @@ import { ActionResponse } from "@/src/types/actions-types";
 import { createDonorSchema, loginDonorSchema } from "@/src/schemas/donor";
 
 export async function signupAsDonor(
-  formData: FormData
+  data: Record<string, unknown>
 ): Promise<ActionResponse> {
+  // 1) Create anonymous supabase client
   const supabase = await createAnonymousServerSupabaseClient();
 
-  // Parse donation preferences from form data
-  const donationPreferences = formData
-    .getAll("donation_preferences")
-    .filter(Boolean) as string[];
-
-  const result = createDonorSchema.safeParse({
-    email: formData.get("email"),
-    first_name: formData.get("first_name"),
-    last_name: formData.get("last_name"),
-    donation_preferences:
-      donationPreferences.length > 0 ? donationPreferences : undefined,
-  });
+  // 2) Validate data
+  const result = createDonorSchema.safeParse(data);
 
   if (!result.success) {
     return {
@@ -55,12 +46,14 @@ export async function signupAsDonor(
   return redirect(`/otp?email=${encodeURIComponent(result.data.email)}`);
 }
 
-export async function login(formData: FormData): Promise<ActionResponse> {
+export async function loginAsDonor(
+  data: Record<string, unknown>
+): Promise<ActionResponse> {
+  // 1) Create anonymous supabase client
   const supabase = await createAnonymousServerSupabaseClient();
 
-  const result = loginDonorSchema.safeParse({
-    email: formData.get("email"),
-  });
+  // 2) Validate data
+  const result = loginDonorSchema.safeParse(data);
 
   if (!result.success) {
     return {

@@ -113,14 +113,7 @@ export function OrganizationPageClient({
   };
 
   const onSubmit = async (data: TUpdateOrganizationSchema) => {
-    const formData = new FormData();
-
-    Object.entries(data).forEach(([key, value]) => {
-      if (Array.isArray(value)) formData.append(key, JSON.stringify(value));
-      else formData.append(key, value);
-    });
-
-    const res = await updateOrganization(formData);
+    const res = await updateOrganization(data);
 
     if (res.success) {
       toast.success("Organization information updated successfully");

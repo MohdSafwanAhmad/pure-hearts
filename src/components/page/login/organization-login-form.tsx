@@ -1,5 +1,5 @@
 "use client";
-import { login } from "@/src/actions/auth-organization";
+import { loginAsOrganization } from "@/src/actions/auth-organization";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
 import {
@@ -30,10 +30,7 @@ export function OrganizationLoginForm() {
   });
 
   const onSubmit = async (data: TLoginOrganizationSchema) => {
-    const formData = new FormData();
-    formData.append("email", data.email);
-
-    const res = await login(formData);
+    const res = await loginAsOrganization(data);
 
     if (res?.error) {
       toast.error(res.error);

@@ -7,13 +7,14 @@ import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 import { ActionResponse } from "@/src/types/actions-types";
 import { verifyOtpSchema } from "@/src/schemas/one-time-password";
 
-export async function verifyOtp(formData: FormData): Promise<ActionResponse> {
+export async function verifyOtp(
+  data: Record<string, unknown>
+): Promise<ActionResponse> {
+  // 1) Create anonymous supabase client
   const supabase = await createAnonymousServerSupabaseClient();
 
-  const result = verifyOtpSchema.safeParse({
-    email: formData.get("email"),
-    token: formData.get("token"),
-  });
+  // 2) Validate data
+  const result = verifyOtpSchema.safeParse(data);
 
   if (!result.success) {
     return {
@@ -23,6 +24,7 @@ export async function verifyOtp(formData: FormData): Promise<ActionResponse> {
     };
   }
 
+  // 3) Verify OTP
   const { error } = await supabase.auth.verifyOtp({
     email: result.data.email,
     token: result.data.token,

@@ -13,10 +13,10 @@ import { ActionResponse } from "@/src/types/actions-types";
 
 /**
  * Server action to update organization information text fields
- * @param formData - FormData containing the organization information text fields
+ * @param data - Data containing the organization information text fields
  */
 export async function updateOrganization(
-  formData: FormData
+  data: Record<string, unknown>
 ): Promise<ActionResponse> {
   const supabase = await createServerSupabaseClient();
 
@@ -31,19 +31,7 @@ export async function updateOrganization(
   }
 
   // 2) Validate data
-  const dataObj = Object.fromEntries(formData.entries()) as Record<
-    string,
-    string | string[] | undefined
-  >;
-  if (typeof dataObj.projectAreas === "string") {
-    try {
-      dataObj.projectAreas = JSON.parse(dataObj.projectAreas);
-    } catch {
-      dataObj.projectAreas = [];
-    }
-  }
-
-  const result = updateOrganizationSchema.safeParse(dataObj);
+  const result = updateOrganizationSchema.safeParse(data);
 
   if (!result.success) {
     const errors: Record<string, string[]> = {};
