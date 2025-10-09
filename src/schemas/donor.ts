@@ -28,7 +28,7 @@ export const CA_PROVINCES_TO_CITIES: Record<string, string[]> = {
 
 export const CANADIAN_PROVINCES = Object.keys(CA_PROVINCES_TO_CITIES);
 
-export const donorProfileSchema = z
+export const donorSchema = z
   .object({
     first_name: z
       .string()
@@ -81,4 +81,4 @@ export const donorProfileSchema = z
     }
   });
 
-export type TDonorProfileSchema = z.infer<typeof donorProfileSchema>;
+export type TDonorSchema = z.infer<typeof donorSchema>;

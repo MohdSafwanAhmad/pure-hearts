@@ -35,8 +35,8 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import {
-  donorProfileSchema,
-  TDonorProfileSchema,
+  donorSchema,
+  TDonorSchema,
   CA_PROVINCES_TO_CITIES,
   CANADIAN_PROVINCES,
 } from "@/src/schemas/donor";
@@ -65,7 +65,7 @@ export default function ProfileForm({ initial }: Props) {
   const [serverError, setServerError] = useState<string | null>(null);
   const [serverSuccess, setServerSuccess] = useState<string | null>(null);
 
-  const defaultValues: TDonorProfileSchema = {
+  const defaultValues: TDonorSchema = {
     first_name: initial.first_name ?? "",
     last_name: initial.last_name ?? "",
     phone: initial.phone ?? "",
@@ -78,8 +78,8 @@ export default function ProfileForm({ initial }: Props) {
     country: "Canada",
   };
 
-  const form = useForm<TDonorProfileSchema>({
-    resolver: zodResolver(donorProfileSchema),
+  const form = useForm<TDonorSchema>({
+    resolver: zodResolver(donorSchema),
     defaultValues,
     mode: "onChange",
   });
@@ -107,7 +107,7 @@ export default function ProfileForm({ initial }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProvince]);
 
-  async function onSubmit(values: TDonorProfileSchema) {
+  async function onSubmit(values: TDonorSchema) {
     setServerError(null);
     setServerSuccess(null);
 

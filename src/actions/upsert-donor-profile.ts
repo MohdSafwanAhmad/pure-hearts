@@ -6,7 +6,7 @@ import {
   getDonorProfile,
 } from "@/src/lib/supabase/server";
 import type { Database } from "@/src/types/database-types";
-import { donorProfileSchema } from "@/src/schemas/donor";
+import { donorSchema } from "@/src/schemas/donor";
 
 /** DB helpers (typed from your generated Database type) */
 type DonorInsert = Database["public"]["Tables"]["donors"]["Insert"];
@@ -63,7 +63,7 @@ export async function upsertDonorProfile(
   }
 
   // Validate data with Zod
-  const result = donorProfileSchema.safeParse(payload);
+  const result = donorSchema.safeParse(payload);
 
   if (!result.success) {
     const errors: Record<string, string[]> = {};
