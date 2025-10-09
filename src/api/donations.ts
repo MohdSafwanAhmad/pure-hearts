@@ -99,7 +99,6 @@ export async function generateReceiptPdf(
 }
 
 export async function getDonationsByUserId(
-  userId: string
 ): Promise<Donation[]> {
   const supabase = await createAnonymousServerSupabaseClient();
   const donorProfile = await getDonorProfile();
@@ -111,7 +110,7 @@ export async function getDonationsByUserId(
   const { data, error } = await supabase
     .from("donations")
     .select("*")
-    .eq("donor_id", userId)
+    .eq("donor_id", donorProfile.user_id)
     .order("created_at", { ascending: false });
 
   if (error) {
