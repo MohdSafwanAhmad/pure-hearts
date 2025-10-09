@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
@@ -13,7 +13,6 @@ import {
 
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
-import { Label } from "@/src/components/ui/label";
 import { Alert, AlertDescription } from "@/src/components/ui/alert";
 import {
   Card,
@@ -28,6 +27,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/src/components/ui/form";
 
 /* ------------------------------------------------------------------ */
 /* Canada provinces and a simple city list for each (extend as needed) */
@@ -72,7 +79,7 @@ const ProfileSchema = z.object({
     .refine((v) => CANADIAN_PROVINCES.includes(v), {
       message: "Please select a valid province",
     }),
-  // City required; we’ll validate it belongs to selected province
+  // City required; we'll validate it belongs to selected province
   city: z.string().min(1, "City is required"),
   // Country fixed to Canada, but keep for type completeness
   country: z.literal("Canada"),
@@ -89,12 +96,12 @@ type Props = {
     address: string | null;
     city: string | null;
     state: string | null;
-    country: string | null; // we will pin to Canada in the UI
+    country: string | null;
     profile_completed: boolean;
   };
 };
 
-export default function ProfileForm({ userId, initial }: Props) {
+export default function ProfileForm({ initial }: Props) {
   const router = useRouter();
 
   // Start locked if already completed
@@ -137,7 +144,7 @@ export default function ProfileForm({ userId, initial }: Props) {
     mode: "onChange",
   });
 
-  const { register, handleSubmit, control, reset, watch, formState } = form;
+  const { handleSubmit, reset, watch, formState } = form;
   const { isDirty, isValid, isSubmitting } = formState;
 
   // Province selected → compute city options
@@ -148,7 +155,7 @@ export default function ProfileForm({ userId, initial }: Props) {
     [selectedProvince]
   );
 
-  // If province changes and current city isn’t valid, clear it
+  // If province changes and current city isn't valid, clear it
   useEffect(() => {
     const currentCity = watch("city");
     if (selectedProvince && currentCity) {
@@ -180,7 +187,7 @@ export default function ProfileForm({ userId, initial }: Props) {
         : "Profile completed successfully!"
     );
     setEditMode(false);
-    reset(values); // keep tidy
+    reset(values);
     router.refresh();
   }
 
@@ -211,7 +218,7 @@ export default function ProfileForm({ userId, initial }: Props) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      {/* Page header (similar to org) */}
+      {/* Page header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
@@ -245,174 +252,219 @@ export default function ProfileForm({ userId, initial }: Props) {
         </Alert>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        {/* Basic Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Basic Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="first_name">First name *</Label>
-                <Input
-                  id="first_name"
-                  disabled={!editMode || isSubmitting}
-                  {...register("first_name")}
+      <Form {...form}>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          {/* Basic Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Basic Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="first_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First name *</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          disabled={!editMode || isSubmitting}
+                          placeholder="Enter your first name"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div>
-                <Label htmlFor="last_name">Last name *</Label>
-                <Input
-                  id="last_name"
-                  disabled={!editMode || isSubmitting}
-                  {...register("last_name")}
-                />
-              </div>
-            </div>
 
-            <div>
-              <Label htmlFor="phone">Phone</Label>
-              <Input
-                id="phone"
-                type="tel"
-                disabled={!editMode || isSubmitting}
-                {...register("phone")}
-                placeholder="+1 234 567 8901"
+                <FormField
+                  control={form.control}
+                  name="last_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last name *</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          disabled={!editMode || isSubmitting}
+                          placeholder="Enter your last name"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value ?? ""}
+                        type="tel"
+                        disabled={!editMode || isSubmitting}
+                        placeholder="+1 234 567 8901"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Location */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Location</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label>Country</Label>
-              <Input value="Canada" disabled className="bg-muted" />
-            </div>
+          {/* Location */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Location</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormItem>
+                <FormLabel>Country</FormLabel>
+                <FormControl>
+                  <Input value="Canada" disabled className="bg-muted" />
+                </FormControl>
+              </FormItem>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="state">State / Province *</Label>
-                <Controller
-                  control={control}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
                   name="state"
                   render={({ field }) => (
-                    <Select
-                      disabled={!editMode || isSubmitting}
-                      onValueChange={(v) => field.onChange(v)}
-                      value={field.value}
-                    >
-                      <SelectTrigger id="state">
-                        <SelectValue placeholder="Select a province" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CANADIAN_PROVINCES.map((prov) => (
-                          <SelectItem key={prov} value={prov}>
-                            {prov}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormItem>
+                      <FormLabel>State / Province *</FormLabel>
+                      <Select
+                        disabled={!editMode || isSubmitting}
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a province" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {CANADIAN_PROVINCES.map((prov) => (
+                            <SelectItem key={prov} value={prov}>
+                              {prov}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
                   )}
                 />
-              </div>
 
-              <div>
-                <Label htmlFor="city">City *</Label>
-                <Controller
-                  control={control}
+                <FormField
+                  control={form.control}
                   name="city"
                   render={({ field }) => (
-                    <Select
-                      disabled={!editMode || isSubmitting || !selectedProvince}
-                      onValueChange={(v) => field.onChange(v)}
-                      value={field.value}
-                    >
-                      <SelectTrigger id="city">
-                        <SelectValue
-                          placeholder={
-                            selectedProvince
-                              ? "Select a city"
-                              : "Select a province first"
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(cityOptions.length ? cityOptions : []).map((c) => (
-                          <SelectItem key={c} value={c}>
-                            {c}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormItem>
+                      <FormLabel>City *</FormLabel>
+                      <Select
+                        disabled={!editMode || isSubmitting || !selectedProvince}
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder={
+                                selectedProvince
+                                  ? "Select a city"
+                                  : "Select a province first"
+                              }
+                            />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {(cityOptions.length ? cityOptions : []).map((c) => (
+                            <SelectItem key={c} value={c}>
+                              {c}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
                   )}
                 />
               </div>
-            </div>
 
-            <div>
-              <Label htmlFor="address">Street Address *</Label>
-              <Input
-                id="address"
-                disabled={!editMode || isSubmitting}
-                {...register("address")}
-                placeholder="e.g., 101 Zakat Crescent"
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Street Address *</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        disabled={!editMode || isSubmitting}
+                        placeholder="e.g., 101 Zakat Crescent"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Actions */}
-        {editMode && (
-          <div className="flex justify-between items-center pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                reset(defaultValues);
-                setServerError(null);
-                setServerSuccess(null);
-                // If it was already completed, return to locked view
-                setEditMode(!initial.profile_completed ? true : false);
-              }}
-              disabled={isSubmitting || (!isDirty && initial.profile_completed)}
-            >
-              Cancel
-            </Button>
-
-            <div className="flex gap-3">
-              {initial.profile_completed && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={onDelete}
-                  disabled={isSubmitting}
-                >
-                  Delete Profile
-                </Button>
-              )}
-
+          {/* Actions */}
+          {editMode && (
+            <div className="flex justify-between items-center pt-2">
               <Button
-                type="submit"
-                disabled={!isValid || isSubmitting || !isDirty}
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  reset(defaultValues);
+                  setServerError(null);
+                  setServerSuccess(null);
+                  setEditMode(!initial.profile_completed ? true : false);
+                }}
+                disabled={isSubmitting || (!isDirty && initial.profile_completed)}
               >
-                {initial.profile_completed
-                  ? isSubmitting
-                    ? "Updating..."
-                    : "Save Changes"
-                  : isSubmitting
-                  ? "Saving..."
-                  : "Complete Profile"}
+                Cancel
               </Button>
+
+              <div className="flex gap-3">
+                {initial.profile_completed && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={onDelete}
+                    disabled={isSubmitting}
+                  >
+                    Delete Profile
+                  </Button>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={!isValid || isSubmitting || !isDirty}
+                >
+                  {initial.profile_completed
+                    ? isSubmitting
+                      ? "Updating..."
+                      : "Save Changes"
+                    : isSubmitting
+                    ? "Saving..."
+                    : "Complete Profile"}
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
-      </form>
+          )}
+        </form>
+      </Form>
     </div>
   );
 }
