@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import { getDonorProfile, getOrganizationProfile } from "./server";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -35,9 +36,16 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: DO NOT REMOVE auth.getUser()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [donor, organization] = await Promise.all([
+    getDonorProfile({
+      optionalClient: supabase,
+    }),
+    getOrganizationProfile({
+      optionalClient: supabase,
+    }),
+  ]);
+
+  const user = donor || organization;
 
   const protectedRoutes = ["/dashboard"];
   if (!user && protectedRoutes.includes(request.nextUrl.pathname)) {
@@ -51,10 +59,17 @@ export async function updateSession(request: NextRequest) {
   const paths = request.nextUrl.pathname.split("/");
   const isAuthRoute = paths.some((path) => authRoutesValue.includes(path));
 
-  if (user && isAuthRoute) {
+  if (donor && isAuthRoute) {
     // user, potentially respond by redirecting the user to the dashboard
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = "/dashboard/donor/overview";
+    return NextResponse.redirect(url);
+  }
+
+  if (organization && isAuthRoute) {
+    // user, potentially respond by redirecting the user to the dashboard
+    const url = request.nextUrl.clone();
+    url.pathname = `/organizations/${organization.slug}`;
     return NextResponse.redirect(url);
   }
 
