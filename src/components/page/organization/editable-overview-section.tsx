@@ -8,16 +8,26 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
-import { TOrganizationSchema } from "@/src/schemas/organization";
+import { TUpdateOrganizationSchema } from "@/src/schemas/organization";
 import { UseFormReturn } from "react-hook-form";
-import { ProjectAreasCombobox } from "./project-areas-combobox";
+import { ProjectAreasCombobox } from "@/src/components/page/organization/project-areas-combobox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/src/components/ui/select";
+import { canadianProvinces } from "@/src/lib/constants";
 
 interface EditableOverviewSectionProps {
-  form: UseFormReturn<TOrganizationSchema>;
+  form: UseFormReturn<TUpdateOrganizationSchema>;
+  projectAreas: { value: number; label: string }[];
 }
 
 export function EditableOverviewSection({
   form,
+  projectAreas,
 }: EditableOverviewSectionProps) {
   return (
     <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 py-4">
@@ -26,7 +36,9 @@ export function EditableOverviewSection({
         name="organizationName"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Organization Name</FormLabel>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Organization Name
+            </FormLabel>
             <FormControl>
               <Input {...field} placeholder="Enter organization name" />
             </FormControl>
@@ -40,7 +52,9 @@ export function EditableOverviewSection({
         name="address"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Street Address</FormLabel>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Street Address
+            </FormLabel>
             <FormControl>
               <Input {...field} placeholder="Enter street address" />
             </FormControl>
@@ -54,7 +68,9 @@ export function EditableOverviewSection({
         name="city"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>City</FormLabel>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              City
+            </FormLabel>
             <FormControl>
               <Input {...field} placeholder="Enter city" />
             </FormControl>
@@ -68,10 +84,23 @@ export function EditableOverviewSection({
         name="state"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Province/State</FormLabel>
-            <FormControl>
-              <Input {...field} placeholder="Enter province or state" />
-            </FormControl>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              State/Province *
+            </FormLabel>
+            <Select onValueChange={field.onChange} value={field.value}>
+              <FormControl>
+                <SelectTrigger className="w-full text-black">
+                  <SelectValue placeholder="Select your state or province" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {canadianProvinces.map((province) => (
+                  <SelectItem key={province.value} value={province.value}>
+                    {province.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <FormMessage />
           </FormItem>
         )}
@@ -82,7 +111,9 @@ export function EditableOverviewSection({
         name="country"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Country</FormLabel>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Country
+            </FormLabel>
             <FormControl>
               <Input {...field} placeholder="Enter country" />
             </FormControl>
@@ -96,7 +127,9 @@ export function EditableOverviewSection({
         <FormField
           control={form.control}
           name="projectAreas"
-          render={() => <ProjectAreasCombobox form={form} />}
+          render={() => (
+            <ProjectAreasCombobox form={form} projectAreas={projectAreas} />
+          )}
         />
       </div>
     </div>

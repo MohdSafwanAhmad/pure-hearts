@@ -1,5 +1,5 @@
 "use client";
-import { loginAsOrganization } from "@/src/actions/auth-organization";
+import { loginAsDonor } from "@/src/actions/auth-donor";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
 import {
@@ -11,26 +11,23 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
-import {
-  loginOrganizationSchema,
-  TLoginOrganizationSchema,
-} from "@/src/schemas/organization";
+import { loginDonorSchema, TLoginDonorSchema } from "@/src/schemas/donor";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-export function OrganizationLoginForm() {
-  const form = useForm<TLoginOrganizationSchema>({
-    resolver: zodResolver(loginOrganizationSchema),
+export function DonorLoginForm() {
+  const form = useForm<TLoginDonorSchema>({
+    resolver: zodResolver(loginDonorSchema),
     defaultValues: {
       email: "",
     },
   });
 
-  const onSubmit = async (data: TLoginOrganizationSchema) => {
-    const res = await loginAsOrganization(data);
+  const onSubmit = async (data: TLoginDonorSchema) => {
+    const res = await loginAsDonor(data);
 
     if (res?.error) {
       toast.error(res.error);
@@ -45,9 +42,9 @@ export function OrganizationLoginForm() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 md:p-8">
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col items-center text-center">
-                  <h1 className="text-2xl font-bold">Organization Login</h1>
+                  <h1 className="text-2xl font-bold">Welcome back</h1>
                   <p className="text-muted-foreground text-balance">
-                    Access your organization account
+                    Login to your Pure Zakat account
                   </p>
                 </div>
 
@@ -56,11 +53,11 @@ export function OrganizationLoginForm() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Organization Email</FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="organization@example.com"
+                          placeholder="m@example.com"
                           {...field}
                         />
                       </FormControl>
@@ -78,11 +75,8 @@ export function OrganizationLoginForm() {
                 </Button>
 
                 <div className="text-center text-sm">
-                  Don&apos;t have an organization account?{" "}
-                  <Link
-                    href="/signup/organization"
-                    className="underline underline-offset-4"
-                  >
+                  Don&apos;t have an account?{" "}
+                  <Link href="/signup" className="underline underline-offset-4">
                     Sign up
                   </Link>
                 </div>

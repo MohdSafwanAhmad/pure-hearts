@@ -3,13 +3,16 @@
 import { Heading } from "@/src/components/global/heading";
 import { Button } from "@/src/components/ui/button";
 import { cn } from "@/src/lib/utils";
-import { TDonor } from "@/src/types/auth-organizations-types";
 import { BarChart3, Home, Menu, User, X } from "lucide-react";
 import { useState } from "react";
 import DashboardView from "./dashboard-view";
 
 export interface Props {
-  profile: TDonor;
+  profile: {
+    user_id: string;
+    first_name: string;
+    last_name: string;
+  };
 }
 
 export function DonorDashboard({ profile }: Props) {

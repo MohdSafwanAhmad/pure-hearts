@@ -1,5 +1,5 @@
 import { UseFormReturn } from "react-hook-form";
-import { TOrganizationSchema } from "@/src/schemas/organization";
+import { TUpdateOrganizationSchema } from "@/src/schemas/organization";
 import {
   FormField,
   FormItem,
@@ -10,7 +10,7 @@ import {
 import { Input } from "@/src/components/ui/input";
 
 interface EditableContactSectionProps {
-  form: UseFormReturn<TOrganizationSchema>;
+  form: UseFormReturn<TUpdateOrganizationSchema>;
 }
 
 const contactFields = [
@@ -54,20 +54,22 @@ const contactFields = [
 
 export function EditableContactSection({ form }: EditableContactSectionProps) {
   return (
-    <div className="grid gap-x-6 grid-cols-1 sm:grid-cols-2 divide-y">
+    <div className="grid gap-x-6 grid-cols-1 sm:grid-cols-2 ">
       {contactFields.map((field) => (
         <div key={field.name} className="py-4">
           <FormField
             control={form.control}
-            name={field.name as keyof TOrganizationSchema}
+            name={field.name as keyof TUpdateOrganizationSchema}
             render={({ field: formField }) => (
               <FormItem>
-                <FormLabel>{field.label}</FormLabel>
+                <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {field.label}
+                </FormLabel>
                 <FormControl>
                   <Input
                     {...formField}
                     type={field.type}
-                    value={formField.value || ""}
+                    value={(formField.value as string) || ""}
                     placeholder={field.placeholder}
                   />
                 </FormControl>

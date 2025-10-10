@@ -8,11 +8,11 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { Input } from "@/src/components/ui/input";
-import { TOrganizationSchema } from "@/src/schemas/organization";
+import { TUpdateOrganizationSchema } from "@/src/schemas/organization";
 import { UseFormReturn } from "react-hook-form";
 
 interface EditablePrivateSectionProps {
-  form: UseFormReturn<TOrganizationSchema>;
+  form: UseFormReturn<TUpdateOrganizationSchema>;
 }
 
 export function EditablePrivateSection({ form }: EditablePrivateSectionProps) {
@@ -23,7 +23,9 @@ export function EditablePrivateSection({ form }: EditablePrivateSectionProps) {
         name="contactPersonName"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Contact Person Name</FormLabel>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Contact Person Name
+            </FormLabel>
             <FormControl>
               <Input {...field} placeholder="Enter contact person's name" />
             </FormControl>
@@ -37,7 +39,9 @@ export function EditablePrivateSection({ form }: EditablePrivateSectionProps) {
         name="contactPersonEmail"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Contact Person Email</FormLabel>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Contact Person Email
+            </FormLabel>
             <FormControl>
               <Input
                 {...field}
@@ -55,7 +59,9 @@ export function EditablePrivateSection({ form }: EditablePrivateSectionProps) {
         name="contactPersonPhone"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Contact Person Phone</FormLabel>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Contact Person Phone
+            </FormLabel>
             <FormControl>
               <Input {...field} type="tel" placeholder="e.g. +1 234 567 890" />
             </FormControl>

@@ -55,8 +55,11 @@ export async function createAnonymousServerSupabaseClient() {
   );
 }
 
-export async function getDonorProfile() {
-  const supabase = await createAnonymousServerSupabaseClient();
+export async function getDonorProfile(parameters?: {
+  optionalClient?: ReturnType<typeof createServerClient>;
+}) {
+  const supabase =
+    parameters?.optionalClient || (await createAnonymousServerSupabaseClient());
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -80,8 +83,11 @@ export async function getDonorProfile() {
   };
 }
 
-export async function getOrganizationProfile() {
-  const supabase = await createAnonymousServerSupabaseClient();
+export async function getOrganizationProfile(parameters?: {
+  optionalClient?: ReturnType<typeof createServerClient>;
+}) {
+  const supabase =
+    parameters?.optionalClient || (await createAnonymousServerSupabaseClient());
   const {
     data: { user },
   } = await supabase.auth.getUser();

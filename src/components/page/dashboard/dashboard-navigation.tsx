@@ -10,7 +10,6 @@ import { Menu, X, Home, User, BarChart3 } from "lucide-react";
 import LogoutButton from "@/src/components/global/logout-button";
 
 export interface Props {
-  dashboardType: "organization" | "donor";
   children: React.ReactNode;
   sections: {
     id: string;
@@ -26,11 +25,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   BarChart3,
 };
 
-export function DashboardNavigation({
-  dashboardType,
-  children,
-  sections,
-}: Props) {
+export function DashboardNavigation({ children, sections }: Props) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -56,9 +51,7 @@ export function DashboardNavigation({
                 level={5}
                 className="text-lg font-semibold text-sidebar-foreground"
               >
-                {dashboardType === "organization"
-                  ? "Organization Dashboard"
-                  : "Donor Dashboard"}
+                Donor Dashboard
               </Heading>
               <Button
                 variant="ghost"
@@ -110,9 +103,7 @@ export function DashboardNavigation({
             <Menu className="h-4 w-4" />
           </Button>
           <Heading level={5} className="text-lg font-semibold">
-            {dashboardType === "organization"
-              ? "Organization Dashboard"
-              : "Donor Dashboard"}
+            Donor Dashboard
           </Heading>
           <div className="w-8" />
         </div>

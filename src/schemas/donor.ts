@@ -32,14 +32,15 @@ export const donorSchema = z
   .object({
     first_name: z
       .string()
-      .min(1, "First name is required")
-      .max(50, "First name must be less than 50 characters")
+      .min(2, "Please enter at least 2 characters")
+      .max(100, "Please enter at most 100 characters")
       .trim(),
     last_name: z
       .string()
-      .min(1, "Last name is required")
-      .max(50, "Last name must be less than 50 characters")
+      .min(2, "Please enter at least 2 characters")
+      .max(100, "Please enter at most 100 characters")
       .trim(),
+    email: z.email("Please enter a valid email address"),
     phone: z
       .string()
       .optional()
@@ -66,6 +67,9 @@ export const donorSchema = z
       }),
     city: z.string().min(1, "City is required"),
     country: z.literal("Canada"),
+    donation_preferences: z
+      .array(z.string())
+      .min(1, "Please select at least one donation preference"),
   })
   .superRefine((val, ctx) => {
     // Ensure city belongs to chosen province
@@ -81,4 +85,9 @@ export const donorSchema = z
     }
   });
 
+export const loginDonorSchema = z.object({
+  email: z.email("Please enter a valid email address"),
+});
+
 export type TDonorSchema = z.infer<typeof donorSchema>;
+export type TLoginDonorSchema = z.infer<typeof loginDonorSchema>;

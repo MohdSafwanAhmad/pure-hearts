@@ -1,10 +1,10 @@
-import { LoginForm } from "@/src/components/page/login/login-form";
+import { DonorLoginForm } from "@/src/components/page/login/donor-login-form";
 
 export default function DonorLoginPage() {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-sm md:max-w-3xl">
-        <LoginForm />
+        <DonorLoginForm />
       </div>
     </div>
   );
