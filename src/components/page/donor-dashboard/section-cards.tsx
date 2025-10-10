@@ -1,11 +1,7 @@
-// src/components/donor-dashboard/section-cards.tsx
-import { IconTrendingUp } from "@tabler/icons-react";
 import type { Database } from "@/src/types/database-types";
 import {
   Card,
-  CardAction,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";

@@ -1,6 +1,7 @@
 "use server";
 
 import {
+  createServerSupabaseClient,
   createAnonymousServerSupabaseClient,
   getOrganizationProfile,
 } from "@/src/lib/supabase/server";
