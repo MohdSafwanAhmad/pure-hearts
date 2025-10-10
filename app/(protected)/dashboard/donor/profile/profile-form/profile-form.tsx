@@ -35,6 +35,16 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/src/components/ui/alert-dialog";
+import {
   donorProfileSchema,
   TDonorProfileSchema,
   CA_PROVINCES_TO_CITIES,
@@ -58,10 +68,9 @@ type Props = {
 export default function ProfileForm({ initial }: Props) {
   const router = useRouter();
 
-  // Start locked if already completed
-  const [editMode, setEditMode] = useState(
-    !initial.profile_completed ? true : false
-  );
+  // Start in edit mode if profile is not completed
+  const [editMode, setEditMode] = useState(!initial.profile_completed);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [serverSuccess, setServerSuccess] = useState<string | null>(null);
 
@@ -131,18 +140,18 @@ export default function ProfileForm({ initial }: Props) {
     router.refresh();
   }
 
-  async function onDelete() {
-    if (!confirm("Delete your profile? This cannot be undone.")) return;
+  async function handleDelete() {
     setServerError(null);
     setServerSuccess(null);
 
     const res = await deleteDonorProfile();
     if ("error" in res) {
       setServerError(res.error ?? "Failed to delete profile");
+      setShowDeleteDialog(false);
       return;
     }
 
-    setServerSuccess("Profile deleted");
+    setServerSuccess("Profile deleted successfully");
     setEditMode(true);
     reset({
       first_name: "",
@@ -153,7 +162,18 @@ export default function ProfileForm({ initial }: Props) {
       city: "",
       country: "Canada",
     });
+    setShowDeleteDialog(false);
     router.refresh();
+  }
+
+  function handleCancel() {
+    reset(defaultValues);
+    setServerError(null);
+    setServerSuccess(null);
+    // Only exit edit mode if profile is already completed
+    if (initial.profile_completed) {
+      setEditMode(false);
+    }
   }
 
   return (
@@ -169,12 +189,17 @@ export default function ProfileForm({ initial }: Props) {
           </p>
         </div>
 
+        {/* Show Edit/Delete buttons only when profile is completed AND not in edit mode */}
         {!editMode && initial.profile_completed && (
           <div className="flex gap-3">
             <Button type="button" onClick={() => setEditMode(true)}>
               Edit Profile
             </Button>
-            <Button type="button" variant="destructive" onClick={onDelete}>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => setShowDeleteDialog(true)}
+            >
               Delete Profile
             </Button>
           </div>
@@ -359,52 +384,56 @@ export default function ProfileForm({ initial }: Props) {
             </CardContent>
           </Card>
 
-          {/* Actions */}
+          {/* Action Buttons - Only show when in edit mode */}
           {editMode && (
             <div className="flex justify-between items-center pt-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  reset(defaultValues);
-                  setServerError(null);
-                  setServerSuccess(null);
-                  setEditMode(!initial.profile_completed ? true : false);
-                }}
-                disabled={isSubmitting || (!isDirty && initial.profile_completed)}
+                onClick={handleCancel}
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
 
-              <div className="flex gap-3">
-                {initial.profile_completed && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={onDelete}
-                    disabled={isSubmitting}
-                  >
-                    Delete Profile
-                  </Button>
-                )}
-
-                <Button
-                  type="submit"
-                  disabled={!isValid || isSubmitting || !isDirty}
-                >
-                  {initial.profile_completed
-                    ? isSubmitting
-                      ? "Updating..."
-                      : "Save Changes"
-                    : isSubmitting
-                    ? "Saving..."
-                    : "Complete Profile"}
-                </Button>
-              </div>
+              <Button
+                type="submit"
+                disabled={!isValid || isSubmitting || !isDirty}
+              >
+                {initial.profile_completed
+                  ? isSubmitting
+                    ? "Updating..."
+                    : "Save Changes"
+                  : isSubmitting
+                  ? "Saving..."
+                  : "Complete Profile"}
+              </Button>
             </div>
           )}
         </form>
       </Form>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              donor profile and remove all your data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Profile
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
