@@ -28,7 +28,26 @@ export const CA_PROVINCES_TO_CITIES: Record<string, string[]> = {
 
 export const CANADIAN_PROVINCES = Object.keys(CA_PROVINCES_TO_CITIES);
 
-export const donorSchema = z
+// SIGNUP SCHEMA - Used in donor-signup-form.tsx
+// Includes email and donation_preferences (required during signup)
+export const createDonorSchema = z.object({
+  first_name: z
+    .string()
+    .min(2, "Please enter at least 2 characters")
+    .max(100, "Please enter at most 100 characters"),
+  last_name: z
+    .string()
+    .min(2, "Please enter at least 2 characters")
+    .max(100, "Please enter at most 100 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  donation_preferences: z
+    .array(z.string())
+    .min(1, "Please select at least one donation preference"),
+});
+
+// PROFILE UPDATE SCHEMA - Used in profile-form.tsx
+// Only includes editable fields (no email, no donation_preferences)
+export const donorProfileSchema = z
   .object({
     first_name: z
       .string()
@@ -40,7 +59,6 @@ export const donorSchema = z
       .min(2, "Please enter at least 2 characters")
       .max(100, "Please enter at most 100 characters")
       .trim(),
-    email: z.email("Please enter a valid email address"),
     phone: z
       .string()
       .optional()
@@ -67,9 +85,6 @@ export const donorSchema = z
       }),
     city: z.string().min(1, "City is required"),
     country: z.literal("Canada"),
-    donation_preferences: z
-      .array(z.string())
-      .min(1, "Please select at least one donation preference"),
   })
   .superRefine((val, ctx) => {
     // Ensure city belongs to chosen province
@@ -85,9 +100,12 @@ export const donorSchema = z
     }
   });
 
+// LOGIN SCHEMA
 export const loginDonorSchema = z.object({
-  email: z.email("Please enter a valid email address"),
+  email: z.string().email("Please enter a valid email address"),
 });
 
-export type TDonorSchema = z.infer<typeof donorSchema>;
+// Type exports
+export type TCreateDonorSchema = z.infer<typeof createDonorSchema>;
+export type TDonorProfileSchema = z.infer<typeof donorProfileSchema>;
 export type TLoginDonorSchema = z.infer<typeof loginDonorSchema>;
