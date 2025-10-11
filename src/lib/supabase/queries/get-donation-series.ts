@@ -1,6 +1,6 @@
 "use server";
 
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 import type { Database } from "@/src/types/database-types";
 
 export type DonationPoint = { date: string; amount: number };
@@ -22,7 +22,7 @@ function toIsoDay(v: string | null | undefined): string | null {
 export async function getDonationSeriesForCurrentUser(): Promise<
   DonationPoint[]
 > {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
   const {
     data: { user },
     error: userErr,

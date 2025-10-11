@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 import { getDonationReceiptData, generateReceiptPdf } from "@/src/api/donations";
 
 export const runtime = "nodejs";
@@ -12,7 +12,7 @@ export async function GET(
     const { donationId } = await ctx.params;
 
     // Authenticate user
-    const supabase = await createServerSupabaseClient();
+    const supabase = await createAnonymousServerSupabaseClient();
     const {
       data: { user },
       error: userErr,
