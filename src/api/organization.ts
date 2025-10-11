@@ -50,7 +50,7 @@ export async function getOrganizationBySlug(slug: string) {
 export async function getOrganizationStats(
   organizationUserId: string
 ): Promise<OrganizationStats> {
-  const supabase = await createAnonymousServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const today = new Date().toISOString();
 
   interface DonorData {

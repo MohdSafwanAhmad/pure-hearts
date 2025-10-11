@@ -2,7 +2,6 @@
 
 import {
   createServerSupabaseClient,
-  createAnonymousServerSupabaseClient,
   getOrganizationProfile,
 } from "@/src/lib/supabase/server";
 import { updateOrganizationSchema } from "@/src/schemas/organization";
@@ -175,7 +174,7 @@ export async function updateOrganizationLogo(
     const filename = `${uuidv4()}-${organization.slug}-logo.${"webp"}`;
 
     // 3) Get the public URL of the uploaded file
-    const supabase = await createAnonymousServerSupabaseClient();
+    const supabase = await createServerSupabaseClient();
     const { data, error } = await supabase.storage
       .from(PUBLIC_IMAGE_BUCKET_NAME)
       .upload(filename, optimizedBuffer, {

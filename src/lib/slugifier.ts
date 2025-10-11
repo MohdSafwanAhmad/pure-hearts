@@ -1,5 +1,5 @@
 import "server-only";
-import { createAnonymousServerSupabaseClient } from "./supabase/server";
+import { createServerSupabaseClient } from "./supabase/server";
 import slugify from "slugify";
 
 const defaultSlugOptions = {
@@ -27,7 +27,7 @@ export async function generateUniqueSlug(
   name: string,
   tableName: string
 ): Promise<string> {
-  const supabase = await createAnonymousServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const baseSlug = generateSlug(name);
 
   if (!baseSlug) {
