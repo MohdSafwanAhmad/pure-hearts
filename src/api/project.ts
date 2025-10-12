@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 import { PUBLIC_IMAGE_BUCKET_NAME } from "@/src/lib/constants";
 import { getOrganizationBySlug } from "@/src/api/organization";
 
@@ -39,7 +39,7 @@ export async function getProjectBySlugs(
   const organization = await getOrganizationBySlug(orgSlug);
   if (!organization) return null;
 
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   // 2. Get project by org user id and slug
   const { data: project, error: projErr } = await supabase
@@ -118,7 +118,7 @@ export async function getProjectBySlugs(
  * Uses getProjectBySlugs to assemble full details per project.
  */
 export async function getRecentProjects(limit = 8): Promise<ProjectDetail[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   type Row = {
     slug: string;
@@ -159,7 +159,7 @@ export async function getProjects(
   limit = 24,
   offset = 0
 ): Promise<ProjectDetail[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   type ProjectRow = {
     id: string;

@@ -1,6 +1,6 @@
 "use server";
 
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 
 export type DonationRow = {
   id: string;
@@ -15,7 +15,7 @@ export type DonationRow = {
 };
 
 export async function getDonationRowsForCurrentUser(): Promise<DonationRow[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   const {
     data: { user },

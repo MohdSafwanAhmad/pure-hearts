@@ -1,15 +1,11 @@
-// src/components/donor-dashboard/section-cards.tsx
-import { IconTrendingUp } from "@tabler/icons-react";
 import type { Database } from "@/src/types/database-types";
 import {
   Card,
-  CardAction,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 
 // Narrow row type for our select
 type DonationSlim = Pick<
@@ -30,7 +26,7 @@ const DAILY_MS = 24 * 60 * 60 * 1000;
 const MONTHLY_MS = 31 * DAILY_MS;
 
 async function fetchDonationsForUser(): Promise<DonationSlim[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAnonymousServerSupabaseClient();
 
   const {
     data: { user },
