@@ -96,24 +96,45 @@ export type Database = {
       };
       donors: {
         Row: {
+          address: string | null;
+          city: string | null;
+          country: string | null;
           donation_preferences: Json | null;
           first_name: string;
           last_name: string;
+          phone: string | null;
           profile_completed: boolean | null;
+          profile_photo: string | null;
+          state: string | null;
+          updated_at: string | null;
           user_id: string;
         };
         Insert: {
+          address?: string | null;
+          city?: string | null;
+          country?: string | null;
           donation_preferences?: Json | null;
           first_name: string;
           last_name: string;
+          phone?: string | null;
           profile_completed?: boolean | null;
+          profile_photo?: string | null;
+          state?: string | null;
+          updated_at?: string | null;
           user_id: string;
         };
         Update: {
+          address?: string | null;
+          city?: string | null;
+          country?: string | null;
           donation_preferences?: Json | null;
           first_name?: string;
           last_name?: string;
+          phone?: string | null;
           profile_completed?: boolean | null;
+          profile_photo?: string | null;
+          state?: string | null;
+          updated_at?: string | null;
           user_id?: string;
         };
         Relationships: [];
@@ -158,6 +179,7 @@ export type Database = {
           country: string;
           facebook_url: string | null;
           instagram_url: string | null;
+          is_stripe_account_connected: boolean;
           is_verified: boolean | null;
           linkedin_url: string | null;
           logo: string | null;
@@ -166,6 +188,7 @@ export type Database = {
           organization_phone: string;
           slug: string;
           state: string;
+          stripe_account_id: string | null;
           twitter_url: string | null;
           user_id: string;
           website_url: string | null;
@@ -179,6 +202,7 @@ export type Database = {
           country?: string;
           facebook_url?: string | null;
           instagram_url?: string | null;
+          is_stripe_account_connected?: boolean;
           is_verified?: boolean | null;
           linkedin_url?: string | null;
           logo?: string | null;
@@ -187,6 +211,7 @@ export type Database = {
           organization_phone: string;
           slug: string;
           state: string;
+          stripe_account_id?: string | null;
           twitter_url?: string | null;
           user_id: string;
           website_url?: string | null;
@@ -200,6 +225,7 @@ export type Database = {
           country?: string;
           facebook_url?: string | null;
           instagram_url?: string | null;
+          is_stripe_account_connected?: boolean;
           is_verified?: boolean | null;
           linkedin_url?: string | null;
           logo?: string | null;
@@ -208,6 +234,7 @@ export type Database = {
           organization_phone?: string;
           slug?: string;
           state?: string;
+          stripe_account_id?: string | null;
           twitter_url?: string | null;
           user_id?: string;
           website_url?: string | null;

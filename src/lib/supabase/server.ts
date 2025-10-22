@@ -2,7 +2,8 @@ import "server-only";
 import { Database } from "@/src/types/database-types";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { cache } from "react";
 
 /**
  * Creates a Supabase client for server-side use. With Admin privileges using the Service Role Key.
@@ -55,54 +56,56 @@ export async function createAnonymousServerSupabaseClient() {
   );
 }
 
-export async function getDonorProfile(parameters?: {
-  optionalClient?: ReturnType<typeof createServerClient>;
-}) {
-  const supabase =
-    parameters?.optionalClient || (await createAnonymousServerSupabaseClient());
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export const getDonorProfile = cache(
+  async (parameters?: { optionalClient?: SupabaseClient<Database> }) => {
+    const supabase =
+      parameters?.optionalClient ||
+      (await createAnonymousServerSupabaseClient());
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  if (!user) {
-    return null;
+    if (!user) {
+      return null;
+    }
+    const { data: profile } = await supabase
+      .from("donors")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!profile) {
+      return null;
+    }
+
+    return {
+      ...profile,
+      email: user.email,
+    };
   }
-  const { data: profile } = await supabase
-    .from("donors")
-    .select("*")
-    .eq("user_id", user.id)
-    .single();
+);
 
-  if (!profile) {
-    return null;
+export const getOrganizationProfile = cache(
+  async (parameters?: { optionalClient?: SupabaseClient<Database> }) => {
+    const supabase =
+      parameters?.optionalClient ||
+      (await createAnonymousServerSupabaseClient());
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return null;
+    }
+    const { data: profile } = await supabase
+      .from("organizations")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!profile) {
+      return null;
+    }
+
+    return { email: user.email, ...profile };
   }
-
-  return {
-    ...profile,
-    email: user.email,
-  };
-}
-
-export async function getOrganizationProfile(parameters?: {
-  optionalClient?: ReturnType<typeof createServerClient>;
-}) {
-  const supabase =
-    parameters?.optionalClient || (await createAnonymousServerSupabaseClient());
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return null;
-  }
-  const { data: profile } = await supabase
-    .from("organizations")
-    .select("*")
-    .eq("user_id", user.id)
-    .single();
-
-  if (!profile) {
-    return null;
-  }
-
-  return profile;
-}
+);

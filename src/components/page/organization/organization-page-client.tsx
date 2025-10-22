@@ -1,6 +1,7 @@
 "use client";
 
 import { updateOrganization } from "@/src/actions/organization";
+import { goToExpressDashboard, linkStripeAccount } from "@/src/actions/payment";
 import { EditableDetailsSection } from "@/src/components/page/organization/editable-details-section";
 import { EditableHeaderSection } from "@/src/components/page/organization/editable-header-section";
 import { ProjectsSection } from "@/src/components/page/organization/projects-section";
@@ -12,7 +13,14 @@ import {
   updateOrganizationSchema,
 } from "@/src/schemas/organization";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Edit2, Save, X } from "lucide-react";
+import {
+  CreditCard,
+  Edit2,
+  Loader2,
+  Save,
+  X,
+  LayoutDashboard,
+} from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -41,6 +49,7 @@ interface OrganizationPageClientProps {
     linkedin_url: string | null;
     logo: string | null;
     slug: string | null;
+    is_stripe_account_connected?: boolean;
   };
   isOwner: boolean;
   stats: {
@@ -78,6 +87,8 @@ export function OrganizationPageClient({
   projectAreas,
 }: OrganizationPageClientProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoadingPayment, setIsLoadingPayment] = useState(false);
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState(false);
 
   const projectAreasIds = organization.project_areas.map((area) => area.id);
 
@@ -126,6 +137,26 @@ export function OrganizationPageClient({
     }
   };
 
+  const handleSetupPayments = async () => {
+    setIsLoadingPayment(true);
+    const result = await linkStripeAccount();
+    if (!result.success) {
+      toast.error("Failed to set up payment information");
+    }
+    setIsLoadingPayment(false);
+  };
+
+  const handleGoToDashboard = async () => {
+    setIsLoadingDashboard(true);
+    try {
+      await goToExpressDashboard();
+    } catch {
+      toast.error("Failed to open Stripe dashboard");
+    } finally {
+      setIsLoadingDashboard(false);
+    }
+  };
+
   // Import the editable components
   return (
     <div>
@@ -133,7 +164,46 @@ export function OrganizationPageClient({
         <form onSubmit={form.handleSubmit(onSubmit)}>
           {/* Global Edit Button (only shown to organization owners) */}
           {isOwner && !isEditing && (
-            <div className="container mx-auto px-4 py-4 flex justify-end sticky top-0 ">
+            <div className="container mx-auto px-4 py-4 flex justify-end gap-2 sticky top-0 ">
+              {organization.is_stripe_account_connected ? (
+                <Button
+                  onClick={handleGoToDashboard}
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary hover:text-white"
+                  disabled={isLoadingDashboard}
+                >
+                  {isLoadingDashboard ? (
+                    <>
+                      <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                      Opening...
+                    </>
+                  ) : (
+                    <>
+                      <LayoutDashboard className="mr-1 h-4 w-4" />
+                      Go to Billing Dashboard
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSetupPayments}
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary hover:text-white"
+                  disabled={isLoadingPayment}
+                >
+                  {isLoadingPayment ? (
+                    <>
+                      <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                      Setting Up...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="mr-1 h-4 w-4" />
+                      Set Up Payments
+                    </>
+                  )}
+                </Button>
+              )}
               <Button
                 onClick={startEditing}
                 variant="outline"
