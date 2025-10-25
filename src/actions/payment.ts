@@ -3,41 +3,95 @@
 import { getStripe } from "@/src/lib/stripe";
 import {
   createServerSupabaseClient,
+  getDonorProfile,
   getOrganizationProfile,
 } from "@/src/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { donationSchema, type DonationSchema } from "@/src/schemas/donation";
 import { ActionResponse } from "@/src/types/actions-types";
+import { redirect } from "next/navigation";
+import Stripe from "stripe";
 
-export async function createCheckoutSession() {
+// https://stripe.com/en-ca/pricing/local-payment-methods
+// https://docs.stripe.com/connect/direct-charges?platform=web&ui=stripe-hosted#platform-visibility-limitations
+// https://docs.stripe.com/connect/testing
+// T!t!t1234!te
+
+export async function createCheckoutSession(formData: DonationSchema) {
+  // Validate the donation data
+  const validationResult = donationSchema.safeParse(formData);
+
+  if (!validationResult.success) {
+    throw new Error(`Invalid donation data: ${validationResult.error.message}`);
+  }
+
+  const parameters = validationResult.data;
+
   // 1) get Logged in user
+  const donor = await getDonorProfile();
+
   // 2) if user logged in and has a stripe customer id, use that, else create one
-  //// when creating strip customer, add metadata with user id and name, and make sure to save the stripe customer id to the user record
+  const stripe = getStripe();
+  let customer: Stripe.Response<Stripe.Customer> | null = null;
+
+  if (donor) {
+    let customerId = donor.stripe_account_id;
+    if (!customerId) {
+      customer = await stripe.customers.create({
+        email: donor.email,
+        name: `${donor.first_name} ${donor.last_name}`,
+        metadata: {
+          user_id: donor.user_id,
+        },
+      });
+      customerId = customer.id;
+      const supabase = await createServerSupabaseClient();
+      await supabase
+        .from("donors")
+        .update({ stripe_account_id: customerId })
+        .eq("user_id", donor.user_id);
+    }
+  }
+
   // 3) create checkout session
-  //   const session = await stripe.checkout.sessions.create({
-  //     mode: "payment",
-  //     customer: customerId,
-  //     line_items: [
-  //       {
-  //         price_data: {
-  //           currency: "usd",
-  //           unit_amount: product.price * 100,
-  //           product_data: {
-  //             name: product.name,
-  //             description: product.description,
-  //           },
-  //         },
-  //         quantity: 1,
-  //       },
-  //     ],
-  //     metadata: {
-  //       productId: product.id,
-  //       userId: user.id,
-  //     },
-  //     success_url:
-  //       "http://localhost:3000/purchase/success?sessionId={CHECKOUT_SESSION_ID}",
-  //     cancel_url: "http://localhost:5173/",
-  //   });
-  //   if (session.url == null) throw new Error("Session URL is null");
+  const donationAmountInCents = Math.round(parameters.donationAmount * 100);
+
+  const session = await stripe.checkout.sessions.create(
+    {
+      mode: "payment",
+      customer: donor?.stripe_account_id ?? undefined, // undefined if guest checkout
+      line_items: [
+        {
+          price_data: {
+            currency: "cad",
+            unit_amount: donationAmountInCents,
+            product_data: {
+              name: parameters.projectName,
+              description: parameters.projectDescription,
+            },
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        projectId: parameters.projectId,
+        projectName: parameters.projectName,
+        organizationId: parameters.organizationId,
+        organizationSlug: parameters.organizationSlug,
+        organizationName: parameters.organizationName,
+        userId: donor?.user_id ?? null,
+      },
+      success_url: `${process.env.NEXT_PUBLIC_DOMAIN}/donation/payment/success?sessionId={CHECKOUT_SESSION_ID}&organizationStripeAccountId=${parameters.organizationStripeAccountId}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_DOMAIN}/donation/payment/cancel?projectId=${parameters.projectId}`,
+    },
+    {
+      stripeAccount: parameters.organizationStripeAccountId,
+    }
+  );
+
+  if (session.url == null) throw new Error("Session URL is invalid");
+
+  // 4) redirect to checkout
+  return redirect(session.url);
 }
 
 export async function linkStripeAccount(): Promise<ActionResponse> {
@@ -64,13 +118,13 @@ export async function linkStripeAccount(): Promise<ActionResponse> {
       },
       controller: {
         fees: {
-          payer: "application",
+          payer: "account",
         },
         losses: {
-          payments: "application",
+          payments: "stripe",
         },
         stripe_dashboard: {
-          type: "express",
+          type: "full",
         },
       },
       country: "CA",
@@ -109,7 +163,7 @@ export async function linkStripeAccount(): Promise<ActionResponse> {
   return redirect(accountLink.url!);
 }
 
-export async function goToExpressDashboard() {
+export async function goToStripeDashboard() {
   // 1) get logged in user and org info
   const organization = await getOrganizationProfile();
   if (!organization) {
@@ -129,13 +183,13 @@ export async function goToExpressDashboard() {
   }
 
   // 2) create the login link
-  const loginLink = await stripe.accounts.createLoginLink(
-    organization.stripe_account_id
-  );
+  const accountLink = await stripe.accountLinks.create({
+    account: organization.stripe_account_id,
+    refresh_url: `${process.env.NEXT_PUBLIC_DOMAIN}/organizations/${organization.slug}`,
+    return_url: `${process.env.NEXT_PUBLIC_DOMAIN}/organizations/${organization.slug}`,
+    type: "account_onboarding",
+  });
 
   // 3) redirect to stripe dashboard
-  return redirect(loginLink.url);
+  return redirect(accountLink.url);
 }
-
-// so for regular user flow on signup we create a stripe customer account and store the id in supabase
-// for orgs we create a stripe connected account and store that id in supabase

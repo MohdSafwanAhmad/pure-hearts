@@ -106,6 +106,7 @@ export type Database = {
           profile_completed: boolean | null;
           profile_photo: string | null;
           state: string | null;
+          stripe_account_id: string | null;
           updated_at: string | null;
           user_id: string;
         };
@@ -120,6 +121,7 @@ export type Database = {
           profile_completed?: boolean | null;
           profile_photo?: string | null;
           state?: string | null;
+          stripe_account_id?: string | null;
           updated_at?: string | null;
           user_id: string;
         };
@@ -134,6 +136,7 @@ export type Database = {
           profile_completed?: boolean | null;
           profile_photo?: string | null;
           state?: string | null;
+          stripe_account_id?: string | null;
           updated_at?: string | null;
           user_id?: string;
         };
