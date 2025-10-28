@@ -11,11 +11,6 @@ import { ActionResponse } from "@/src/types/actions-types";
 import { redirect } from "next/navigation";
 import Stripe from "stripe";
 
-// https://stripe.com/en-ca/pricing/local-payment-methods
-// https://docs.stripe.com/connect/direct-charges?platform=web&ui=stripe-hosted#platform-visibility-limitations
-// https://docs.stripe.com/connect/testing
-// T!t!t1234!te
-
 export async function createCheckoutSession(formData: DonationSchema) {
   // Validate the donation data
   const validationResult = donationSchema.safeParse(formData);
