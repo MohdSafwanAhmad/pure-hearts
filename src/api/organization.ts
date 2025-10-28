@@ -21,7 +21,13 @@ export async function getOrganizationBySlug(slug: string) {
     .eq("slug", slug)
     .single();
 
-  if (!organization?.is_verified) return null;
+  if (error) return null;
+
+  if (!organizationProfile) {
+    if (organization && !organization.is_verified) {
+      return null;
+    }
+  }
 
   // 2. Fetch project areas via join table
   const { data: projectAreas, error: areasError } = await supabase
