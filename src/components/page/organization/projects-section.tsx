@@ -19,10 +19,11 @@ interface Props {
     projectBackgroundImage: string;
     slug: string;
     goal_amount: number | null;
+    is_completed: boolean;
     collected: number;
     percent: number;
     organizationSlug: string;
-    beneficiaryCount: number;
+    beneficiaryType: string;
     organization: {
       name: string;
       organizationSlug: string;
@@ -31,20 +32,9 @@ interface Props {
 }
 
 export function ProjectsSection({ projects }: Props) {
-  const completedProjects = projects.filter((project) => {
-    if (project.completionDate === undefined) return false;
+  const completedProjects = projects.filter((project) => project.is_completed);
 
-    if (project.completionDate < new Date()) return true;
-
-    return false;
-  });
-
-  const existingProjects = projects.filter((project) => {
-    if (project.completionDate === undefined) return true;
-    if (project.completionDate >= new Date()) return true;
-
-    return false;
-  });
+  const existingProjects = projects.filter((project) => !project.is_completed);
 
   const [activeProjectType, setActiveProjectType] =
     useState<ProjectType>("completed");
@@ -130,11 +120,7 @@ export function ProjectsSection({ projects }: Props) {
               description={project.description}
               imageUrl={project.projectBackgroundImage}
               organizationName={project.organization.name}
-              beneficiaryLabel={
-                project.beneficiaryCount
-                  ? `${project.beneficiaryCount} beneficiaries`
-                  : undefined
-              }
+              beneficiaryLabel={project.beneficiaryType}
               collected={project.collected}
               goalAmount={project.goal_amount}
               percent={project.percent}

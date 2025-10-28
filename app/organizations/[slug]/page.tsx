@@ -73,8 +73,9 @@ export default async function OrganizationPage({
       percent: project.goal_amount
         ? (project.collected / project.goal_amount) * 100
         : 0,
+      is_completed: project.is_completed,
       organizationSlug: organization.slug,
-      beneficiaryCount: project.beneficiary_count,
+      beneficiaryType: project.beneficary_type,
       organization: {
         name: organization.organization_name,
         organizationSlug: organization.slug,

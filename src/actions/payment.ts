@@ -59,6 +59,7 @@ export async function createCheckoutSession(formData: DonationSchema) {
     {
       mode: "payment",
       customer: donor?.stripe_account_id ?? undefined, // undefined if guest checkout
+      customer_email: donor?.email ?? undefined, // undefined if guest checkout
       line_items: [
         {
           price_data: {
@@ -72,12 +73,18 @@ export async function createCheckoutSession(formData: DonationSchema) {
           quantity: 1,
         },
       ],
+      billing_address_collection: "required",
+      phone_number_collection: {
+        enabled: true,
+      },
       metadata: {
         projectId: parameters.projectId,
         projectName: parameters.projectName,
         organizationId: parameters.organizationId,
         organizationSlug: parameters.organizationSlug,
         organizationName: parameters.organizationName,
+        organizationStripeAccountId: parameters.organizationStripeAccountId,
+        userEmail: donor?.email ?? "",
         userId: donor?.user_id ?? null,
       },
       success_url: `${process.env.NEXT_PUBLIC_DOMAIN}/donation/payment/success?sessionId={CHECKOUT_SESSION_ID}&organizationStripeAccountId=${parameters.organizationStripeAccountId}`,

@@ -58,24 +58,66 @@ export type Database = {
       donations: {
         Row: {
           amount: number;
+          billing_address: string | null;
+          billing_city: string | null;
+          billing_country: string | null;
+          billing_postal_code: string | null;
+          billing_state: string | null;
           created_at: string | null;
-          donor_id: string;
+          currency: string;
+          donor_app_email: string | null;
+          donor_id: string | null;
+          donor_name: string | null;
+          donor_phone: string | null;
+          donor_stripe_email: string | null;
           id: string;
+          is_anonymous: boolean | null;
+          payment_method: string | null;
           project_id: string;
+          stripe_fee: number | null;
+          stripe_payment_id: string | null;
         };
         Insert: {
           amount: number;
+          billing_address?: string | null;
+          billing_city?: string | null;
+          billing_country?: string | null;
+          billing_postal_code?: string | null;
+          billing_state?: string | null;
           created_at?: string | null;
-          donor_id: string;
+          currency?: string;
+          donor_app_email?: string | null;
+          donor_id?: string | null;
+          donor_name?: string | null;
+          donor_phone?: string | null;
+          donor_stripe_email?: string | null;
           id?: string;
+          is_anonymous?: boolean | null;
+          payment_method?: string | null;
           project_id: string;
+          stripe_fee?: number | null;
+          stripe_payment_id?: string | null;
         };
         Update: {
           amount?: number;
+          billing_address?: string | null;
+          billing_city?: string | null;
+          billing_country?: string | null;
+          billing_postal_code?: string | null;
+          billing_state?: string | null;
           created_at?: string | null;
-          donor_id?: string;
+          currency?: string;
+          donor_app_email?: string | null;
+          donor_id?: string | null;
+          donor_name?: string | null;
+          donor_phone?: string | null;
+          donor_stripe_email?: string | null;
           id?: string;
+          is_anonymous?: boolean | null;
+          payment_method?: string | null;
           project_id?: string;
+          stripe_fee?: number | null;
+          stripe_payment_id?: string | null;
         };
         Relationships: [
           {
@@ -84,6 +126,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "donors";
             referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "donations_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "project_status_view";
+            referencedColumns: ["id"];
           },
           {
             foreignKeyName: "donations_project_id_fkey";
@@ -321,7 +370,39 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      project_status_view: {
+        Row: {
+          beneficiary_type_id: string | null;
+          created_at: string | null;
+          description: string | null;
+          end_date: string | null;
+          goal_amount: number | null;
+          id: string | null;
+          is_completed: boolean | null;
+          organization_user_id: string | null;
+          project_background_image: string | null;
+          slug: string | null;
+          start_date: string | null;
+          title: string | null;
+          updated_at: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "projects_beneficiary_type_id_fkey";
+            columns: ["beneficiary_type_id"];
+            isOneToOne: false;
+            referencedRelation: "beneficiary_types";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "projects_organization_user_id_fkey";
+            columns: ["organization_user_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["user_id"];
+          }
+        ];
+      };
     };
     Functions: {
       slugify: {

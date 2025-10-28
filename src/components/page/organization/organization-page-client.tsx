@@ -62,10 +62,11 @@ interface OrganizationPageClientProps {
     projectBackgroundImage: string;
     slug: string;
     goal_amount: number | null;
+    is_completed: boolean;
     collected: number;
     percent: number;
     organizationSlug: string;
-    beneficiaryCount: number;
+    beneficiaryType: string;
     organization: {
       name: string;
       organizationSlug: string;
