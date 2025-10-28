@@ -8,6 +8,11 @@ import { ProjectsSection } from "@/src/components/page/organization/projects-sec
 import { OrganizationStats } from "@/src/components/page/organization/stats-section";
 import { StripeVerificationAlert } from "@/src/components/page/organization/stripe-verification-alert";
 import { Button } from "@/src/components/ui/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/src/components/ui/carousel";
 import { Form } from "@/src/components/ui/form";
 import {
   TUpdateOrganizationSchema,
@@ -169,77 +174,180 @@ export function OrganizationPageClient({
 
           {/* Global Edit Button (only shown to organization owners) */}
           {isOwner && !isEditing && (
-            <div className="container mx-auto px-4 py-4 flex justify-end gap-2  top-0 ">
-              {organization.is_stripe_account_connected ? (
-                <Button
-                  onClick={handleGoToDashboard}
-                  variant="outline"
-                  className="border-primary text-primary hover:bg-primary hover:text-white"
-                  disabled={isLoadingDashboard}
-                >
-                  {isLoadingDashboard ? (
-                    <>
-                      <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                      Opening...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="mr-1 h-4 w-4" />
-                      Manage Payments Information
-                    </>
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleSetupPayments}
-                  variant="outline"
-                  className="border-primary text-primary hover:bg-primary hover:text-white"
-                  disabled={isLoadingPayment}
-                >
-                  {isLoadingPayment ? (
-                    <>
-                      <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                      Setting Up...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="mr-1 h-4 w-4" />
-                      Set Up Payments
-                    </>
-                  )}
-                </Button>
-              )}
-              <Button
-                onClick={startEditing}
-                variant="outline"
-                className="border-primary text-primary hover:bg-primary hover:text-white"
+            <div className="container mx-auto px-4 py-4">
+              <Carousel
+                opts={{
+                  align: "start",
+                }}
+                className="w-full md:hidden"
               >
-                <Edit2 className="mr-1 h-4 w-4" />
-                Edit Organization Information
-              </Button>
+                <CarouselContent className="-ml-2">
+                  {organization.is_stripe_account_connected ? (
+                    <CarouselItem className="pl-2 basis-auto">
+                      <Button
+                        onClick={handleGoToDashboard}
+                        variant="outline"
+                        className="border-primary text-primary hover:bg-primary hover:text-white whitespace-nowrap"
+                        disabled={isLoadingDashboard}
+                      >
+                        {isLoadingDashboard ? (
+                          <>
+                            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                            Opening...
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="mr-1 h-4 w-4" />
+                            Manage Payments Information
+                          </>
+                        )}
+                      </Button>
+                    </CarouselItem>
+                  ) : (
+                    <CarouselItem className="pl-2 basis-auto">
+                      <Button
+                        onClick={handleSetupPayments}
+                        variant="outline"
+                        className="border-primary text-primary hover:bg-primary hover:text-white whitespace-nowrap"
+                        disabled={isLoadingPayment}
+                      >
+                        {isLoadingPayment ? (
+                          <>
+                            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                            Setting Up...
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="mr-1 h-4 w-4" />
+                            Set Up Payments
+                          </>
+                        )}
+                      </Button>
+                    </CarouselItem>
+                  )}
+                  <CarouselItem className="pl-2 basis-auto">
+                    <Button
+                      onClick={startEditing}
+                      variant="outline"
+                      className="border-primary text-primary hover:bg-primary hover:text-white whitespace-nowrap"
+                    >
+                      <Edit2 className="mr-1 h-4 w-4" />
+                      Edit Organization Information
+                    </Button>
+                  </CarouselItem>
+                </CarouselContent>
+              </Carousel>
+
+              {/* Desktop View */}
+              <div className="hidden md:flex justify-end gap-2">
+                {organization.is_stripe_account_connected ? (
+                  <Button
+                    onClick={handleGoToDashboard}
+                    variant="outline"
+                    className="border-primary text-primary hover:bg-primary hover:text-white"
+                    disabled={isLoadingDashboard}
+                  >
+                    {isLoadingDashboard ? (
+                      <>
+                        <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                        Opening...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="mr-1 h-4 w-4" />
+                        Manage Payments Information
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleSetupPayments}
+                    variant="outline"
+                    className="border-primary text-primary hover:bg-primary hover:text-white"
+                    disabled={isLoadingPayment}
+                  >
+                    {isLoadingPayment ? (
+                      <>
+                        <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                        Setting Up...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="mr-1 h-4 w-4" />
+                        Set Up Payments
+                      </>
+                    )}
+                  </Button>
+                )}
+                <Button
+                  onClick={startEditing}
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary hover:text-white"
+                >
+                  <Edit2 className="mr-1 h-4 w-4" />
+                  Edit Organization Information
+                </Button>
+              </div>
             </div>
           )}
 
           {/* Form Action Buttons (only shown when editing) */}
           {isOwner && isEditing && (
-            <div className="container mx-auto px-4 py-4 flex justify-end gap-2 sticky top-0 ">
-              <Button
-                type="submit"
-                className="bg-green-600 hover:bg-green-700"
-                disabled={form.formState.isSubmitting}
+            <div className="container mx-auto px-4 py-4">
+              <Carousel
+                opts={{
+                  align: "start",
+                }}
+                className="w-full md:hidden"
               >
-                <Save className="mr-1 h-4 w-4" />
-                {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={cancelEditing}
-                disabled={form.formState.isSubmitting}
-              >
-                <X className="mr-1 h-4 w-4" />
-                Cancel
-              </Button>
+                <CarouselContent className="-ml-2">
+                  <CarouselItem className="pl-2 basis-auto">
+                    <Button
+                      type="submit"
+                      className="bg-green-600 hover:bg-green-700 whitespace-nowrap"
+                      disabled={form.formState.isSubmitting}
+                    >
+                      <Save className="mr-1 h-4 w-4" />
+                      {form.formState.isSubmitting
+                        ? "Saving..."
+                        : "Save Changes"}
+                    </Button>
+                  </CarouselItem>
+                  <CarouselItem className="pl-2 basis-auto">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={cancelEditing}
+                      disabled={form.formState.isSubmitting}
+                      className="whitespace-nowrap"
+                    >
+                      <X className="mr-1 h-4 w-4" />
+                      Cancel
+                    </Button>
+                  </CarouselItem>
+                </CarouselContent>
+              </Carousel>
+
+              {/* Desktop View */}
+              <div className="hidden md:flex justify-end gap-2">
+                <Button
+                  type="submit"
+                  className="bg-green-600 hover:bg-green-700"
+                  disabled={form.formState.isSubmitting}
+                >
+                  <Save className="mr-1 h-4 w-4" />
+                  {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={cancelEditing}
+                  disabled={form.formState.isSubmitting}
+                >
+                  <X className="mr-1 h-4 w-4" />
+                  Cancel
+                </Button>
+              </div>
             </div>
           )}
 
