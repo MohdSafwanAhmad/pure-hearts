@@ -156,7 +156,7 @@ To test Stripe payment functionality in development:
    ```
 3. Forward webhook events to your local server:
    ```
-   stripe listen --forward-to localhost:3000/api/webhooks/stripe
+   npm run run-stripe-webhook
    ```
 4. The CLI will output a webhook signing secret (starts with `whsec_`). Add it to your `.env.local`:
    ```
@@ -188,12 +188,6 @@ Now you can pick any project under that organization and make a fake donation.
   - **ZIP Code**: Any valid zip code in canada
 
 - You can also test other scenarios using different payment methods, like affirm. that is easy to test.
-
-### Useful Stripe Test Resources
-
-- [Test Card Numbers](https://stripe.com/docs/testing#cards)
-- [Webhook Testing](https://stripe.com/docs/webhooks/test)
-- [Stripe Dashboard Events](https://dashboard.stripe.com/test/events)
 
 ## Technologies Used
 
