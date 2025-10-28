@@ -38,13 +38,13 @@ export async function POST(req: NextRequest) {
       const supabase = await createServerSupabaseClient();
 
       await supabase
-        .from("organizations")
+        .from("organization_payment_info")
         .update({
           is_stripe_account_connected:
             account.capabilities?.transfers === "active" &&
             account.capabilities?.card_payments === "active",
         })
-        .eq("user_id", userId);
+        .eq("organization_id", userId);
     }
   }
 
@@ -71,7 +71,6 @@ export async function POST(req: NextRequest) {
         }
       );
       const paymentIntentId = charge.payment_intent as string;
-      console.log("from charge.updated, payment intent id:", paymentIntentId);
 
       // in cents
       const { net, fee } = balanceTransaction;

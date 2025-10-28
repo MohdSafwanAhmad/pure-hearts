@@ -24,9 +24,9 @@ interface OrganizationPageClientProps {
     user_id: string;
     organization_name: string;
     organization_phone: string;
-    contact_person_name: string;
-    contact_person_email: string;
-    contact_person_phone: string;
+    contact_person_name: string | null;
+    contact_person_email: string | null;
+    contact_person_phone: string | null;
     country: string;
     state: string;
     city: string;
@@ -44,7 +44,7 @@ interface OrganizationPageClientProps {
     logo: string | null;
     slug: string | null;
     stripe_account_id: string | null;
-    is_stripe_account_connected?: boolean;
+    is_stripe_account_connected: boolean | null;
   };
   isOwner: boolean;
   stats: {

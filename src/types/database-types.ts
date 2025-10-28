@@ -191,6 +191,61 @@ export type Database = {
         };
         Relationships: [];
       };
+      organization_contact_info: {
+        Row: {
+          contact_person_email: string;
+          contact_person_name: string;
+          contact_person_phone: string;
+          organization_id: string;
+        };
+        Insert: {
+          contact_person_email: string;
+          contact_person_name: string;
+          contact_person_phone: string;
+          organization_id: string;
+        };
+        Update: {
+          contact_person_email?: string;
+          contact_person_name?: string;
+          contact_person_phone?: string;
+          organization_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "organization_contact_info_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: true;
+            referencedRelation: "organizations";
+            referencedColumns: ["user_id"];
+          }
+        ];
+      };
+      organization_payment_info: {
+        Row: {
+          is_stripe_account_connected: boolean;
+          organization_id: string;
+          stripe_account_id: string | null;
+        };
+        Insert: {
+          is_stripe_account_connected?: boolean;
+          organization_id: string;
+          stripe_account_id?: string | null;
+        };
+        Update: {
+          is_stripe_account_connected?: boolean;
+          organization_id?: string;
+          stripe_account_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "organization_payment_info_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: true;
+            referencedRelation: "organizations";
+            referencedColumns: ["user_id"];
+          }
+        ];
+      };
       organization_project_areas: {
         Row: {
           organization_id: string;
@@ -225,13 +280,9 @@ export type Database = {
         Row: {
           address: string;
           city: string;
-          contact_person_email: string;
-          contact_person_name: string;
-          contact_person_phone: string;
           country: string;
           facebook_url: string | null;
           instagram_url: string | null;
-          is_stripe_account_connected: boolean;
           is_verified: boolean | null;
           linkedin_url: string | null;
           logo: string | null;
@@ -240,7 +291,6 @@ export type Database = {
           organization_phone: string;
           slug: string;
           state: string;
-          stripe_account_id: string | null;
           twitter_url: string | null;
           user_id: string;
           website_url: string | null;
@@ -248,13 +298,9 @@ export type Database = {
         Insert: {
           address: string;
           city: string;
-          contact_person_email: string;
-          contact_person_name: string;
-          contact_person_phone: string;
           country?: string;
           facebook_url?: string | null;
           instagram_url?: string | null;
-          is_stripe_account_connected?: boolean;
           is_verified?: boolean | null;
           linkedin_url?: string | null;
           logo?: string | null;
@@ -263,7 +309,6 @@ export type Database = {
           organization_phone: string;
           slug: string;
           state: string;
-          stripe_account_id?: string | null;
           twitter_url?: string | null;
           user_id: string;
           website_url?: string | null;
@@ -271,13 +316,9 @@ export type Database = {
         Update: {
           address?: string;
           city?: string;
-          contact_person_email?: string;
-          contact_person_name?: string;
-          contact_person_phone?: string;
           country?: string;
           facebook_url?: string | null;
           instagram_url?: string | null;
-          is_stripe_account_connected?: boolean;
           is_verified?: boolean | null;
           linkedin_url?: string | null;
           logo?: string | null;
@@ -286,7 +327,6 @@ export type Database = {
           organization_phone?: string;
           slug?: string;
           state?: string;
-          stripe_account_id?: string | null;
           twitter_url?: string | null;
           user_id?: string;
           website_url?: string | null;

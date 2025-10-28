@@ -137,6 +137,9 @@ export default async function ProjectBySlugsPage(props: {
             organizationStripeAccountId={
               project.organization?.stripe_account_id || ""
             }
+            isOrganizationStripeAccountConnected={
+              project.organization.is_stripe_account_connected || false
+            }
             projectName={project.title}
             projectId={project.id}
             projectDescription={project.description || ""}

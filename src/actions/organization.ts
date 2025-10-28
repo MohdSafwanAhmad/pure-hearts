@@ -53,28 +53,36 @@ export async function updateOrganization(
   }
 
   // 3) Update organization in database
-  const { error: updateError } = await supabase
-    .from("organizations")
-    .update({
-      organization_name: result.data.organizationName,
-      organization_phone: result.data.organizationPhone,
-      country: result.data.country,
-      city: result.data.city,
-      address: result.data.address,
-      state: result.data.state,
-      contact_person_name: result.data.contactPersonName,
-      contact_person_email: result.data.contactPersonEmail,
-      contact_person_phone: result.data.contactPersonPhone,
-      mission_statement: result.data.missionStatement,
-      website_url: result.data.websiteUrl || null,
-      facebook_url: result.data.facebookUrl || null,
-      twitter_url: result.data.twitterUrl || null,
-      instagram_url: result.data.instagramUrl || null,
-      linkedin_url: result.data.linkedinUrl || null,
-    })
-    .eq("user_id", organization.user_id);
+  const [{ error: updateError }, { error: contactInfoError }] =
+    await Promise.all([
+      supabase
+        .from("organizations")
+        .update({
+          organization_name: result.data.organizationName,
+          organization_phone: result.data.organizationPhone,
+          country: result.data.country,
+          city: result.data.city,
+          address: result.data.address,
+          state: result.data.state,
+          mission_statement: result.data.missionStatement,
+          website_url: result.data.websiteUrl || null,
+          facebook_url: result.data.facebookUrl || null,
+          twitter_url: result.data.twitterUrl || null,
+          instagram_url: result.data.instagramUrl || null,
+          linkedin_url: result.data.linkedinUrl || null,
+        })
+        .eq("user_id", organization.user_id),
+      supabase
+        .from("organization_contact_info")
+        .update({
+          contact_person_name: result.data.contactPersonName,
+          contact_person_email: result.data.contactPersonEmail,
+          contact_person_phone: result.data.contactPersonPhone,
+        })
+        .eq("organization_id", organization.user_id),
+    ]);
 
-  if (updateError) {
+  if (updateError || contactInfoError) {
     console.error("Update error:", updateError);
     return {
       error:

@@ -113,9 +113,28 @@ export async function linkStripeAccount(): Promise<ActionResponse> {
     };
   }
 
+  const supabase = await createServerSupabaseClient();
+  const { data: organizationPaymentInfo, error: paymentInfoError } =
+    await supabase
+      .from("organization_payment_info")
+      .select("*")
+      .eq("organization_id", organization.user_id)
+      .maybeSingle();
+
+  if (paymentInfoError) {
+    console.error(
+      "Error fetching organization payment info:",
+      paymentInfoError
+    );
+    return {
+      error: "Failed to fetch organization payment information",
+      success: false,
+    };
+  }
+
   // 2) when the org signup i need to create a stripe customer for the org else i create one here if it does not exist
   const stripe = getStripe();
-  let organizationStripeAccountId = organization.stripe_account_id;
+  let organizationStripeAccountId = organizationPaymentInfo?.stripe_account_id;
   if (!organizationStripeAccountId) {
     const account = await stripe.accounts.create({
       email: organization.email,
@@ -141,10 +160,10 @@ export async function linkStripeAccount(): Promise<ActionResponse> {
 
     // save the stripe account id to the org profile in supabase
     const supabase = await createServerSupabaseClient();
-    const { error } = await supabase
-      .from("organizations")
-      .update({ stripe_account_id: organizationStripeAccountId })
-      .eq("user_id", organization.user_id);
+    const { error } = await supabase.from("organization_payment_info").insert({
+      organization_id: organization.user_id,
+      stripe_account_id: organizationStripeAccountId,
+    });
 
     if (error) {
       console.error("Error saving Stripe account ID:", error);
@@ -181,8 +200,26 @@ export async function goToStripeDashboard() {
   }
 
   const stripe = getStripe();
+  const supabase = await createServerSupabaseClient();
+  const { data: organizationPaymentInfo, error: paymentInfoError } =
+    await supabase
+      .from("organization_payment_info")
+      .select("*")
+      .eq("organization_id", organization.user_id)
+      .maybeSingle();
 
-  if (!organization.stripe_account_id) {
+  if (paymentInfoError) {
+    console.error(
+      "Error fetching organization payment info:",
+      paymentInfoError
+    );
+    return {
+      error: "Failed to fetch organization payment information",
+      success: false,
+    };
+  }
+
+  if (!organizationPaymentInfo?.stripe_account_id) {
     return {
       error: "Organization does not have a Stripe account connected",
       success: false,
@@ -191,7 +228,7 @@ export async function goToStripeDashboard() {
 
   // 2) create the login link
   const accountLink = await stripe.accountLinks.create({
-    account: organization.stripe_account_id,
+    account: organizationPaymentInfo.stripe_account_id,
     refresh_url: `${process.env.NEXT_PUBLIC_DOMAIN}/organizations/${organization.slug}`,
     return_url: `${process.env.NEXT_PUBLIC_DOMAIN}/organizations/${organization.slug}`,
     type: "account_onboarding",

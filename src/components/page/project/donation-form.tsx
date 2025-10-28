@@ -14,9 +14,10 @@ import {
 import { Input } from "@/src/components/ui/input";
 import { donationSchema, DonationSchema } from "@/src/schemas/donation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Settings } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 interface DonationFormProps {
   defaultAmount?: number;
@@ -24,6 +25,7 @@ interface DonationFormProps {
   organizationSlug: string;
   organizationId: string;
   organizationStripeAccountId: string;
+  isOrganizationStripeAccountConnected: boolean;
   projectName: string;
   projectId: string;
   projectDescription: string;
@@ -35,6 +37,7 @@ export function DonationForm({
   organizationSlug,
   organizationId,
   organizationStripeAccountId,
+  isOrganizationStripeAccountConnected,
   projectName,
   projectId,
   projectDescription,
@@ -62,13 +65,37 @@ export function DonationForm({
 
     try {
       await createCheckoutSession(values);
-    } catch (error) {
-      console.error("Error creating checkout session:", error);
+    } catch {
+      toast.error(
+        "An error occurred while creating the checkout session. Please try again."
+      );
+    } finally {
       setIsLoading(false);
     }
   };
 
   const predefinedAmounts = [25, 50, 100, 250];
+
+  if (!isOrganizationStripeAccountConnected) {
+    return (
+      <Card>
+        <CardContent className="py-8">
+          <div className="flex flex-col items-center justify-center space-y-4 text-center min-h-[400px]">
+            <div className="rounded-full bg-muted p-4">
+              <Settings className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-lg">Donations Coming Soon</h3>
+              <p className="text-sm text-muted-foreground max-w-md">
+                The organization is currently setting up their payment
+                processing. Please check back soon to support this project.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

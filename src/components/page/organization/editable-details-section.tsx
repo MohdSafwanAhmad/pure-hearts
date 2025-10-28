@@ -19,9 +19,9 @@ interface Props {
   organization: {
     organization_name: string;
     organization_phone: string;
-    contact_person_name: string;
-    contact_person_email: string;
-    contact_person_phone: string;
+    contact_person_name: string | null;
+    contact_person_email: string | null;
+    contact_person_phone: string | null;
     country: string;
     state: string;
     city: string;

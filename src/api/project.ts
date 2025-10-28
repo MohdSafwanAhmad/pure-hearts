@@ -25,6 +25,7 @@ export interface ProjectDetail {
     logo?: string | null;
     mission_statement?: string | null;
     stripe_account_id?: string | null;
+    is_stripe_account_connected?: boolean;
   };
 }
 
@@ -117,6 +118,8 @@ export async function getProjectBySlugs(
       logo: organization.logo ?? null,
       mission_statement: organization.mission_statement ?? null,
       stripe_account_id: organization.stripe_account_id ?? null,
+      is_stripe_account_connected:
+        organization.is_stripe_account_connected ?? false,
     },
   };
 }

@@ -1,5 +1,8 @@
 import { PUBLIC_IMAGE_BUCKET_NAME } from "@/src/lib/constants";
-import { createServerSupabaseClient } from "@/src/lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  getOrganizationProfile,
+} from "@/src/lib/supabase/server";
 
 export interface OrganizationStats {
   completedProjects: number;
@@ -10,6 +13,7 @@ export interface OrganizationStats {
 
 export async function getOrganizationBySlug(slug: string) {
   const supabase = await createServerSupabaseClient();
+  const organizationProfile = await getOrganizationProfile();
 
   const { data: organization, error } = await supabase
     .from("organizations")
@@ -44,7 +48,58 @@ export async function getOrganizationBySlug(slug: string) {
     return null;
   }
 
-  return { ...organization, project_areas: areas };
+  // 4. Retrieve remaining info of the organization from other tables
+
+  let organizationPaymentInfo: {
+    stripe_account_id: string | null;
+    is_stripe_account_connected: boolean;
+  } = {
+    stripe_account_id: null,
+    is_stripe_account_connected: false,
+  };
+  let organizationPrivateContactInfo: {
+    contact_person_email: string | null;
+    contact_person_phone: string | null;
+    contact_person_name: string | null;
+  } = {
+    contact_person_email: null,
+    contact_person_phone: null,
+    contact_person_name: null,
+  };
+
+  const [paymentInfo, contactInfo] = await Promise.all([
+    supabase
+      .from("organization_payment_info")
+      .select("*")
+      .eq("organization_id", organization.user_id)
+      .single(),
+    supabase
+      .from("organization_contact_info")
+      .select("*")
+      .eq("organization_id", organization.user_id)
+      .single(),
+  ]);
+
+  // This data is public info, necessary to process payments
+  if (paymentInfo.data) {
+    organizationPaymentInfo = paymentInfo.data;
+  }
+
+  // Only add private contact info if the requester is the organization itself
+  if (
+    organizationProfile &&
+    organizationProfile.user_id === organization.user_id &&
+    contactInfo.data
+  ) {
+    organizationPrivateContactInfo = contactInfo.data;
+  }
+
+  return {
+    ...organization,
+    ...organizationPaymentInfo,
+    ...organizationPrivateContactInfo,
+    project_areas: areas,
+  };
 }
 
 export async function getOrganizationStats(
