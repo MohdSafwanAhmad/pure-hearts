@@ -50,45 +50,47 @@ export async function createCheckoutSession(formData: DonationSchema) {
   // 3) create checkout session
   const donationAmountInCents = Math.round(parameters.donationAmount * 100);
 
-  const session = await stripe.checkout.sessions.create(
-    {
-      mode: "payment",
-      customer: donor?.stripe_account_id ?? undefined, // undefined if guest checkout
-      customer_email: donor?.email ?? undefined, // undefined if guest checkout
-      line_items: [
-        {
-          price_data: {
-            currency: "cad",
-            unit_amount: donationAmountInCents,
-            product_data: {
-              name: parameters.projectName,
-              description: parameters.projectDescription,
-            },
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    customer: donor?.stripe_account_id ?? undefined, // undefined if guest checkout
+    customer_email: donor?.email ?? undefined, // undefined if guest checkout
+    line_items: [
+      {
+        price_data: {
+          currency: "cad",
+          unit_amount: donationAmountInCents,
+          product_data: {
+            name: parameters.projectName,
+            description: parameters.projectDescription,
           },
-          quantity: 1,
         },
-      ],
-      billing_address_collection: "required",
-      phone_number_collection: {
-        enabled: true,
+        quantity: 1,
       },
-      metadata: {
-        projectId: parameters.projectId,
-        projectName: parameters.projectName,
-        organizationId: parameters.organizationId,
-        organizationSlug: parameters.organizationSlug,
-        organizationName: parameters.organizationName,
-        organizationStripeAccountId: parameters.organizationStripeAccountId,
-        userEmail: donor?.email ?? "",
-        userId: donor?.user_id ?? null,
-      },
-      success_url: `${process.env.NEXT_PUBLIC_DOMAIN}/donation/payment/success?sessionId={CHECKOUT_SESSION_ID}&organizationStripeAccountId=${parameters.organizationStripeAccountId}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_DOMAIN}/donation/payment/cancel?projectId=${parameters.projectId}`,
+    ],
+    billing_address_collection: "required",
+    phone_number_collection: {
+      enabled: true,
     },
-    {
-      stripeAccount: parameters.organizationStripeAccountId,
-    }
-  );
+    // transfer full amount to org account, no platform fee
+    payment_intent_data: {
+      application_fee_amount: 0, // No platform fee
+      transfer_data: {
+        destination: parameters.organizationStripeAccountId,
+      },
+    },
+    metadata: {
+      projectId: parameters.projectId,
+      projectName: parameters.projectName,
+      organizationId: parameters.organizationId,
+      organizationSlug: parameters.organizationSlug,
+      organizationName: parameters.organizationName,
+      organizationStripeAccountId: parameters.organizationStripeAccountId,
+      userEmail: donor?.email ?? "",
+      userId: donor?.user_id ?? null,
+    },
+    success_url: `${process.env.NEXT_PUBLIC_DOMAIN}/donation/payment/success?sessionId={CHECKOUT_SESSION_ID}&organizationStripeAccountId=${parameters.organizationStripeAccountId}`,
+    cancel_url: `${process.env.NEXT_PUBLIC_DOMAIN}/donation/payment/cancel?projectId=${parameters.projectId}`,
+  });
 
   if (session.url == null) throw new Error("Session URL is invalid");
 
@@ -139,13 +141,13 @@ export async function linkStripeAccount(): Promise<ActionResponse> {
       },
       controller: {
         fees: {
-          payer: "account",
+          payer: "application",
         },
         losses: {
-          payments: "stripe",
+          payments: "application",
         },
         stripe_dashboard: {
-          type: "full",
+          type: "express",
         },
       },
       country: "CA",

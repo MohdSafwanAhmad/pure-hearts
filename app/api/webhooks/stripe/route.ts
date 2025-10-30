@@ -41,8 +41,7 @@ export async function POST(req: NextRequest) {
         .from("organization_payment_info")
         .update({
           is_stripe_account_connected:
-            account.capabilities?.transfers === "active" &&
-            account.capabilities?.card_payments === "active",
+            account.capabilities?.transfers === "active",
         })
         .eq("organization_id", userId);
     }
@@ -64,16 +63,12 @@ export async function POST(req: NextRequest) {
 
     if (charge.balance_transaction) {
       const balanceTransaction = await stripe.balanceTransactions.retrieve(
-        charge.balance_transaction as string,
-        {},
-        {
-          stripeAccount: event.account,
-        }
+        charge.balance_transaction as string
       );
       const paymentIntentId = charge.payment_intent as string;
 
       // in cents
-      const { net, fee } = balanceTransaction;
+      const { fee, amount, currency } = balanceTransaction;
 
       // update the donation record with fee and net amount
       const supabase = await createServerSupabaseClient();
@@ -81,7 +76,8 @@ export async function POST(req: NextRequest) {
         .from("donations")
         .update({
           stripe_fee: fee / 100,
-          amount: net / 100,
+          amount: amount / 100,
+          currency: currency,
         })
         .eq("stripe_payment_id", paymentIntentId);
     }
@@ -106,11 +102,7 @@ const fulfillDonation = async (session: Stripe.Checkout.Session) => {
   const stripe_payment_intent_id = session.payment_intent as string;
 
   const paymentIntent = await stripe.paymentIntents.retrieve(
-    stripe_payment_intent_id,
-    {},
-    {
-      stripeAccount: metadata.organizationStripeAccountId,
-    }
+    stripe_payment_intent_id
   );
 
   // 1.1) Get balance transaction details for fee and net amount
@@ -121,21 +113,11 @@ const fulfillDonation = async (session: Stripe.Checkout.Session) => {
   const chargeId = paymentIntent.latest_charge;
 
   if (chargeId && typeof chargeId === "string") {
-    const charge = await stripe.charges.retrieve(
-      chargeId,
-      {},
-      {
-        stripeAccount: metadata.organizationStripeAccountId,
-      }
-    );
+    const charge = await stripe.charges.retrieve(chargeId);
     const balanceTransaction = charge.balance_transaction;
     if (balanceTransaction && typeof balanceTransaction === "string") {
       const balanceDetails = await stripe.balanceTransactions.retrieve(
-        balanceTransaction,
-        {},
-        {
-          stripeAccount: metadata.organizationStripeAccountId,
-        }
+        balanceTransaction
       );
       stripeFee = balanceDetails.fee / 100;
       amountDonation = (balanceDetails.amount - balanceDetails.fee) / 100;

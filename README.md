@@ -141,8 +141,8 @@ To test Stripe payment functionality in development:
 
 1. You need a Stripe account. Sign up at [https://stripe.com](https://stripe.com) if you don't have one.
    - I created one using pure hearts gmail account
-2. Get your Stripe API keys from the [Stripe Dashboard](https://dashboard.stripe.com/test/apikeys).
-3. Add the following environment variables to your `.env.local` file:
+2. Click on the top left profile icon dropdown and switch to sandbox mode.
+3. You will see on the home section on the right a section called **API Keys**.Copy the key called `Secret key` and add it to the following environment variables to your `.env.local` file:
    ```
    STRIPE_SECRET_KEY=sk_test_...
    ```
@@ -170,7 +170,7 @@ To test Stripe payment functionality in development:
 
 1. Before testing payments, ensure that the organization you are testing with has a connected Stripe account. You can create a test connected account by logging in as an organization on the app. Then navigate to the organization's page and click on "Setup payments" to create a connected Stripe account.
 
-2. Follow the prompts to create a test connected account. You might need to give your real phone number to create the account and receive the code.
+2. Follow the prompts to create a test connected account. You can use the test info (only available in testing mode) when stripe allows it.
 
 3. Use the test document when possible and fill all the info to get your fake account verified.
 

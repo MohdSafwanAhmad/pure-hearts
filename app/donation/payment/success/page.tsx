@@ -25,9 +25,7 @@ export default async function DonationSuccessPage({
   }
 
   const stripe = getStripe();
-  const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId, {
-    stripeAccount: organizationStripeAccountId,
-  });
+  const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId);
 
   if (!checkoutSession || checkoutSession.payment_status !== "paid") {
     redirect("/");
