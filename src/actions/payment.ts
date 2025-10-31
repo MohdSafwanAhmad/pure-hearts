@@ -58,7 +58,9 @@ export async function createCheckoutSession(formData: DonationSchema) {
       .single(),
     supabase
       .from("organizations")
-      .select("organization_name, address, city, country, organization_phone")
+      .select(
+        "organization_name, address, city, country, postal_code, organization_phone"
+      )
       .eq("user_id", parameters.organizationId)
       .single(),
   ]);
@@ -110,6 +112,7 @@ export async function createCheckoutSession(formData: DonationSchema) {
       organizationAddress: organization.address,
       organizationCity: organization.city,
       organizationCountry: organization.country,
+      organizationPostalCode: organization.postal_code,
       organizationPhone: organization.organization_phone,
       organizationStripeAccountId: parameters.organizationStripeAccountId,
       organizationSlug: parameters.organizationSlug,

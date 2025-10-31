@@ -159,6 +159,7 @@ const fulfillDonation = async (session: Stripe.Checkout.Session) => {
     organization_address: metadata.organizationAddress,
     organization_city: metadata.organizationCity,
     organization_country: metadata.organizationCountry,
+    organization_postal_code: metadata.organizationPostalCode,
     organization_phone: metadata.organizationPhone,
     organization_stripe_account_id: metadata.organizationStripeAccountId,
 

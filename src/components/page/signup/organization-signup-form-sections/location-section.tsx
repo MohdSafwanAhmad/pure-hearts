@@ -115,6 +115,29 @@ export function LocationSection({ form }: Props) {
           </FormItem>
         )}
       />
+
+      <FormField
+        control={form.control}
+        name="postalCode"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Postal Code *
+            </FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                type="text"
+                placeholder="H3Z 2Y7"
+                className={
+                  form.formState.errors?.postalCode ? "border-red-500" : ""
+                }
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 }

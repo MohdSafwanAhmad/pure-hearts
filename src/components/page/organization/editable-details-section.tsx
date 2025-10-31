@@ -26,6 +26,7 @@ interface Props {
     state: string;
     city: string;
     address: string;
+    postal_code: string;
     mission_statement: string;
     website_url: string | null;
     facebook_url: string | null;
@@ -80,6 +81,10 @@ export function EditableDetailsSection({
     {
       label: "Street Address",
       value: organization.address,
+    },
+    {
+      label: "Postal Code",
+      value: organization.postal_code,
     },
     {
       label: "Province/State",

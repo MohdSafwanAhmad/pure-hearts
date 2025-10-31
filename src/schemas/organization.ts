@@ -24,6 +24,13 @@ export const createOrganizationSchema = z.object({
     .string()
     .min(5, "Please provide your complete street address")
     .max(200, "Address must be less than 200 characters"),
+  postalCode: z
+    .string("Please enter a valid postal code")
+    .regex(
+      /^[A-Za-z]\d[A-Za-z][ ]?\d[A-Za-z]\d$/,
+      "Please enter a valid Canadian postal code (e.g., H3Z 2Y7)"
+    )
+    .transform((val) => val.toUpperCase().replace(/\s/g, " ").trim()),
   state: z.string().min(1, "Please select your province or territory"),
   contactPersonName: z
     .string()
@@ -104,6 +111,14 @@ export const updateOrganizationSchema = z.object({
     .string()
     .min(5, "Please provide your complete street address")
     .max(200, "Address must be less than 200 characters"),
+  postalCode: z
+    .string()
+    .min(1, "Postal code is required")
+    .regex(
+      /^[A-Za-z]\d[A-Za-z][ ]?\d[A-Za-z]\d$/,
+      "Please enter a valid Canadian postal code (e.g., H3Z 2Y7)"
+    )
+    .transform((val) => val.toUpperCase().replace(/\s/g, " ").trim()),
   state: z.string().min(1, "Please select your province or territory"),
   contactPersonName: z
     .string()

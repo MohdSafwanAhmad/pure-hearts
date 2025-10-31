@@ -62,6 +62,7 @@ export async function signupAsOrganization(
         country: result.data.country,
         city: result.data.city,
         address: result.data.address,
+        postal_code: result.data.postalCode,
         state: result.data.state,
         contact_person_name: result.data.contactPersonName,
         contact_person_email: result.data.contactPersonEmail,

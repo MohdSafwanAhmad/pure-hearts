@@ -36,6 +36,7 @@ interface OrganizationPageClientProps {
     state: string;
     city: string;
     address: string;
+    postal_code: string;
     mission_statement: string;
     project_areas: {
       id: number;
@@ -105,6 +106,7 @@ export function OrganizationPageClient({
       state: organization.state || "",
       city: organization.city || "",
       address: organization.address || "",
+      postalCode: organization.postal_code || "",
       missionStatement: organization.mission_statement || "",
       projectAreas: projectAreasIds,
       websiteUrl: organization.website_url || "",

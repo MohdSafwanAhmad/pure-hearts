@@ -63,6 +63,7 @@ export async function updateOrganization(
           country: result.data.country,
           city: result.data.city,
           address: result.data.address,
+          postal_code: result.data.postalCode,
           state: result.data.state,
           mission_statement: result.data.missionStatement,
           website_url: result.data.websiteUrl || null,

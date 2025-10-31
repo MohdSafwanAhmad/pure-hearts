@@ -325,6 +325,7 @@ export type Database = {
           mission_statement: string;
           organization_name: string;
           organization_phone: string;
+          postal_code: string;
           slug: string;
           state: string;
           twitter_url: string | null;
@@ -343,6 +344,7 @@ export type Database = {
           mission_statement: string;
           organization_name: string;
           organization_phone: string;
+          postal_code: string;
           slug: string;
           state: string;
           twitter_url?: string | null;
@@ -361,6 +363,7 @@ export type Database = {
           mission_statement?: string;
           organization_name?: string;
           organization_phone?: string;
+          postal_code?: string;
           slug?: string;
           state?: string;
           twitter_url?: string | null;
