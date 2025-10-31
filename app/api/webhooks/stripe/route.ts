@@ -125,29 +125,52 @@ const fulfillDonation = async (session: Stripe.Checkout.Session) => {
   }
 
   // 1.2) Insert donation record
-  await supabase.from("donations").insert({
+  const { error } = await supabase.from("donations").insert({
+    // Identifiers
     stripe_payment_id: stripe_payment_intent_id,
+    donor_id: metadata.userId || null, // User ID from logged-in user account (if any)
+    project_id: metadata.projectId,
 
+    // Donation details
     amount: amountDonation,
     stripe_fee: stripeFee,
     currency: session.currency ?? undefined,
     payment_method: session.payment_method_types?.[0],
+
+    // Donor in-app information
+    donor_in_app_address: metadata.donorInAppAddress,
+    donor_in_app_email: metadata.userEmail,
+    donor_in_app_first_name: metadata.donorInAppFirstName,
+    donor_in_app_last_name: metadata.donorInAppLastName,
     is_anonymous: !metadata.userId,
 
+    // Donor Stripe information
     donor_stripe_email: session.customer_details?.email || "", // Email used in checkout/transaction
-    donor_name: session.customer_details?.name,
-    donor_phone: session.customer_details?.phone,
+    donor_stripe_name: session.customer_details?.name,
+    donor_stripe_phone: session.customer_details?.phone,
+    donor_stripe_billing_address: fullAddress,
+    donor_stripe_billing_city: billingAddress?.city,
+    donor_stripe_billing_state: billingAddress?.state,
+    donor_stripe_billing_postal_code: billingAddress?.postal_code,
+    donor_stripe_billing_country: billingAddress?.country,
 
-    billing_address: fullAddress,
-    billing_city: billingAddress?.city,
-    billing_state: billingAddress?.state,
-    billing_postal_code: billingAddress?.postal_code,
-    billing_country: billingAddress?.country,
+    // Organization snapshot information
+    organization_name: metadata.organizationName,
+    organization_address: metadata.organizationAddress,
+    organization_city: metadata.organizationCity,
+    organization_country: metadata.organizationCountry,
+    organization_phone: metadata.organizationPhone,
+    organization_stripe_account_id: metadata.organizationStripeAccountId,
 
-    donor_id: metadata.userId || null, // User ID from logged-in user account (if any)
-    donor_app_email: metadata.userEmail || null, // Email from logged-in user account (if any)
-    project_id: metadata.projectId,
+    // Project snapshot information
+    project_title: metadata.projectTitle,
+    project_description: metadata.projectDescription,
+    project_goal_amount: parseFloat(metadata.projectGoalAmount || "0"),
   });
+
+  if (error) {
+    console.error("Error inserting donation record:", error);
+  }
 
   // 2) Fill donor details if not present
   if (metadata.userId) {

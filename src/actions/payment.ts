@@ -49,6 +49,23 @@ export async function createCheckoutSession(formData: DonationSchema) {
 
   // 3) create checkout session
   const donationAmountInCents = Math.round(parameters.donationAmount * 100);
+  const supabase = await createServerSupabaseClient();
+  const [{ data: project }, { data: organization }] = await Promise.all([
+    supabase
+      .from("projects")
+      .select("title, slug, description, goal_amount")
+      .eq("id", parameters.projectId)
+      .single(),
+    supabase
+      .from("organizations")
+      .select("organization_name, address, city, country, organization_phone")
+      .eq("user_id", parameters.organizationId)
+      .single(),
+  ]);
+
+  if (!project || !organization) {
+    throw new Error("Invalid project or organization information");
+  }
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -79,14 +96,30 @@ export async function createCheckoutSession(formData: DonationSchema) {
       },
     },
     metadata: {
-      projectId: parameters.projectId,
-      projectName: parameters.projectName,
-      organizationId: parameters.organizationId,
-      organizationSlug: parameters.organizationSlug,
-      organizationName: parameters.organizationName,
-      organizationStripeAccountId: parameters.organizationStripeAccountId,
       userEmail: donor?.email ?? "",
       userId: donor?.user_id ?? null,
+
+      donorInAppAddress: donor?.address || null,
+      donorInAppEmail: donor?.email || null,
+      donorInAppFirstName: donor?.first_name || null,
+      donorInAppLastName: donor?.last_name || null,
+
+      // organization info
+      organizationId: parameters.organizationId,
+      organizationName: parameters.organizationName,
+      organizationAddress: organization.address,
+      organizationCity: organization.city,
+      organizationCountry: organization.country,
+      organizationPhone: organization.organization_phone,
+      organizationStripeAccountId: parameters.organizationStripeAccountId,
+      organizationSlug: parameters.organizationSlug,
+
+      // Project snapshot information
+      projectId: parameters.projectId,
+      projectTitle: parameters.projectName,
+      projectSlug: project.slug,
+      projectDescription: project.description,
+      projectGoalAmount: project.goal_amount,
     },
     success_url: `${process.env.NEXT_PUBLIC_DOMAIN}/donation/payment/success?sessionId={CHECKOUT_SESSION_ID}&organizationStripeAccountId=${parameters.organizationStripeAccountId}`,
     cancel_url: `${process.env.NEXT_PUBLIC_DOMAIN}/donation/payment/cancel?projectId=${parameters.projectId}`,
@@ -171,7 +204,7 @@ export async function linkStripeAccount(): Promise<ActionResponse> {
     }
   }
 
-  // 2) build the url for the org to create set its payment method and billing info
+  // 3) build the url for the org to create set its payment method and billing info
   const accountLink = await stripe.accountLinks.create({
     account: organizationStripeAccountId,
     refresh_url: `${process.env.NEXT_PUBLIC_DOMAIN}/organizations/${organization.slug}`,
@@ -182,7 +215,7 @@ export async function linkStripeAccount(): Promise<ActionResponse> {
     },
   });
 
-  // 3) redirect to stripe onboarding url
+  // 4) redirect to stripe onboarding url
   return redirect(accountLink.url!);
 }
 
