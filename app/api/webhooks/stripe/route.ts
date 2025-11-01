@@ -261,7 +261,9 @@ const fulfillDonation = async (session: Stripe.Checkout.Session) => {
     const resend = getResendClient();
     await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL!, // Use this for testing without domain
-      to: donorEmail, // in test mode only verified emails can be used, so use the pure heart gmail address
+      to: process.env.RESEND_TESTING_TO_EMAIL
+        ? process.env.RESEND_TESTING_TO_EMAIL
+        : donorEmail, // in test mode only verified emails can be used, so use the pure heart gmail address
       subject: "Thank You for Your Donation - Receipt Attached",
       html: emailHtml,
       attachments: [

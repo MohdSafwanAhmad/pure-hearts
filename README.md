@@ -13,6 +13,7 @@
   - [Syncing with the Cloud Database](#syncing-with-the-cloud-database)
   - [Making change on Supabase/Edge functions](#making-change-on-supabaseedge-functions)
   - [How database Seeding works for Development](#how-database-seeding-works-for-development)
+- [Testing Email Functionality with Resend](#testing-email-functionality-with-resend)
 - [Testing Stripe Payments](#testing-stripe-payments)
 - [Technologies Used](#technologies-used)
 
@@ -133,6 +134,49 @@ Only when you are ready to deploy to the cloud:
 2. If you want to add more seed data, you can edit the `supabase/seed.sql` file and add your SQL insert statements.
 3. After editing the `supabase/seed.sql` file, you can run `npx supabase db reset` to reset the local database and apply the seed data again.
 
+## Testing Email Functionality with Resend
+
+To test email sending functionality in **development**:
+
+### Prerequisites
+
+1. You need a Resend account. Sign up at [https://resend.com](https://resend.com) if you don't have one.
+2. Navigate to the [API Keys page](https://resend.com/api-keys) in your Resend dashboard.
+3. Create a new API key and copy it.
+4. Add the following environment variables to your `.env.local` file:
+   ```
+   RESEND_API_KEY=re_...
+   RESEND_FROM_EMAIL=onboarding@resend.dev
+   RESEND_TESTING_TO_EMAIL=pure.heart.platform@gmail.com
+   ```
+
+### Configuration Details
+
+- **RESEND_API_KEY**: Your Resend API key from the dashboard.
+- **RESEND_FROM_EMAIL**:
+  - For testing purposes, use `onboarding@resend.dev` (provided by Resend for development).
+  - For production, you'll need to verify your own domain and use an email from that domain.
+- **RESEND_TESTING_TO_EMAIL**:
+  - **Development only** - Set this to `pure.heart.platform@gmail.com` when testing locally. This overrides the recipient and sends all emails to this address for testing purposes.
+  - **Important**: Do NOT set this variable in production. In production, emails will be sent to the actual recipients (donors).
+
+### Testing Email Flow
+
+1. Trigger any action in the app that sends an email (e.g., donation receipts, signup confirmations).
+2. Check the inbox of `pure.heart.platform@gmail.com` (or whichever email you set in `RESEND_TESTING_TO_EMAIL`).
+3. In development mode, all emails will be sent to the testing email address regardless of the intended recipient.
+
+### Production Setup
+
+For production deployment:
+
+1. Verify your domain in Resend:
+   - Go to [Domains](https://resend.com/domains) in your Resend dashboard.
+   - Add and verify your domain by adding the required DNS records.
+2. Update your production environment variables in Vercel:
+   - Set `RESEND_FROM_EMAIL` to an email from your verified domain (e.g., `noreply@yourdomain.com`).
+   - **Do NOT set** `RESEND_TESTING_TO_EMAIL` in production - don't add it at all.
+
 ## Testing Stripe Payments
 
 To test Stripe payment functionality in development:
@@ -181,7 +225,6 @@ To test Stripe payment functionality in development:
 Now you can pick any project under that organization and make a fake donation.
 
 - To test card payments, use the following test card details:
-
   - **Card Number**: `4242 4242 4242 4242`
   - **Expiry Date**: Any future date (e.g., `12/34`)
   - **CVC**: Any 3 digits (e.g., `123`)
