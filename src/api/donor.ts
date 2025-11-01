@@ -1,63 +1,42 @@
-// server-only APIs (Node runtime)
+import {
+  createServerSupabaseClient,
+  getDonorProfile,
+} from "@/src/lib/supabase/server";
+import type { Database } from "@/src/types/database-types";
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import fs from "node:fs";
-import path from "node:path";
-// Standalone build: embeds AFM data so no disk reads for Helvetica
-// @ts-expect-error: pdfkit standalone build does not have type definitions
-import PDFDocument from "pdfkit/js/pdfkit.standalone.js";
-import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
-import { Donation, DonationReceiptData } from "@/src/types/donation-types";
+export async function fetchDonationsForUser() {
+  const donor = await getDonorProfile();
+  if (!donor) return [];
 
-/* ------------------------------------------------------------------ */
-/* Helpers                                                            */
-/* ------------------------------------------------------------------ */
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("donations")
+    .select("amount, project_id, created_at")
+    .eq("donor_id", donor.user_id);
 
-function safeIsoDate(v: string | null | undefined): string {
-  if (!v) return "";
-  const d = new Date(v);
-  return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
-}
-
-function findInterFont(): string | null {
-  const tries = [
-    ["public", "fonts", "Inter", "static", "Inter-Regular.ttf"],
-    ["public", "fonts", "Inter", "Inter-VariableFont_opsz,wght.ttf"],
-    ["public", "fonts", "Inter", "Inter-Italic-VariableFont_opsz,wght.ttf"],
-    ["public", "fonts", "Inter-Regular.ttf"],
-  ];
-  for (const parts of tries) {
-    const p = path.join(process.cwd(), ...parts);
-    if (fs.existsSync(p)) return p;
+  if (error) {
+    console.error("SectionCards donations fetch error:", error.message);
+    return [];
   }
-  return null;
+  return data;
 }
 
-/* ------------------------------------------------------------------ */
-/* Donor Profile (merged here)                                        */
-/* ------------------------------------------------------------------ */
-
-export type DonorProfile = {
-  user_id: string;
-  first_name: string | null;
-  last_name: string | null;
-  phone: string | null;
-  address: string | null;
-  city: string | null;
-  state: string | null;
-  country: string | null;
-  profile_completed: boolean | null;
+export type DonationRow = {
+  id: string;
+  header: string;
+  type: string;
+  status: string;
+  target: string;
+  limit: string;
+  reviewer: string;
+  organizationSlug: string | null;
 };
 
-/* ------------------------------------------------------------------ */
-/* Donations                                                          */
-/* ------------------------------------------------------------------ */
+export async function getDonationRowsForCurrentUser(): Promise<DonationRow[]> {
+  const supabase = await createServerSupabaseClient();
+  const donor = await getDonorProfile();
 
-export async function getDonationReceiptData(
-  donationId: string,
-  userId: string
-): Promise<DonationReceiptData | null> {
-  const supabase = await createAnonymousServerSupabaseClient();
+  if (!donor) return [];
 
   const { data, error } = await supabase
     .from("donations")
@@ -66,144 +45,92 @@ export async function getDonationReceiptData(
       id,
       amount,
       created_at,
-      donors:donor_id ( first_name, last_name ),
       projects:project_id (
         title,
-        organizations:organization_user_id ( organization_name )
+        organizations:organization_user_id (
+          organization_name,
+          slug
+        )
       )
     `
     )
-    .eq("id", donationId)
-    .eq("donor_id", userId)
-    .maybeSingle();
+    .eq("donor_id", donor.user_id)
+    .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching donation:", error);
-    return null;
-  }
+  if (error) throw error;
 
-  if (!data) return null;
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const donorName =
-    [data.donors?.first_name, data.donors?.last_name]
-      .filter(Boolean)
-      .join(" ") ||
-    user?.email ||
-    "—";
-
-  return {
-    id: data.id,
-    amount: Number(data.amount ?? 0),
-    created_at: data.created_at ?? "",
-    donorName,
-    donorEmail: user?.email ?? "—",
-    organizationName: data.projects?.organizations?.organization_name ?? "—",
-    projectTitle: data.projects?.title ?? "—",
-  };
-}
-
-export async function generateReceiptPdf(
-  receiptData: DonationReceiptData
-): Promise<Buffer> {
-  const doc = new PDFDocument({ margin: 50, autoFirstPage: false });
-
-  // Stream -> Buffer
-  const chunks: Buffer[] = [];
-  doc.on("data", (b: Buffer) => chunks.push(b));
-  const done = new Promise<Buffer>((resolve) =>
-    doc.on("end", () => resolve(Buffer.concat(chunks)))
+  return (data ?? []).map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (d: any): DonationRow => ({
+      id: d.id,
+      header: d.projects?.title ?? "Donation",
+      type: d.projects?.title ?? "—",
+      status: d.projects?.organizations?.organization_name ?? "—",
+      target: String(d.amount ?? ""),
+      limit: new Date(d.created_at).toISOString().slice(0, 10),
+      reviewer: "",
+      organizationSlug: d.projects?.organizations?.slug ?? null,
+    })
   );
-
-  // ✅ No disk reads, no Inter, just use built-in Helvetica
-  doc.font("Helvetica");
-  doc.addPage();
-
-  const dateIso = safeIsoDate(receiptData.created_at);
-
-  doc.fontSize(20).text("Donation Receipt", { align: "center" }).moveDown();
-  doc.fontSize(12);
-  doc.text(`Receipt #      : ${receiptData.id}`);
-  doc.text(`Date           : ${dateIso}`);
-  doc.text(`Donor          : ${receiptData.donorName}`);
-  doc.text(`Email          : ${receiptData.donorEmail}`);
-  doc.text(`Organization   : ${receiptData.organizationName}`);
-  doc.text(`Project        : ${receiptData.projectTitle}`);
-  doc.text(`Amount Donated : $${receiptData.amount.toFixed(2)}`);
-  doc.moveDown().text("Thank you for your generous contribution.");
-  doc.end();
-
-  return await done;
 }
 
-export async function getDonationsByUserId(
-  userId: string
-): Promise<Donation[]> {
-  const supabase = await createAnonymousServerSupabaseClient();
+export type DonationPoint = { date: string; amount: number };
+
+// narrow row type from your DB types
+type DonationSlim = Pick<
+  Database["public"]["Tables"]["donations"]["Row"],
+  "amount" | "created_at"
+>;
+
+/** turn a timestamp into YYYY-MM-DD or null if invalid */
+function toIsoDay(v: string | null | undefined): string | null {
+  if (!v) return null;
+  const t = Date.parse(v);
+  if (!Number.isFinite(t)) return null;
+  return new Date(t).toISOString().slice(0, 10);
+}
+
+export async function getDonationSeriesForCurrentUser(): Promise<
+  DonationPoint[]
+> {
+  const supabase = await createServerSupabaseClient();
+  const donor = await getDonorProfile();
+  if (!donor) return [];
 
   const { data, error } = await supabase
     .from("donations")
-    .select("*")
-    .eq("donor_id", userId)
-    .order("created_at", { ascending: false });
+    .select("amount, created_at")
+    .eq("donor_id", donor.user_id)
+    .order("created_at", { ascending: true });
 
-  if (error) {
-    console.error("Error fetching user donations:", error);
-    return [];
+  if (error) throw error;
+
+  // --- aggregate by day (UTC) ---
+  const byDay = new Map<string, number>();
+
+  for (const row of (data ?? []) as DonationSlim[]) {
+    const key = toIsoDay(row.created_at);
+    if (!key) continue; // skip bad/empty timestamps
+
+    const num =
+      typeof row.amount === "string"
+        ? parseFloat(row.amount)
+        : Number(row.amount ?? 0);
+
+    const safe = Number.isFinite(num) ? num : 0;
+    byDay.set(key, (byDay.get(key) ?? 0) + safe);
   }
 
-  return data || [];
-}
+  // --- build a continuous 90-day series (fill gaps with 0) ---
+  const end = new Date(); // today
+  const start = new Date();
+  start.setDate(end.getDate() - 89); // 90 points inclusive
 
-// shape you write into "donors" (adjust fields to match your columns)
-export type DonorUpsert = {
-  user_id: string;
-  first_name?: string | null;
-  last_name?: string | null;
-  phone?: string | null;
-  address?: string | null;
-  city?: string | null;
-  state?: string | null;
-  country?: string | null;
-  profile_completed?: boolean | null;
-};
-
-export type UpsertDonorResult =
-  | { ok: true; profile_completed: boolean }
-  | { error: string };
-
-export type DeleteDonorResult = { ok: true } | { error: string };
-
-export async function upsertDonorProfile(
-  row: DonorUpsert
-): Promise<UpsertDonorResult> {
-  const supabase = await createAnonymousServerSupabaseClient();
-
-  // If your generated types are behind, cast to any to avoid TS "column doesn't exist" noise.
-  const { error } = await supabase
-    .from("donors")
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .upsert(row as any, { onConflict: "user_id" });
-
-  if (error) {
-    return { error: error.message };
+  const out: DonationPoint[] = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const key = d.toISOString().slice(0, 10);
+    out.push({ date: key, amount: byDay.get(key) ?? 0 });
   }
 
-  return { ok: true, profile_completed: !!row.profile_completed };
-}
-
-export async function deleteDonorProfile(
-  userId: string
-): Promise<DeleteDonorResult> {
-  const supabase = await createAnonymousServerSupabaseClient();
-  const { error } = await supabase
-    .from("donors")
-    .delete()
-    .eq("user_id", userId);
-
-  if (error) return { error: error.message };
-  return { ok: true };
+  return out;
 }

@@ -1,8 +1,11 @@
 // Standalone build: embeds AFM data so no disk reads for Helvetica
 // @ts-expect-error: pdfkit standalone build does not have type definitions
 import PDFDocument from "pdfkit/js/pdfkit.standalone.js";
-import { createAnonymousServerSupabaseClient, getDonorProfile } from "@/src/lib/supabase/server";
-import { Donation, DonationReceiptData } from "@/src/types/donation-types";
+import {
+  createServerSupabaseClient,
+  getDonorProfile,
+} from "@/src/lib/supabase/server";
+import { DonationReceiptData } from "@/src/types/donation-types";
 
 function safeIsoDate(v: string | null | undefined): string {
   if (!v) return "";
@@ -10,12 +13,11 @@ function safeIsoDate(v: string | null | undefined): string {
   return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
 }
 
-
 export async function getDonationReceiptData(
   donationId: string,
   userId: string
 ): Promise<DonationReceiptData | null> {
-  const supabase = await createAnonymousServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const donorProfile = await getDonorProfile();
 
   if (!donorProfile) {
@@ -96,27 +98,4 @@ export async function generateReceiptPdf(
   doc.end();
 
   return await done;
-}
-
-export async function getDonationsByUserId(
-): Promise<Donation[]> {
-  const supabase = await createAnonymousServerSupabaseClient();
-  const donorProfile = await getDonorProfile();
-
-  if (!donorProfile) {
-    return [];
-  }
-
-  const { data, error } = await supabase
-    .from("donations")
-    .select("*")
-    .eq("donor_id", donorProfile.user_id)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Error fetching user donations:", error);
-    return [];
-  }
-
-  return data || [];
 }
