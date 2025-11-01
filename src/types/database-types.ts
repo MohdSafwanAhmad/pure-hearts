@@ -62,9 +62,14 @@ export type Database = {
           currency: string;
           donor_id: string | null;
           donor_in_app_address: string | null;
+          donor_in_app_city: string | null;
+          donor_in_app_country: string | null;
           donor_in_app_email: string | null;
           donor_in_app_first_name: string | null;
           donor_in_app_last_name: string | null;
+          donor_in_app_phone: string | null;
+          donor_in_app_postal_code: string | null;
+          donor_in_app_state: string | null;
           donor_stripe_billing_address: string | null;
           donor_stripe_billing_city: string | null;
           donor_stripe_billing_country: string | null;
@@ -80,6 +85,8 @@ export type Database = {
           organization_country: string | null;
           organization_name: string | null;
           organization_phone: string | null;
+          organization_postal_code: string | null;
+          organization_state: string | null;
           organization_stripe_account_id: string | null;
           payment_method: string | null;
           project_description: string | null;
@@ -95,9 +102,14 @@ export type Database = {
           currency?: string;
           donor_id?: string | null;
           donor_in_app_address?: string | null;
+          donor_in_app_city?: string | null;
+          donor_in_app_country?: string | null;
           donor_in_app_email?: string | null;
           donor_in_app_first_name?: string | null;
           donor_in_app_last_name?: string | null;
+          donor_in_app_phone?: string | null;
+          donor_in_app_postal_code?: string | null;
+          donor_in_app_state?: string | null;
           donor_stripe_billing_address?: string | null;
           donor_stripe_billing_city?: string | null;
           donor_stripe_billing_country?: string | null;
@@ -113,6 +125,8 @@ export type Database = {
           organization_country?: string | null;
           organization_name?: string | null;
           organization_phone?: string | null;
+          organization_postal_code?: string | null;
+          organization_state?: string | null;
           organization_stripe_account_id?: string | null;
           payment_method?: string | null;
           project_description?: string | null;
@@ -128,9 +142,14 @@ export type Database = {
           currency?: string;
           donor_id?: string | null;
           donor_in_app_address?: string | null;
+          donor_in_app_city?: string | null;
+          donor_in_app_country?: string | null;
           donor_in_app_email?: string | null;
           donor_in_app_first_name?: string | null;
           donor_in_app_last_name?: string | null;
+          donor_in_app_phone?: string | null;
+          donor_in_app_postal_code?: string | null;
+          donor_in_app_state?: string | null;
           donor_stripe_billing_address?: string | null;
           donor_stripe_billing_city?: string | null;
           donor_stripe_billing_country?: string | null;
@@ -146,6 +165,8 @@ export type Database = {
           organization_country?: string | null;
           organization_name?: string | null;
           organization_phone?: string | null;
+          organization_postal_code?: string | null;
+          organization_state?: string | null;
           organization_stripe_account_id?: string | null;
           payment_method?: string | null;
           project_description?: string | null;
@@ -188,6 +209,7 @@ export type Database = {
           first_name: string;
           last_name: string;
           phone: string | null;
+          postal_code: string | null;
           profile_completed: boolean | null;
           profile_photo: string | null;
           state: string | null;
@@ -203,6 +225,7 @@ export type Database = {
           first_name: string;
           last_name: string;
           phone?: string | null;
+          postal_code?: string | null;
           profile_completed?: boolean | null;
           profile_photo?: string | null;
           state?: string | null;
@@ -218,6 +241,7 @@ export type Database = {
           first_name?: string;
           last_name?: string;
           phone?: string | null;
+          postal_code?: string | null;
           profile_completed?: boolean | null;
           profile_photo?: string | null;
           state?: string | null;

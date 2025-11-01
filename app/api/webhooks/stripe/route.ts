@@ -130,6 +130,7 @@ const fulfillDonation = async (session: Stripe.Checkout.Session) => {
     stripe_payment_id: stripe_payment_intent_id,
     donor_id: metadata.userId || null, // User ID from logged-in user account (if any)
     project_id: metadata.projectId,
+    is_anonymous: !metadata.userId,
 
     // Donation details
     amount: amountDonation,
@@ -138,11 +139,15 @@ const fulfillDonation = async (session: Stripe.Checkout.Session) => {
     payment_method: session.payment_method_types?.[0],
 
     // Donor in-app information
-    donor_in_app_address: metadata.donorInAppAddress,
     donor_in_app_email: metadata.userEmail,
     donor_in_app_first_name: metadata.donorInAppFirstName,
     donor_in_app_last_name: metadata.donorInAppLastName,
-    is_anonymous: !metadata.userId,
+    donor_in_app_country: metadata.donorInAppCountry,
+    donor_in_app_state: metadata.donorInAppState,
+    donor_in_app_city: metadata.donorInAppCity,
+    donor_in_app_address: metadata.donorInAppAddress,
+    donor_in_app_postal_code: metadata.donorInAppPostalCode,
+    donor_in_app_phone: metadata.donorInAppPhone,
 
     // Donor Stripe information
     donor_stripe_email: session.customer_details?.email || "", // Email used in checkout/transaction
@@ -156,12 +161,13 @@ const fulfillDonation = async (session: Stripe.Checkout.Session) => {
 
     // Organization snapshot information
     organization_name: metadata.organizationName,
-    organization_address: metadata.organizationAddress,
-    organization_city: metadata.organizationCity,
-    organization_country: metadata.organizationCountry,
-    organization_postal_code: metadata.organizationPostalCode,
     organization_phone: metadata.organizationPhone,
     organization_stripe_account_id: metadata.organizationStripeAccountId,
+    organization_country: metadata.organizationCountry,
+    organization_state: metadata.organizationState,
+    organization_city: metadata.organizationCity,
+    organization_address: metadata.organizationAddress,
+    organization_postal_code: metadata.organizationPostalCode,
 
     // Project snapshot information
     project_title: metadata.projectTitle,
@@ -177,7 +183,7 @@ const fulfillDonation = async (session: Stripe.Checkout.Session) => {
   if (metadata.userId) {
     const { data: donor } = await supabase
       .from("donors")
-      .select("address, city, state, country, phone")
+      .select("address, city, state, country, phone, postal_code")
       .eq("user_id", metadata.userId)
       .single();
 
@@ -190,6 +196,8 @@ const fulfillDonation = async (session: Stripe.Checkout.Session) => {
           state: donor.state ?? billingAddress?.state ?? undefined,
           country: donor.country ?? billingAddress?.country ?? undefined,
           phone: donor.phone ?? session.customer_details?.phone ?? undefined,
+          postal_code:
+            donor.postal_code ?? billingAddress?.postal_code ?? undefined,
         })
         .eq("user_id", metadata.userId);
     }

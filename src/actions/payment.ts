@@ -59,7 +59,7 @@ export async function createCheckoutSession(formData: DonationSchema) {
     supabase
       .from("organizations")
       .select(
-        "organization_name, address, city, country, postal_code, organization_phone"
+        "organization_name, address, state, city, country, postal_code, organization_phone"
       )
       .eq("user_id", parameters.organizationId)
       .single(),
@@ -72,7 +72,6 @@ export async function createCheckoutSession(formData: DonationSchema) {
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     customer: donor?.stripe_account_id ?? undefined, // undefined if guest checkout
-    customer_email: donor?.email ?? undefined, // undefined if guest checkout
     line_items: [
       {
         price_data: {
@@ -101,16 +100,22 @@ export async function createCheckoutSession(formData: DonationSchema) {
       userEmail: donor?.email ?? "",
       userId: donor?.user_id ?? null,
 
-      donorInAppAddress: donor?.address || null,
       donorInAppEmail: donor?.email || null,
       donorInAppFirstName: donor?.first_name || null,
       donorInAppLastName: donor?.last_name || null,
+      donorInAppCountry: donor?.country || null,
+      donorInAppState: donor?.state || null,
+      donorInAppCity: donor?.city || null,
+      donorInAppAddress: donor?.address || null,
+      donorInAppPostalCode: donor?.postal_code || null,
+      donorInAppPhone: donor?.phone || null,
 
       // organization info
       organizationId: parameters.organizationId,
       organizationName: parameters.organizationName,
       organizationAddress: organization.address,
       organizationCity: organization.city,
+      organizationState: organization.state,
       organizationCountry: organization.country,
       organizationPostalCode: organization.postal_code,
       organizationPhone: organization.organization_phone,

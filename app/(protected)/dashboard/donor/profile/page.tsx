@@ -1,24 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { redirect } from "next/navigation";
-import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
 import { getDonorProfile } from "@/src/lib/supabase/server";
 import ProfileForm from "./profile-form/profile-form";
+import { redirect } from "next/navigation";
 
 export default async function ProfilePage() {
-  const supabase = await createAnonymousServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
-
-  // ✅ no arguments now
   const donor = await getDonorProfile();
+
+  if (!donor) redirect("/login");
 
   return (
     <div className="container mx-auto max-w-3xl">
       <ProfileForm
-        userId={user.id}
+        userId={donor.user_id}
         initial={{
           first_name: donor?.first_name ?? "",
           last_name: donor?.last_name ?? "",
@@ -28,6 +21,7 @@ export default async function ProfilePage() {
           state: (donor as any)?.state ?? "",
           country: (donor as any)?.country ?? "",
           profile_completed: Boolean(donor?.profile_completed),
+          postal_code: donor?.postal_code ?? "",
         }}
       />
     </div>
