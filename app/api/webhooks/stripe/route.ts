@@ -3,6 +3,10 @@ import { headers as nextHeaders } from "next/headers";
 import { getStripe } from "@/src/lib/stripe";
 import { createServerSupabaseClient } from "@/src/lib/supabase/server";
 import type Stripe from "stripe";
+import { getResendClient } from "@/src/lib/resend";
+import { render } from "@react-email/components";
+import DonationReceiptEmail from "@/src/emails/donation-receipt";
+import { generateReceiptPdf } from "@/src/api/donations";
 
 // Stripe requires the raw body for signature verification
 export async function POST(req: NextRequest) {
@@ -17,13 +21,13 @@ export async function POST(req: NextRequest) {
     event = stripe.webhooks.constructEvent(
       rawBody,
       sig!,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      process.env.STRIPE_WEBHOOK_SECRET!,
     );
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json(
       { error: `Webhook Error: ${errorMsg}` },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -63,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     if (charge.balance_transaction) {
       const balanceTransaction = await stripe.balanceTransactions.retrieve(
-        charge.balance_transaction as string
+        charge.balance_transaction as string,
       );
       const paymentIntentId = charge.payment_intent as string;
 
@@ -102,13 +106,13 @@ const fulfillDonation = async (session: Stripe.Checkout.Session) => {
   const stripe_payment_intent_id = session.payment_intent as string;
 
   const paymentIntent = await stripe.paymentIntents.retrieve(
-    stripe_payment_intent_id
+    stripe_payment_intent_id,
   );
 
   // 1.1) Get balance transaction details for fee and net amount
 
   let stripeFee = 0;
-  let amountDonation = session.amount_total! / 100;
+  const amountDonation = session.amount_total! / 100;
 
   const chargeId = paymentIntent.latest_charge;
 
@@ -116,67 +120,70 @@ const fulfillDonation = async (session: Stripe.Checkout.Session) => {
     const charge = await stripe.charges.retrieve(chargeId);
     const balanceTransaction = charge.balance_transaction;
     if (balanceTransaction && typeof balanceTransaction === "string") {
-      const balanceDetails = await stripe.balanceTransactions.retrieve(
-        balanceTransaction
-      );
+      const balanceDetails =
+        await stripe.balanceTransactions.retrieve(balanceTransaction);
       stripeFee = balanceDetails.fee / 100;
-      amountDonation = (balanceDetails.amount - balanceDetails.fee) / 100;
     }
   }
 
   // 1.2) Insert donation record
-  const { error } = await supabase.from("donations").insert({
-    // Identifiers
-    stripe_payment_id: stripe_payment_intent_id,
-    donor_id: metadata.userId || null, // User ID from logged-in user account (if any)
-    project_id: metadata.projectId,
-    is_anonymous: !metadata.userId,
+  const { data: insertedDonation, error } = await supabase
+    .from("donations")
+    .insert({
+      // Identifiers
+      stripe_payment_id: stripe_payment_intent_id,
+      donor_id: metadata.userId || null, // User ID from logged-in user account (if any)
+      project_id: metadata.projectId,
+      is_anonymous: !metadata.userId,
 
-    // Donation details
-    amount: amountDonation,
-    stripe_fee: stripeFee,
-    currency: session.currency ?? undefined,
-    payment_method: session.payment_method_types?.[0],
+      // Donation details
+      amount: amountDonation,
+      stripe_fee: stripeFee,
+      currency: session.currency ?? undefined,
+      payment_method: session.payment_method_types?.[0],
 
-    // Donor in-app information
-    donor_in_app_email: metadata.userEmail,
-    donor_in_app_first_name: metadata.donorInAppFirstName,
-    donor_in_app_last_name: metadata.donorInAppLastName,
-    donor_in_app_country: metadata.donorInAppCountry,
-    donor_in_app_state: metadata.donorInAppState,
-    donor_in_app_city: metadata.donorInAppCity,
-    donor_in_app_address: metadata.donorInAppAddress,
-    donor_in_app_postal_code: metadata.donorInAppPostalCode,
-    donor_in_app_phone: metadata.donorInAppPhone,
+      // Donor in-app information
+      donor_in_app_email: metadata.userEmail,
+      donor_in_app_first_name: metadata.donorInAppFirstName,
+      donor_in_app_last_name: metadata.donorInAppLastName,
+      donor_in_app_country: metadata.donorInAppCountry,
+      donor_in_app_state: metadata.donorInAppState,
+      donor_in_app_city: metadata.donorInAppCity,
+      donor_in_app_address: metadata.donorInAppAddress,
+      donor_in_app_postal_code: metadata.donorInAppPostalCode,
+      donor_in_app_phone: metadata.donorInAppPhone,
 
-    // Donor Stripe information
-    donor_stripe_email: session.customer_details?.email || "", // Email used in checkout/transaction
-    donor_stripe_name: session.customer_details?.name,
-    donor_stripe_phone: session.customer_details?.phone,
-    donor_stripe_billing_address: fullAddress,
-    donor_stripe_billing_city: billingAddress?.city,
-    donor_stripe_billing_state: billingAddress?.state,
-    donor_stripe_billing_postal_code: billingAddress?.postal_code,
-    donor_stripe_billing_country: billingAddress?.country,
+      // Donor Stripe information
+      donor_stripe_email: session.customer_details?.email || "", // Email used in checkout/transaction
+      donor_stripe_name: session.customer_details?.name,
+      donor_stripe_phone: session.customer_details?.phone,
+      donor_stripe_billing_address: fullAddress,
+      donor_stripe_billing_city: billingAddress?.city,
+      donor_stripe_billing_state: billingAddress?.state,
+      donor_stripe_billing_postal_code: billingAddress?.postal_code,
+      donor_stripe_billing_country: billingAddress?.country,
 
-    // Organization snapshot information
-    organization_name: metadata.organizationName,
-    organization_phone: metadata.organizationPhone,
-    organization_stripe_account_id: metadata.organizationStripeAccountId,
-    organization_country: metadata.organizationCountry,
-    organization_state: metadata.organizationState,
-    organization_city: metadata.organizationCity,
-    organization_address: metadata.organizationAddress,
-    organization_postal_code: metadata.organizationPostalCode,
+      // Organization snapshot information
+      organization_name: metadata.organizationName,
+      organization_phone: metadata.organizationPhone,
+      organization_stripe_account_id: metadata.organizationStripeAccountId,
+      organization_country: metadata.organizationCountry,
+      organization_state: metadata.organizationState,
+      organization_city: metadata.organizationCity,
+      organization_address: metadata.organizationAddress,
+      organization_postal_code: metadata.organizationPostalCode,
 
-    // Project snapshot information
-    project_title: metadata.projectTitle,
-    project_description: metadata.projectDescription,
-    project_goal_amount: parseFloat(metadata.projectGoalAmount || "0"),
-  });
+      // Project snapshot information
+      project_title: metadata.projectTitle,
+      project_description: metadata.projectDescription,
+      project_goal_amount: parseFloat(metadata.projectGoalAmount || "0"),
+    })
+    .select()
+    .single();
 
   if (error) {
     console.error("Error inserting donation record:", error);
+    return;
   }
 
   // 2) Fill donor details if not present
@@ -201,5 +208,71 @@ const fulfillDonation = async (session: Stripe.Checkout.Session) => {
         })
         .eq("user_id", metadata.userId);
     }
+  }
+
+  // 3) Send receipt email
+  try {
+    const donorEmail =
+      metadata.userEmail || session.customer_details?.email || "";
+
+    if (!donorEmail || !insertedDonation) {
+      console.error("Missing email or donation data for receipt");
+      return;
+    }
+
+    // Prepare receipt data
+    const donorName =
+      [metadata.donorInAppFirstName, metadata.donorInAppLastName]
+        .filter(Boolean)
+        .join(" ") ||
+      session.customer_details?.name ||
+      donorEmail;
+
+    const receiptData = {
+      id: insertedDonation.id,
+      amount: amountDonation,
+      created_at: insertedDonation.created_at || new Date().toISOString(),
+      donorName,
+      donorEmail,
+      organizationName: metadata.organizationName || "—",
+      projectTitle: metadata.projectTitle || "—",
+    };
+
+    // Generate PDF receipt
+    const pdfBuffer = await generateReceiptPdf(receiptData);
+
+    // Render email template
+    const emailHtml = await render(
+      DonationReceiptEmail({
+        donorName,
+        organizationName: metadata.organizationName || "—",
+        projectTitle: metadata.projectTitle || "—",
+        amount: amountDonation,
+        date: new Date(receiptData.created_at).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+        receiptId: insertedDonation.id,
+      }),
+    );
+
+    // Send email with Resend
+    const resend = getResendClient();
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL!, // Use this for testing without domain
+      to: donorEmail, // in test mode only verified emails can be used, so use the pure heart gmail address
+      subject: "Thank You for Your Donation - Receipt Attached",
+      html: emailHtml,
+      attachments: [
+        {
+          filename: `receipt-${insertedDonation.id}.pdf`,
+          content: pdfBuffer,
+        },
+      ],
+    });
+  } catch (emailError) {
+    console.error("Error sending receipt email:", emailError);
+    // Don't throw - we don't want to fail the webhook if email fails
   }
 };
