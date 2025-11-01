@@ -7,6 +7,7 @@ import { EditableHeaderSection } from "@/src/components/page/organization/editab
 import { ProjectsSection } from "@/src/components/page/organization/projects-section";
 import { OrganizationStats } from "@/src/components/page/organization/stats-section";
 import { StripeVerificationAlert } from "@/src/components/page/organization/stripe-verification-alert";
+import { OrganizationVerificationAlert } from "@/src/components/page/organization/organization-verification-alert";
 import { Button } from "@/src/components/ui/button";
 import {
   Carousel,
@@ -51,6 +52,7 @@ interface OrganizationPageClientProps {
     slug: string | null;
     stripe_account_id: string | null;
     is_stripe_account_connected: boolean | null;
+    is_verified: boolean | null;
   };
   isOwner: boolean;
   stats: {
@@ -165,6 +167,13 @@ export function OrganizationPageClient({
     <div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
+          {/* Organization Verification Alert - Only show if owner and not verified */}
+          {isOwner && !organization.is_verified && (
+            <OrganizationVerificationAlert
+              organizationName={organization.organization_name}
+            />
+          )}
+
           {/* Stripe Verification Alert - Only show if owner, has stripe account but not connected */}
           {isOwner &&
             organization.stripe_account_id &&
