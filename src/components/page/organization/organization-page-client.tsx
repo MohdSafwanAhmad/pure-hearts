@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { updateOrganization } from "@/src/actions/organization";
 import { EditableDetailsSection } from "@/src/components/page/organization/editable-details-section";
 import { EditableHeaderSection } from "@/src/components/page/organization/editable-header-section";
@@ -178,6 +179,18 @@ export function OrganizationPageClient({
           <div className="container mx-auto px-4">
             {/* Statistics Cards */}
             <OrganizationStats stats={stats} />
+
+            {/* Create Project Button (only shown to organization owners) */}
+            {isOwner && (
+          <div className="flex justify-end mt-2 mb-4">
+            <Button asChild>
+              {/* Link to the new project creation page using the organization's slug */}
+              <Link href={`/organizations/${organization.slug}/projects/new`}>
+                Add Project
+              </Link>
+            </Button>
+          </div>
+        )}
 
             {/* Organization Details */}
             <EditableDetailsSection

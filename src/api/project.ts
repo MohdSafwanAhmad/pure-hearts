@@ -113,6 +113,29 @@ export async function getProjectBySlugs(
   };
 }
 
+
+export async function getBeneficiaryTypes(): Promise<
+  { value: string; label: string }[]
+> {
+  const supabase = await createAnonymousServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("beneficiary_types")
+    .select("id, code, label")
+    .order("code", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching beneficiary types:", error);
+    return [];
+  }
+
+  return (
+    data?.map(({ id, code, label }) => ({
+      value: id,
+      label: label || code,
+    })) ?? []
+  );
+}
+
 /**
  * Fetch a small list of recent, verified projects for display sections.
  * Uses getProjectBySlugs to assemble full details per project.
