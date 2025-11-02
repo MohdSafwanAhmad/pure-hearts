@@ -19,13 +19,9 @@ export const createProjectSchema = z.object({
     .max(2000, "Description must be less than 2000 characters"),
   goalAmount: z
     .string()
-    .optional()
     .refine(
-      (val) => {
-        if (!val) return true;
-        // Accept numbers or numeric strings
-        return !isNaN(Number(val));
-      },
+      (val) => 
+      !isNaN(Number(val)) && Number(val) > 0,
       {
         message: "Goal amount must be a valid number",
       }
@@ -39,6 +35,17 @@ export const createProjectSchema = z.object({
   endDate: z
     .string()
     .optional(),
-});
+})
+.refine(
+    ({ startDate, endDate }) => {
+      // If either date is missing, skip this check
+      if (!startDate || !endDate) return true;
+      return new Date(endDate) >= new Date(startDate);
+    },
+    {
+      message: 'End date cannot be before start date',
+      path: ['endDate'],
+    }
+  );
 
 export type TCreateProjectSchema = z.infer<typeof createProjectSchema>;

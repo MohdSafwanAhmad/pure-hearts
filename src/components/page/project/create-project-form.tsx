@@ -64,8 +64,8 @@ export default function CreateProjectForm({
       description: "",
       goalAmount: "",
       beneficiaryType: "",
-      startDate: undefined,
-      endDate: undefined,
+      startDate: "",
+      endDate: "",
     },
   });
 
@@ -79,9 +79,7 @@ export default function CreateProjectForm({
     const formData = new FormData();
     formData.append("title", values.title);
     formData.append("description", values.description);
-    if (values.goalAmount) {
-      formData.append("goalAmount", values.goalAmount);
-    }
+    formData.append("goalAmount", values.goalAmount);
     formData.append("beneficiaryType", values.beneficiaryType);
     if (values.startDate) {
       formData.append("startDate", values.startDate);
@@ -157,7 +155,7 @@ export default function CreateProjectForm({
             name="goalAmount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Goal Amount (optional)</FormLabel>
+                <FormLabel>Goal Amount</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -210,7 +208,7 @@ export default function CreateProjectForm({
             name="startDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Start Date (optional)</FormLabel>
+                <FormLabel>Start Date</FormLabel>
                 <FormControl>
                   <Input
                     type="date"
@@ -229,7 +227,7 @@ export default function CreateProjectForm({
             name="endDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>End Date (optional)</FormLabel>
+                <FormLabel>End Date</FormLabel>
                 <FormControl>
                   <Input
                     type="date"

@@ -127,7 +127,15 @@ export function OrganizationPageClient({
     }
   };
 
-  // Import the editable components
+  // Button to create a project – passed into ProjectsSection so it shows next to the toggle
+  const addProjectButton = isOwner ? (
+    <Button asChild>
+      <Link href={`/organizations/${organization.slug}/projects/new`}>
+        Add Project
+      </Link>
+    </Button>
+  ) : null;
+
   return (
     <div>
       <Form {...form}>
@@ -180,18 +188,6 @@ export function OrganizationPageClient({
             {/* Statistics Cards */}
             <OrganizationStats stats={stats} />
 
-            {/* Create Project Button (only shown to organization owners) */}
-            {isOwner && (
-          <div className="flex justify-end mt-2 mb-4">
-            <Button asChild>
-              {/* Link to the new project creation page using the organization's slug */}
-              <Link href={`/organizations/${organization.slug}/projects/new`}>
-                Add Project
-              </Link>
-            </Button>
-          </div>
-        )}
-
             {/* Organization Details */}
             <EditableDetailsSection
               organization={organization}
@@ -200,8 +196,11 @@ export function OrganizationPageClient({
               projectAreas={projectAreas}
             />
 
-            {/* Projects Section - This is not editable */}
-            <ProjectsSection projects={projects} />
+            {/* Projects Section - shows Add Project button beside the toggle */}
+            <ProjectsSection
+              projects={projects}
+              addProjectButton={addProjectButton}
+            />
           </div>
         </form>
       </Form>

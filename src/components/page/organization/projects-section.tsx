@@ -28,9 +28,10 @@ interface Props {
       organizationSlug: string;
     };
   }[];
+  addProjectButton?: React.ReactNode;
 }
 
-export function ProjectsSection({ projects }: Props) {
+export function ProjectsSection({ projects, addProjectButton }: Props) {
   const completedProjects = projects.filter((project) => {
     if (project.completionDate === undefined) return false;
 
@@ -74,8 +75,8 @@ export function ProjectsSection({ projects }: Props) {
       </Heading>
 
       {/* Project Toggle */}
-      <div className="flex mb-title">
-        <div className="rounded-lg border border-gray-200 bg-white p-1">
+      <div className="flex mb-title items-center">
+        <div className="rounded-lg border border-gray-200 bg-white p-1 flex">
           <button
             type="button"
             onClick={(e) => {
@@ -107,7 +108,17 @@ export function ProjectsSection({ projects }: Props) {
             Existing Projects
           </button>
         </div>
+
+        {/* Render the Add Project button if provided */}
+        {addProjectButton && (
+          <div className="m-2">
+            <div className="px-4 py-2 text-sm font-medium rounded-md bg-primary text-white hover:bg-primary/90 transition-colors">
+              {addProjectButton}
+            </div>
+          </div>
+        )}
       </div>
+
 
       {/* Projects Grid or Empty State */}
       {currentProjects.length === 0 ? (

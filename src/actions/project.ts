@@ -67,12 +67,34 @@ export async function createProject(formData: FormData): Promise<ActionResponse>
     const data = parsed.data;
     // Generate a slug from the title.  Replace non‑alphanumeric characters
     // with hyphens, collapse multiple hyphens and trim leading/trailing ones.
+    // Generate the base slug from the title
     const slugBase = data.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
-    const slugSuffix = uuidv4().split("-")[0];
-    const slug = `${slugBase}-${slugSuffix}`;
+
+    // Check whether this slug (or numbered variants) already exists for this organization
+    let slugCandidate = slugBase;
+    let suffix = 1;
+    while (true) {
+      const { data: existing } = await supabase
+        .from("projects")
+        .select("slug", { head: true }) // head: true means we only care if a row exists
+        .eq("organization_user_id", organization.user_id)
+        .eq("slug", slugCandidate)
+        .maybeSingle();
+
+      if (!existing) {
+        break; // slugCandidate is available
+      }
+
+      suffix += 1;
+      slugCandidate = `${slugBase}-${suffix}`;
+    }
+
+    const slug = slugCandidate;
+    // const slugSuffix = uuidv4().split("-")[0]; <-- uuid can be attached as a suffix to the slug to handle unique project slugs
+    // const slug = `${slugBase}`;
 
     // Convert optional numeric fields
     let goalAmountNumber: number | null = null;
