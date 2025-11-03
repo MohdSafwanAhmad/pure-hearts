@@ -19,6 +19,7 @@ import {
   TUpdateOrganizationSchema,
   updateOrganizationSchema,
 } from "@/src/schemas/organization";
+import { VerificationStatus } from "@/src/api/verification";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreditCard, Edit2, Loader2, Save, X } from "lucide-react";
 import { useState } from "react";
@@ -81,6 +82,7 @@ interface OrganizationPageClientProps {
     };
   }[];
   projectAreas: { value: number; label: string }[];
+  verificationStatus: VerificationStatus | null;
 }
 
 export function OrganizationPageClient({
@@ -89,6 +91,7 @@ export function OrganizationPageClient({
   stats,
   projects,
   projectAreas,
+  verificationStatus,
 }: OrganizationPageClientProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoadingPayment, setIsLoadingPayment] = useState(false);
@@ -168,9 +171,10 @@ export function OrganizationPageClient({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           {/* Organization Verification Alert - Only show if owner and not verified */}
-          {isOwner && !organization.is_verified && (
+          {isOwner && !organization.is_verified && verificationStatus && (
             <OrganizationVerificationAlert
               organizationName={organization.organization_name}
+              verificationStatus={verificationStatus}
             />
           )}
 

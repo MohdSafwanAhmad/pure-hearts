@@ -23,6 +23,7 @@ interface VerificationRequestEmailProps {
   missionStatement: string;
   websiteUrl?: string;
   organizationId: string;
+  submittedDate: string;
 }
 
 export const VerificationRequestEmail = ({
@@ -38,6 +39,7 @@ export const VerificationRequestEmail = ({
   missionStatement,
   websiteUrl,
   organizationId,
+  submittedDate,
 }: VerificationRequestEmailProps) => {
   return (
     <Html>
@@ -46,6 +48,10 @@ export const VerificationRequestEmail = ({
       <Body style={main}>
         <Container style={container}>
           <Heading style={h1}>Organization Verification Request</Heading>
+
+          <Text style={dateText}>
+            <strong>Submitted on:</strong> {submittedDate}
+          </Text>
 
           <Text style={text}>
             A new organization has requested verification on Pure Hearts.
@@ -176,6 +182,14 @@ const text = {
   fontSize: "16px",
   lineHeight: "26px",
   margin: "0 0 16px",
+};
+
+const dateText = {
+  color: "#333",
+  fontSize: "16px",
+  lineHeight: "26px",
+  margin: "0 0 24px",
+  fontWeight: "bold" as const,
 };
 
 const detailsSection = {

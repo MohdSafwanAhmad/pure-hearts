@@ -24,7 +24,11 @@ import { toast } from "sonner";
 
 const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB
 
-export function VerificationRequestDialog() {
+interface VerificationRequestDialogProps {
+  buttonText?: string;
+}
+
+export function VerificationRequestDialog({ buttonText = "Request Verification" }: VerificationRequestDialogProps) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -124,7 +128,7 @@ export function VerificationRequestDialog() {
           className="border-primary text-primary hover:bg-primary hover:text-white whitespace-nowrap"
         >
           <CheckCircle2 className="mr-1 h-4 w-4" />
-          Request Verification
+          {buttonText}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">

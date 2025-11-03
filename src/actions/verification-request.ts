@@ -73,33 +73,93 @@ export async function submitVerificationRequest(
       };
     }
 
-    // Check for existing pending request
-    const { data: existingRequest, error: existingError } = await supabase
+    // Get all requests for this organization
+    const { data: allRequests, error: requestsError } = await supabase
       .from("organization_verification_requests")
-      .select("id, document_path, status")
+      .select("id, document_path, status, submitted_at")
       .eq("organization_id", organization.user_id)
-      .eq("status", "pending")
-      .single();
+      .order("submitted_at", { ascending: false });
 
-    // If there's a pending request, delete it (document + record)
-    if (existingRequest && !existingError) {
-      // Delete the document from storage
-      const { error: deleteStorageError } = await supabase.storage
-        .from(VERIFICATION_BUCKET)
-        .remove([existingRequest.document_path]);
+    if (requestsError) {
+      console.error("Failed to fetch existing requests:", requestsError);
+      return {
+        success: false,
+        error: "Failed to check existing requests. Please try again.",
+      };
+    }
 
-      if (deleteStorageError) {
-        console.error("Failed to delete old document:", deleteStorageError);
+    const requests = allRequests || [];
+    const pendingRequests = requests.filter((r) => r.status === "pending");
+    const cancelledRequests = requests.filter((r) => r.status === "cancelled");
+
+    // Calculate total attempts used (pending + cancelled)
+    const totalAttempts = pendingRequests.length + cancelledRequests.length;
+
+    // Check if max attempts (3) reached and cooldown is active
+    if (totalAttempts >= 3) {
+      // Get the most recent request (could be pending or cancelled)
+      const mostRecentRequest = requests[0];
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      const lastSubmissionDate = new Date(
+        mostRecentRequest.submitted_at || Date.now(),
+      );
+
+      if (lastSubmissionDate > oneWeekAgo) {
+        const daysRemaining = Math.ceil(
+          7 -
+            (Date.now() - lastSubmissionDate.getTime()) / (1000 * 60 * 60 * 24),
+        );
+        return {
+          success: false,
+          error: `You have reached the maximum number of verification attempts (3/3). Please wait ${daysRemaining} more day(s) before submitting another request.`,
+        };
       }
 
-      // Delete the database record
+      // Cooldown period has passed, delete all previous requests
+      const allRequestIds = requests.map((r) => r.id);
+      const allRequestPaths = requests.map((r) => r.document_path);
+
+      // Delete documents from storage
+      if (allRequestPaths.length > 0) {
+        const { error: deleteStorageError } = await supabase.storage
+          .from(VERIFICATION_BUCKET)
+          .remove(allRequestPaths);
+
+        if (deleteStorageError) {
+          console.error(
+            "Failed to delete old documents:",
+            deleteStorageError,
+          );
+        }
+      }
+
+      // Delete database records
       const { error: deleteDbError } = await supabase
         .from("organization_verification_requests")
         .delete()
-        .eq("id", existingRequest.id);
+        .in("id", allRequestIds);
 
       if (deleteDbError) {
-        console.error("Failed to delete old request:", deleteDbError);
+        console.error("Failed to delete old requests:", deleteDbError);
+      }
+    }
+
+    // Cancel any existing pending requests before creating new one
+    if (pendingRequests.length > 0) {
+      const pendingIds = pendingRequests.map((r) => r.id);
+      const { error: cancelError } = await supabase
+        .from("organization_verification_requests")
+        .update({ status: "cancelled" })
+        .in("id", pendingIds);
+
+      if (cancelError) {
+        console.error("Failed to cancel previous requests:", cancelError);
+        return {
+          success: false,
+          error: "Failed to cancel previous request. Please try again.",
+        };
       }
     }
 
@@ -155,6 +215,15 @@ export async function submitVerificationRequest(
     const fromEmail = process.env.RESEND_FROM_EMAIL!;
     const adminEmail = process.env.RESEND_PURE_HEARTS_EMAIL!;
 
+    // Format the current date
+    const submittedDate = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
     // Render email template to HTML
     const emailHtml = await render(
       VerificationRequestEmail({
@@ -170,6 +239,7 @@ export async function submitVerificationRequest(
         missionStatement: organization.mission_statement,
         websiteUrl: organization.website_url || undefined,
         organizationId: organization.user_id,
+        submittedDate: submittedDate,
       }),
     );
 
