@@ -19,6 +19,7 @@ interface VerificationRequestEmailProps {
   state: string;
   city: string;
   address: string;
+  postalCode: string;
   missionStatement: string;
   websiteUrl?: string;
   organizationId: string;
@@ -33,6 +34,7 @@ export const VerificationRequestEmail = ({
   state,
   city,
   address,
+  postalCode,
   missionStatement,
   websiteUrl,
   organizationId,
@@ -73,7 +75,7 @@ export const VerificationRequestEmail = ({
             <Heading style={h3}>Location</Heading>
 
             <Text style={detailText}>
-              <strong>Address:</strong> {address}
+              <strong>Country:</strong> {country}
             </Text>
 
             <Text style={detailText}>
@@ -81,11 +83,15 @@ export const VerificationRequestEmail = ({
             </Text>
 
             <Text style={detailText}>
+              <strong>Address:</strong> {address}
+            </Text>
+
+            <Text style={detailText}>
               <strong>State/Province:</strong> {state}
             </Text>
 
             <Text style={detailText}>
-              <strong>Country:</strong> {country}
+              <strong>Postal Code:</strong> {postalCode}
             </Text>
 
             <Hr style={hr} />
@@ -111,8 +117,9 @@ export const VerificationRequestEmail = ({
           </Section>
 
           <Text style={text}>
-            Please review the attached verification document(s) and organization
-            information to approve or reject this verification request.
+            The verification document has been uploaded and is ready for review
+            in the admin panel. Please review the organization information and
+            document to approve or reject this verification request.
           </Text>
 
           <Text style={footer}>

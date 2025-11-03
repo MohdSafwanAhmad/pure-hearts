@@ -113,6 +113,12 @@ file_size_limit = "1MiB"
 allowed_mime_types = ["image/webp", "image/png", "image/jpeg", "image/jpg"]
 objects_path = "./public-images"
 
+[storage.buckets.organization-verification-documents]
+public = false
+file_size_limit = "1MiB"
+allowed_mime_types = ["application/pdf"]
+objects_path = "./organization-verification-documents"
+
 [auth]
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used

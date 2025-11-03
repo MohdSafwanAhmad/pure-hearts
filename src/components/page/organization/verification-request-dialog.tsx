@@ -22,7 +22,7 @@ import {
 import { submitVerificationRequest } from "@/src/actions/verification-request";
 import { toast } from "sonner";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB
 
 export function VerificationRequestDialog() {
   const [open, setOpen] = useState(false);
@@ -46,7 +46,7 @@ export function VerificationRequestDialog() {
 
     // Validate file size
     if (selectedFile.size > MAX_FILE_SIZE) {
-      toast.error("File size must be less than 5MB");
+      toast.error("File size must be less than 1MB");
       return;
     }
 
@@ -133,7 +133,7 @@ export function VerificationRequestDialog() {
           <DialogDescription>
             Upload a verification document (e.g., tax receipt, registration
             certificate, or other official documents) to verify your
-            organization. Maximum file size: 5MB.
+            organization. Maximum file size: 1MB.
           </DialogDescription>
         </DialogHeader>
 
@@ -195,7 +195,7 @@ export function VerificationRequestDialog() {
                       </span>{" "}
                       or drag and drop
                     </p>
-                    <p className="text-xs text-gray-500">PDF (max. 5MB)</p>
+                    <p className="text-xs text-gray-500">PDF (max. 1MB)</p>
                   </div>
                 )}
               </label>
