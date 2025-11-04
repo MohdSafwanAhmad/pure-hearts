@@ -10,6 +10,7 @@ import { render } from "@react-email/components";
 import { VERIFICATION_BUCKET } from "@/src/lib/constants";
 import { ActionResponse } from "@/src/types/actions-types";
 import { revalidatePath } from "next/cache";
+import slugify from "slugify";
 
 const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB limit
 
@@ -171,9 +172,14 @@ export async function submitVerificationRequest(
     const base64Data = data.documentBase64.split(",")[1] || data.documentBase64;
     const documentBuffer = Buffer.from(base64Data, "base64");
 
-    // Create unique file path: org-id/timestamp-filename
+    // Create unique file path: org-slug/timestamp-sanitized-filename
     const timestamp = Date.now();
-    const sanitizedFilename = data.documentName.replace(/[^a-zA-Z0-9.-]/g, "_");
+    // Use slugify to safely sanitize the filename, preventing path traversal attacks
+    const sanitizedFilename = slugify(data.documentName, {
+      lower: true,
+      strict: true, // Remove special characters
+      replacement: "-",
+    });
     const filePath = `${organization.slug}/${timestamp}-${sanitizedFilename}`;
 
     const { error: uploadError } = await supabase.storage
