@@ -10,7 +10,7 @@ import { generateReceiptPdf } from "@/src/api/donations";
 
 // Stripe requires the raw body for signature verification
 export async function POST(req: NextRequest) {
-  // 1) Verify if the webhook request is comming from Stripe
+  // 1) Verify if the webhook request is coming from Stripe
   const stripe = getStripe();
   const hdrs = await nextHeaders();
   const sig = hdrs.get("stripe-signature");
