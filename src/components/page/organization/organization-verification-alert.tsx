@@ -14,7 +14,7 @@ export function OrganizationVerificationAlert({
   organizationName,
   verificationStatus,
 }: OrganizationVerificationAlertProps) {
-  const { status, canSubmit, message, attemptsUsed, maxAttempts } = verificationStatus;
+  const { status, canSubmit, message, attemptsUsed, maxAttempts, adminNotes, reviewedBy } = verificationStatus;
 
   // Different alert variants based on status
   const getAlertConfig = () => {
@@ -111,9 +111,19 @@ export function OrganizationVerificationAlert({
                   </p>
                 )}
                 {status === "rejected" && (
-                  <p className="text-sm mt-2 font-semibold">
-                    {message}
-                  </p>
+                  <>
+                    <p className="text-sm mt-2 font-semibold">
+                      {message}
+                    </p>
+                    {adminNotes && (
+                      <div className="mt-3 p-3 bg-white/50 rounded-md border border-orange-300">
+                        <p className="text-sm font-medium mb-1">
+                          Feedback from Reviewer{reviewedBy && ` (${reviewedBy})`}:
+                        </p>
+                        <p className="text-sm whitespace-pre-wrap">{adminNotes}</p>
+                      </div>
+                    )}
+                  </>
                 )}
                 {canSubmit && (
                   <div className="pt-2">

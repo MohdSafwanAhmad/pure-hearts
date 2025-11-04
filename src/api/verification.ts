@@ -1,4 +1,5 @@
 import { createServerSupabaseClient, getOrganizationProfile } from "@/src/lib/supabase/server";
+import { VERIFICATION_BUCKET, PUBLIC_IMAGE_BUCKET_NAME } from "@/src/lib/constants";
 
 export interface VerificationStatus {
   hasRequest: boolean;
@@ -8,6 +9,8 @@ export interface VerificationStatus {
   daysUntilNextAttempt: number | null;
   canSubmit: boolean;
   message: string;
+  adminNotes?: string | null;
+  reviewedBy?: string | null;
 }
 
 export async function getVerificationStatus(): Promise<VerificationStatus> {
@@ -43,7 +46,7 @@ export async function getVerificationStatus(): Promise<VerificationStatus> {
     // Get all requests for this organization
     const { data: allRequests, error: requestsError } = await supabase
       .from("organization_verification_requests")
-      .select("id, status, submitted_at")
+      .select("id, status, submitted_at, admin_notes, reviewed_by_first_name, reviewed_by_last_name")
       .eq("organization_id", organization.user_id)
       .order("submitted_at", { ascending: false });
 
@@ -85,6 +88,11 @@ export async function getVerificationStatus(): Promise<VerificationStatus> {
 
     // Check if there's a rejected request
     if (rejectedRequests.length > 0) {
+      const latestRejected = rejectedRequests[0];
+      const reviewerName = latestRejected.reviewed_by_first_name && latestRejected.reviewed_by_last_name
+        ? `${latestRejected.reviewed_by_first_name} ${latestRejected.reviewed_by_last_name}`
+        : null;
+
       return {
         hasRequest: true,
         status: "rejected",
@@ -95,6 +103,8 @@ export async function getVerificationStatus(): Promise<VerificationStatus> {
         message: totalAttempts < 3
           ? `Your previous verification request was rejected. You have ${3 - totalAttempts} attempt(s) remaining.`
           : "Your previous verification request was rejected. Please review the feedback.",
+        adminNotes: latestRejected.admin_notes,
+        reviewedBy: reviewerName,
       };
     }
 
@@ -143,5 +153,162 @@ export async function getVerificationStatus(): Promise<VerificationStatus> {
       canSubmit: true,
       message: "",
     };
+  }
+}
+
+export interface VerificationRequestDetails {
+  id: string;
+  status: "pending" | "approved" | "rejected" | "cancelled";
+  submittedAt: string;
+  documentName: string;
+  documentPath: string;
+  adminNotes: string | null;
+  reviewedAt: string | null;
+  reviewedByFirstName: string | null;
+  reviewedByLastName: string | null;
+  reviewedByPhone: string | null;
+  organization: {
+    userId: string;
+    organizationName: string;
+    organizationPhone: string;
+    country: string;
+    state: string;
+    city: string;
+    address: string;
+    postalCode: string;
+    missionStatement: string;
+    websiteUrl: string | null;
+    logo: string | null;
+    slug: string | null;
+    isVerified: boolean;
+    contactPersonName: string | null;
+    contactPersonEmail: string | null;
+    contactPersonPhone: string | null;
+    projectAreas: {
+      id: number;
+      label: string;
+    }[];
+  };
+  documentUrl: string | null;
+  latestPendingRequestId: string | null;
+}
+
+export async function getVerificationRequestDetails(
+  requestId: string,
+): Promise<VerificationRequestDetails | null> {
+  try {
+    const supabase = await createServerSupabaseClient();
+
+    // Get verification request
+    const { data: request, error: requestError } = await supabase
+      .from("organization_verification_requests")
+      .select("*")
+      .eq("id", requestId)
+      .single();
+
+    if (requestError || !request) {
+      return null;
+    }
+
+    // Get organization details
+    const { data: organization, error: orgError } = await supabase
+      .from("organizations")
+      .select("*")
+      .eq("user_id", request.organization_id)
+      .single();
+
+    if (orgError || !organization) {
+      return null;
+    }
+
+    // Get organization contact info
+    const { data: contactInfo } = await supabase
+      .from("organization_contact_info")
+      .select("*")
+      .eq("organization_id", request.organization_id)
+      .single();
+
+    // Get project areas
+    const { data: projectAreas } = await supabase
+      .from("organization_project_areas")
+      .select("project_areas(id, label)")
+      .eq("organization_id", request.organization_id);
+
+    const areas =
+      projectAreas?.map(
+        (row: { project_areas: { id: number; label: string } }) =>
+          row.project_areas
+      ) ?? [];
+
+    // Get document URL from storage
+    let documentUrl: string | null = null;
+    if (request.document_path) {
+      const { data: urlData } = await supabase.storage
+        .from(VERIFICATION_BUCKET)
+        .createSignedUrl(request.document_path, 3600); // 1 hour expiry
+
+      documentUrl = urlData?.signedUrl || null;
+    }
+
+    // Get logo URL if exists
+    let logoUrl: string | null = organization.logo;
+    if (organization.logo) {
+      const { data: logoData } = supabase.storage
+        .from(PUBLIC_IMAGE_BUCKET_NAME)
+        .getPublicUrl(organization.logo);
+      logoUrl = logoData.publicUrl;
+    }
+
+    // If cancelled or rejected, get the latest pending request ID
+    let latestPendingRequestId: string | null = null;
+    if (request.status === "cancelled" || request.status === "rejected") {
+      const { data: latestPending } = await supabase
+        .from("organization_verification_requests")
+        .select("id")
+        .eq("organization_id", request.organization_id)
+        .eq("status", "pending")
+        .order("submitted_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      latestPendingRequestId = latestPending?.id || null;
+    }
+
+    return {
+      id: request.id,
+      status: request.status as "pending" | "approved" | "rejected" | "cancelled",
+      submittedAt: request.submitted_at || new Date().toISOString(),
+      documentName: request.document_name,
+      documentPath: request.document_path,
+      adminNotes: request.admin_notes,
+      reviewedAt: request.reviewed_at,
+      reviewedByFirstName: request.reviewed_by_first_name,
+      reviewedByLastName: request.reviewed_by_last_name,
+      reviewedByPhone: request.reviewed_by_phone,
+      organization: {
+        userId: organization.user_id,
+        organizationName: organization.organization_name,
+        organizationPhone: organization.organization_phone,
+        country: organization.country,
+        state: organization.state,
+        city: organization.city,
+        address: organization.address,
+        postalCode: organization.postal_code,
+        missionStatement: organization.mission_statement,
+        websiteUrl: organization.website_url,
+        logo: logoUrl,
+        slug: organization.slug,
+        isVerified: organization.is_verified || false,
+        contactPersonName: contactInfo?.contact_person_name || null,
+        contactPersonEmail: contactInfo?.contact_person_email || null,
+        contactPersonPhone: contactInfo?.contact_person_phone || null,
+        projectAreas: areas,
+      },
+      documentUrl,
+      latestPendingRequestId,
+    };
+  } catch (error) {
+    console.error("Error getting verification request details:", error);
+    return null;
   }
 }

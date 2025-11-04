@@ -128,10 +128,7 @@ export async function submitVerificationRequest(
           .remove(allRequestPaths);
 
         if (deleteStorageError) {
-          console.error(
-            "Failed to delete old documents:",
-            deleteStorageError,
-          );
+          console.error("Failed to delete old documents:", deleteStorageError);
         }
       }
 
@@ -188,16 +185,18 @@ export async function submitVerificationRequest(
     }
 
     // Create verification request record
-    const { error: insertError } = await supabase
+    const { data: newRequest, error: insertError } = await supabase
       .from("organization_verification_requests")
       .insert({
         organization_id: organization.user_id,
         document_path: filePath,
         document_name: data.documentName,
         status: "pending",
-      });
+      })
+      .select("id")
+      .single();
 
-    if (insertError) {
+    if (insertError || !newRequest) {
       console.error("Failed to create verification request:", insertError);
 
       // Cleanup: Delete uploaded file if DB insert fails
@@ -214,6 +213,10 @@ export async function submitVerificationRequest(
 
     const fromEmail = process.env.RESEND_FROM_EMAIL!;
     const adminEmail = process.env.RESEND_PURE_HEARTS_EMAIL!;
+
+    // Create review URL with verification request ID
+    const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || "http://localhost:3000";
+    const reviewUrl = `${baseUrl}/admin/verify-organization/${newRequest.id}`;
 
     // Format the current date
     const submittedDate = new Date().toLocaleDateString("en-US", {
@@ -240,6 +243,8 @@ export async function submitVerificationRequest(
         websiteUrl: organization.website_url || undefined,
         organizationId: organization.user_id,
         submittedDate: submittedDate,
+        verificationRequestId: newRequest.id,
+        reviewUrl: reviewUrl,
       }),
     );
 

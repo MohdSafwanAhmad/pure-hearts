@@ -8,6 +8,7 @@ import {
   Section,
   Text,
   Hr,
+  Button,
 } from "@react-email/components";
 
 interface VerificationRequestEmailProps {
@@ -24,6 +25,8 @@ interface VerificationRequestEmailProps {
   websiteUrl?: string;
   organizationId: string;
   submittedDate: string;
+  verificationRequestId: string;
+  reviewUrl: string;
 }
 
 export const VerificationRequestEmail = ({
@@ -40,6 +43,8 @@ export const VerificationRequestEmail = ({
   websiteUrl,
   organizationId,
   submittedDate,
+  verificationRequestId,
+  reviewUrl,
 }: VerificationRequestEmailProps) => {
   return (
     <Html>
@@ -120,12 +125,22 @@ export const VerificationRequestEmail = ({
             <Text style={detailText}>
               <strong>Organization ID:</strong> {organizationId}
             </Text>
+
+            <Text style={detailText}>
+              <strong>Request ID:</strong> {verificationRequestId}
+            </Text>
+          </Section>
+
+          <Section style={buttonSection}>
+            <Button href={reviewUrl} style={button}>
+              Review Verification Request
+            </Button>
           </Section>
 
           <Text style={text}>
-            The verification document has been uploaded and is ready for review
-            in the admin panel. Please review the organization information and
-            document to approve or reject this verification request.
+            Click the button above to review the organization information and
+            uploaded documents. You can approve or reject this verification
+            request from the review page.
           </Text>
 
           <Text style={footer}>
@@ -210,6 +225,24 @@ const detailText = {
 const hr = {
   borderColor: "#fed7aa",
   margin: "20px 0",
+};
+
+const buttonSection = {
+  textAlign: "center" as const,
+  margin: "32px 0",
+};
+
+const button = {
+  backgroundColor: "#c2410c",
+  borderRadius: "6px",
+  color: "#fff",
+  fontSize: "16px",
+  fontWeight: "bold" as const,
+  textDecoration: "none",
+  textAlign: "center" as const,
+  display: "inline-block",
+  padding: "14px 32px",
+  cursor: "pointer",
 };
 
 const footer = {
