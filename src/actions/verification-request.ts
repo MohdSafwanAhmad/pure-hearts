@@ -9,6 +9,7 @@ import {
 import { render } from "@react-email/components";
 import { VERIFICATION_BUCKET } from "@/src/lib/constants";
 import { ActionResponse } from "@/src/types/actions-types";
+import { revalidatePath } from "next/cache";
 
 const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB limit
 
@@ -18,6 +19,12 @@ interface VerificationRequestData {
   documentType: string;
 }
 
+/**
+ * Submits a verification request for the organization to be verified.
+ *
+ * @param data the data needed for the org to be verified
+ * @returns result of the action, if successful or error message
+ */
 export async function submitVerificationRequest(
   data: VerificationRequestData,
 ): Promise<ActionResponse> {
@@ -269,6 +276,9 @@ export async function submitVerificationRequest(
         error: "Failed to send verification request. Please try again.",
       };
     }
+
+    // Revalidate the organization dashboard path to update UI
+    revalidatePath(`/organizations/${organization.slug}`);
 
     return {
       success: true,

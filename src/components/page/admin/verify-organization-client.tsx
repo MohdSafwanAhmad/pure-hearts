@@ -48,6 +48,7 @@ export function VerifyOrganizationClient({
     return (
       <ApprovedRequestAlert
         organizationName={organization.organizationName}
+        organizationSlug={organization.slug}
         reviewedByFirstName={requestDetails.reviewedByFirstName}
         reviewedByLastName={requestDetails.reviewedByLastName}
         reviewedAt={requestDetails.reviewedAt}

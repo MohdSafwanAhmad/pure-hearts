@@ -1,10 +1,13 @@
 "use client";
 
 import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
-import { CheckCircle2 } from "lucide-react";
+import { Button } from "@/src/components/ui/button";
+import { CheckCircle2, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 interface ApprovedRequestAlertProps {
   organizationName: string;
+  organizationSlug: string;
   reviewedByFirstName: string | null;
   reviewedByLastName: string | null;
   reviewedAt: string | null;
@@ -13,6 +16,7 @@ interface ApprovedRequestAlertProps {
 
 export function ApprovedRequestAlert({
   organizationName,
+  organizationSlug,
   reviewedByFirstName,
   reviewedByLastName,
   reviewedAt,
@@ -45,6 +49,16 @@ export function ApprovedRequestAlert({
                 Admin Notes:
               </p>
               <p className="text-sm text-muted-foreground">{adminNotes}</p>
+            </div>
+          )}
+          {organizationSlug && (
+            <div className="mt-4">
+              <Button asChild size="sm">
+                <Link href={`/organizations/${organizationSlug}`}>
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  View Organization Page
+                </Link>
+              </Button>
             </div>
           )}
         </AlertDescription>

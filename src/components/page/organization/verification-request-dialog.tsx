@@ -28,7 +28,9 @@ interface VerificationRequestDialogProps {
   buttonText?: string;
 }
 
-export function VerificationRequestDialog({ buttonText = "Request Verification" }: VerificationRequestDialogProps) {
+export function VerificationRequestDialog({
+  buttonText = "Request Verification",
+}: VerificationRequestDialogProps) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -144,66 +146,68 @@ export function VerificationRequestDialog({ buttonText = "Request Verification" 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="document">Verification Document (PDF only)</Label>
-            <div
-              className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${
-                dragActive
-                  ? "border-primary bg-primary/5"
-                  : "border-gray-300 hover:border-gray-400"
-              }`}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-            >
-              <input
-                id="document"
-                type="file"
-                accept="application/pdf"
-                onChange={handleFileChange}
-                className="hidden"
-                disabled={isSubmitting}
-              />
+
+            {/* Upload Section */}
+            <div className="flex items-center justify-center w-full">
               <label
                 htmlFor="document"
-                className="flex flex-col items-center justify-center cursor-pointer"
+                className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                  dragActive
+                    ? "border-primary bg-primary/10"
+                    : "border-gray-300 bg-gray-50 hover:bg-gray-100"
+                } ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
               >
-                {file ? (
-                  <div className="text-center">
-                    <FileText className="mx-auto h-12 w-12 text-green-500 mb-2" />
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <Upload className="w-8 h-8 mb-2 text-gray-400" />
+                  <p className="mb-1 text-sm text-gray-500">
+                    <span className="font-semibold">Click to upload</span> or
+                    drag and drop
+                  </p>
+                  <p className="text-xs text-gray-500">PDF only (max. 1MB)</p>
+                </div>
+                <input
+                  id="document"
+                  type="file"
+                  className="hidden"
+                  accept="application/pdf"
+                  onChange={handleFileChange}
+                  disabled={isSubmitting}
+                />
+              </label>
+            </div>
+
+            {/* Selected file info */}
+            {file && (
+              <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <FileText className="h-8 w-8 text-green-600" />
+                  <div>
                     <p className="text-sm font-medium text-gray-900">
                       {file.name}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    <p className="text-xs text-gray-500">
+                      {(file.size / 1024).toFixed(0)} KB
                     </p>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="mt-2"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setFile(null);
-                      }}
-                      disabled={isSubmitting}
-                    >
-                      Remove
-                    </Button>
                   </div>
-                ) : (
-                  <div className="text-center">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-600 mb-1">
-                      <span className="font-semibold text-primary">
-                        Click to upload
-                      </span>{" "}
-                      or drag and drop
-                    </p>
-                    <p className="text-xs text-gray-500">PDF (max. 1MB)</p>
-                  </div>
-                )}
-              </label>
-            </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setFile(null);
+                  }}
+                  disabled={isSubmitting}
+                >
+                  Remove
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

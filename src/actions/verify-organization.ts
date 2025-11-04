@@ -28,6 +28,12 @@ interface RejectOrganizationData {
   adminNotes: string;
 }
 
+/**
+ * Approves an organization verification request.
+ *
+ * @param data The data needed to approve the request
+ * @returns The result of the approval action
+ */
 export async function approveOrganization(
   data: ApproveOrganizationData,
 ): Promise<ActionResponse> {
@@ -220,6 +226,12 @@ export async function approveOrganization(
   }
 }
 
+/**
+ * Rejects an organization verification request.
+ *
+ * @param data The data needed to reject the request
+ * @returns The result of the rejection action
+ */
 export async function rejectOrganization(
   data: RejectOrganizationData,
 ): Promise<ActionResponse> {

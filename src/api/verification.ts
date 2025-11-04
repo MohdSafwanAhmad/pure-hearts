@@ -1,5 +1,11 @@
-import { createServerSupabaseClient, getOrganizationProfile } from "@/src/lib/supabase/server";
-import { VERIFICATION_BUCKET, PUBLIC_IMAGE_BUCKET_NAME } from "@/src/lib/constants";
+import {
+  createServerSupabaseClient,
+  getOrganizationProfile,
+} from "@/src/lib/supabase/server";
+import {
+  VERIFICATION_BUCKET,
+  PUBLIC_IMAGE_BUCKET_NAME,
+} from "@/src/lib/constants";
 
 export interface VerificationStatus {
   hasRequest: boolean;
@@ -46,7 +52,9 @@ export async function getVerificationStatus(): Promise<VerificationStatus> {
     // Get all requests for this organization
     const { data: allRequests, error: requestsError } = await supabase
       .from("organization_verification_requests")
-      .select("id, status, submitted_at, admin_notes, reviewed_by_first_name, reviewed_by_last_name")
+      .select(
+        "id, status, submitted_at, admin_notes, reviewed_by_first_name, reviewed_by_last_name",
+      )
       .eq("organization_id", organization.user_id)
       .order("submitted_at", { ascending: false });
 
@@ -80,18 +88,21 @@ export async function getVerificationStatus(): Promise<VerificationStatus> {
         maxAttempts: 3,
         daysUntilNextAttempt: null,
         canSubmit: totalAttempts < 3, // Can resubmit if under 3 attempts
-        message: totalAttempts < 3
-          ? `Your verification request is currently being reviewed. You can resubmit with updated documents if needed (${totalAttempts}/3 attempts used).`
-          : "Your verification request is currently being reviewed by our team. We'll notify you once it's processed.",
+        message:
+          totalAttempts < 3
+            ? `Your verification request is currently being reviewed. You can resubmit with updated documents if needed (${totalAttempts}/3 attempts used).`
+            : "Your verification request is currently being reviewed by our team. We'll notify you once it's processed.",
       };
     }
 
     // Check if there's a rejected request
     if (rejectedRequests.length > 0) {
       const latestRejected = rejectedRequests[0];
-      const reviewerName = latestRejected.reviewed_by_first_name && latestRejected.reviewed_by_last_name
-        ? `${latestRejected.reviewed_by_first_name} ${latestRejected.reviewed_by_last_name}`
-        : null;
+      const reviewerName =
+        latestRejected.reviewed_by_first_name &&
+        latestRejected.reviewed_by_last_name
+          ? `${latestRejected.reviewed_by_first_name} ${latestRejected.reviewed_by_last_name}`
+          : null;
 
       return {
         hasRequest: true,
@@ -100,9 +111,10 @@ export async function getVerificationStatus(): Promise<VerificationStatus> {
         maxAttempts: 3,
         daysUntilNextAttempt: null,
         canSubmit: totalAttempts < 3,
-        message: totalAttempts < 3
-          ? `Your previous verification request was rejected. You have ${3 - totalAttempts} attempt(s) remaining.`
-          : "Your previous verification request was rejected. Please review the feedback.",
+        message:
+          totalAttempts < 3
+            ? `Your previous verification request was rejected. You have ${3 - totalAttempts} attempt(s) remaining.`
+            : "Your previous verification request was rejected. Please review the feedback.",
         adminNotes: latestRejected.admin_notes,
         reviewedBy: reviewerName,
       };
@@ -113,11 +125,16 @@ export async function getVerificationStatus(): Promise<VerificationStatus> {
       const mostRecentRequest = requests[0];
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      
-      const lastSubmissionDate = new Date(mostRecentRequest.submitted_at || Date.now());
-      
+
+      const lastSubmissionDate = new Date(
+        mostRecentRequest.submitted_at || Date.now(),
+      );
+
       if (lastSubmissionDate > oneWeekAgo) {
-        const daysRemaining = Math.ceil((7 - (Date.now() - lastSubmissionDate.getTime()) / (1000 * 60 * 60 * 24)));
+        const daysRemaining = Math.ceil(
+          7 -
+            (Date.now() - lastSubmissionDate.getTime()) / (1000 * 60 * 60 * 24),
+        );
         return {
           hasRequest: true,
           status: "cooldown",
@@ -138,9 +155,10 @@ export async function getVerificationStatus(): Promise<VerificationStatus> {
       maxAttempts: 3,
       daysUntilNextAttempt: null,
       canSubmit: true,
-      message: totalAttempts > 0 
-        ? `You have ${3 - totalAttempts} verification attempt(s) remaining.`
-        : "Submit your verification request to get your organization verified.",
+      message:
+        totalAttempts > 0
+          ? `You have ${3 - totalAttempts} verification attempt(s) remaining.`
+          : "Submit your verification request to get your organization verified.",
     };
   } catch (error) {
     console.error("Error getting verification status:", error);
@@ -179,7 +197,7 @@ export interface VerificationRequestDetails {
     missionStatement: string;
     websiteUrl: string | null;
     logo: string | null;
-    slug: string | null;
+    slug: string;
     isVerified: boolean;
     contactPersonName: string | null;
     contactPersonEmail: string | null;
@@ -237,7 +255,7 @@ export async function getVerificationRequestDetails(
     const areas =
       projectAreas?.map(
         (row: { project_areas: { id: number; label: string } }) =>
-          row.project_areas
+          row.project_areas,
       ) ?? [];
 
     // Get document URL from storage
@@ -276,7 +294,11 @@ export async function getVerificationRequestDetails(
 
     return {
       id: request.id,
-      status: request.status as "pending" | "approved" | "rejected" | "cancelled",
+      status: request.status as
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "cancelled",
       submittedAt: request.submitted_at || new Date().toISOString(),
       documentName: request.document_name,
       documentPath: request.document_path,
