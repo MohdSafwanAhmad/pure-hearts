@@ -66,6 +66,7 @@ package.json               # Project dependencies and scripts
 ## Technologies Used
 
 - [Next.js](https://nextjs.org/) - The React framework for building server-side rendered applications.
+- [Vercel](https://vercel.com/) - The deployment platform for hosting the application.
 - [TypeScript](https://www.typescriptlang.org/) - A superset of JavaScript that adds static types.
 - [Tailwind CSS](https://tailwindcss.com/) - A utility-first CSS framework for styling.
 - [ShadCN](https://ui.shadcn.com/) - A UI component library built on top of Radix UI and Tailwind CSS.
