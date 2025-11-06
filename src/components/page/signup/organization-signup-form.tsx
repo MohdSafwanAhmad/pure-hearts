@@ -64,7 +64,7 @@ export function OrganizationSignupForm({ projectAreas }: Props) {
       "contactPersonEmail",
       "contactPersonPhone",
     ],
-    2: ["country", "state", "city", "address"],
+    2: ["country", "state", "city", "address", "postalCode"],
     3: [
       "missionStatement",
       "projectAreas",

@@ -1,9 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Progress } from "@/src/components/ui/progress";
-import { DonationBox } from "@/src/components/page/project/donationbox";
+import { DonationForm } from "@/src/components/page/project/donation-form";
+import { DonateButton } from "@/src/components/page/project/donate-button";
 import { getProjectBySlugs, getProjects } from "@/src/api/project";
 import ProjectCard from "@/src/components/global/project-card";
 
@@ -23,7 +29,9 @@ export default async function ProjectBySlugsPage(props: {
   const project = await getProjectBySlugs(orgslug, projectslug);
   if (!project) {
     console.error("project fetch error: not found");
-    return <div className="container mx-auto px-4 py-20">Project not found.</div>;
+    return (
+      <div className="container mx-auto px-4 py-20">Project not found.</div>
+    );
   }
 
   const cover = project.project_background_image || "/placeholder.jpg";
@@ -55,7 +63,9 @@ export default async function ProjectBySlugsPage(props: {
               </h1>
               <p className="mt-2 text-white/90 text-sm sm:text-base line-clamp-1">
                 {project.organization?.name ?? ""}
-                {project.beneficiary?.label ? ` • ${project.beneficiary.label}` : ""}
+                {project.beneficiary?.label
+                  ? ` • ${project.beneficiary.label}`
+                  : ""}
               </p>
             </div>
           </div>
@@ -87,11 +97,15 @@ export default async function ProjectBySlugsPage(props: {
                 <div className="font-semibold">${fmt(project.goal_amount)}</div>
               </div>
               <div className="rounded-md bg-muted p-3 text-center">
-                <div className="text-[11px] text-muted-foreground">Remaining</div>
+                <div className="text-[11px] text-muted-foreground">
+                  Remaining
+                </div>
                 <div className="font-semibold">${fmt(project.remaining)}</div>
               </div>
               <div className="rounded-md bg-muted p-3 text-center">
-                <div className="text-[11px] text-muted-foreground">Progress</div>
+                <div className="text-[11px] text-muted-foreground">
+                  Progress
+                </div>
                 <div className="font-semibold">{project.percent}%</div>
               </div>
             </div>
@@ -109,22 +123,27 @@ export default async function ProjectBySlugsPage(props: {
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <Button size="lg">Donate</Button>
-            </div>
+            <DonateButton />
           </CardContent>
         </Card>
 
         {/* RIGHT: Donate box + Organization */}
-        <div className="space-y-6 lg:col-span-5">
-          <Card className="lg:sticky lg:top-24">
-            <CardHeader>
-              <CardTitle>Donate</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DonationBox defaultAmount={50} />
-            </CardContent>
-          </Card>
+        <div className="space-y-6 lg:col-span-5 donation-section">
+          <DonationForm
+            defaultAmount={50}
+            organizationName={project.organization?.name || ""}
+            organizationSlug={project.organization?.slug || ""}
+            organizationId={project.organization?.user_id || ""}
+            organizationStripeAccountId={
+              project.organization?.stripe_account_id || ""
+            }
+            isOrganizationStripeAccountConnected={
+              project.organization.is_stripe_account_connected || false
+            }
+            projectName={project.title}
+            projectId={project.id}
+            projectDescription={project.description || ""}
+          />
 
           {project.organization && (
             <Card>
@@ -139,7 +158,9 @@ export default async function ProjectBySlugsPage(props: {
                   />
                 )}
                 <div>
-                  <CardTitle className="text-xl">{project.organization.name}</CardTitle>
+                  <CardTitle className="text-xl">
+                    {project.organization.name}
+                  </CardTitle>
                   {project.organization.mission_statement && (
                     <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                       {project.organization.mission_statement}
@@ -167,11 +188,15 @@ export default async function ProjectBySlugsPage(props: {
       {/* Related projects */}
       {relatedProjects.length > 0 && (
         <section className="mt-14">
-          <h2 className="mb-6 text-2xl font-semibold">Other causes you can support</h2>
+          <h2 className="mb-6 text-2xl font-semibold">
+            Other causes you can support
+          </h2>
           <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {relatedProjects.map((p) => {
               const orgSlug = p.organization?.slug;
-              const href = orgSlug ? `/campaigns/${orgSlug}/${p.slug}` : `/campaigns/_/${p.slug}`;
+              const href = orgSlug
+                ? `/campaigns/${orgSlug}/${p.slug}`
+                : `/campaigns/_/${p.slug}`;
               return (
                 <li key={p.id}>
                   <ProjectCard

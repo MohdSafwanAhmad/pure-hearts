@@ -62,6 +62,7 @@ type Props = {
     state: string | null;
     country: string | null;
     profile_completed: boolean;
+    postal_code: string | null;
   };
 };
 
@@ -85,6 +86,7 @@ export default function ProfileForm({ initial }: Props) {
         : "",
     city: initial.city ?? "",
     country: "Canada",
+    postal_code: initial.postal_code ?? "",
   };
 
   const form = useForm<TDonorProfileSchema>({
@@ -161,6 +163,7 @@ export default function ProfileForm({ initial }: Props) {
       state: "",
       city: "",
       country: "Canada",
+      postal_code: "",
     });
     setShowDeleteDialog(false);
     router.refresh();
@@ -275,7 +278,7 @@ export default function ProfileForm({ initial }: Props) {
                         value={field.value ?? ""}
                         type="tel"
                         disabled={!editMode || isSubmitting}
-                        placeholder="+1 234 567 8901"
+                        placeholder="+12345678901"
                       />
                     </FormControl>
                     <FormMessage />
@@ -335,7 +338,9 @@ export default function ProfileForm({ initial }: Props) {
                     <FormItem>
                       <FormLabel>City *</FormLabel>
                       <Select
-                        disabled={!editMode || isSubmitting || !selectedProvince}
+                        disabled={
+                          !editMode || isSubmitting || !selectedProvince
+                        }
                         onValueChange={field.onChange}
                         value={field.value}
                       >
@@ -375,6 +380,24 @@ export default function ProfileForm({ initial }: Props) {
                         {...field}
                         disabled={!editMode || isSubmitting}
                         placeholder="e.g., 101 Zakat Crescent"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="postal_code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Postal Code *</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        disabled={!editMode || isSubmitting}
+                        placeholder="e.g., A1A 1A1"
                       />
                     </FormControl>
                     <FormMessage />

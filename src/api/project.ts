@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
+import {
+  createAnonymousServerSupabaseClient,
+  createServerSupabaseClient,
+} from "@/src/lib/supabase/server";
 import { PUBLIC_IMAGE_BUCKET_NAME } from "@/src/lib/constants";
 import { getOrganizationBySlug } from "@/src/api/organization";
 
@@ -24,6 +27,8 @@ export interface ProjectDetail {
     name: string | null;
     logo?: string | null;
     mission_statement?: string | null;
+    stripe_account_id?: string | null;
+    is_stripe_account_connected?: boolean;
   };
 }
 
@@ -39,7 +44,7 @@ export async function getProjectBySlugs(
   const organization = await getOrganizationBySlug(orgSlug);
   if (!organization) return null;
 
-  const supabase = await createAnonymousServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   // 2. Get project by org user id and slug
   const { data: project, error: projErr } = await supabase
@@ -62,11 +67,15 @@ export async function getProjectBySlugs(
 
   if (dErr) console.error("donations fetch error:", dErr.message);
 
-  const collected = (donations ?? []).reduce((sum, r: any) => sum + Number(r?.amount ?? 0), 0);
+  const collected = (donations ?? []).reduce(
+    (sum, r: any) => sum + Number(r?.amount ?? 0),
+    0
+  );
 
   const goal = Number(project.goal_amount ?? 0);
   const remaining = Math.max(goal - collected, 0);
-  const percent = goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
+  const percent =
+    goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
 
   // 4. Get public image URL for project background
   let project_background_image: string | null = null;
@@ -81,14 +90,16 @@ export async function getProjectBySlugs(
 
   // 5. Return all details
   const beneficiary = project.beneficiary_type_id
-    ? (await (async () => {
+    ? await (async () => {
         const { data: bt } = await supabase
           .from("beneficiary_types")
           .select("id, label")
           .eq("id", project.beneficiary_type_id as string)
           .maybeSingle();
-        return bt ? { beneficiary_type_id: bt.id as string, label: bt.label as string } : null;
-      })())
+        return bt
+          ? { beneficiary_type_id: bt.id as string, label: bt.label as string }
+          : null;
+      })()
     : null;
 
   return {
@@ -109,6 +120,9 @@ export async function getProjectBySlugs(
       name: organization.organization_name,
       logo: organization.logo ?? null,
       mission_statement: organization.mission_statement ?? null,
+      stripe_account_id: organization.stripe_account_id ?? null,
+      is_stripe_account_connected:
+        organization.is_stripe_account_connected ?? false,
     },
   };
 }
@@ -136,14 +150,12 @@ export async function getRecentProjects(limit = 8): Promise<ProjectDetail[]> {
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  const candidates = (data as Row[] | null ?? []).filter(
+  const candidates = ((data as Row[] | null) ?? []).filter(
     (r) => r.organization?.is_verified
   );
 
   const details = await Promise.all(
-    candidates.map((r) =>
-      getProjectBySlugs(r.organization!.slug, r.slug)
-    )
+    candidates.map((r) => getProjectBySlugs(r.organization!.slug, r.slug))
   );
 
   return details.filter(Boolean) as ProjectDetail[];
@@ -159,7 +171,7 @@ export async function getProjects(
   limit = 24,
   offset = 0
 ): Promise<ProjectDetail[]> {
-  const supabase = await createAnonymousServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   type ProjectRow = {
     id: string;
@@ -201,7 +213,7 @@ export async function getProjects(
     return [];
   }
 
-  const projects = (rows as ProjectRow[] | null ?? []).filter(
+  const projects = ((rows as ProjectRow[] | null) ?? []).filter(
     (r) => r.organization?.is_verified
   );
 
@@ -217,9 +229,13 @@ export async function getProjects(
     console.error("getProjects: error fetching donations", dErr.message);
   }
 
-  type DonationRow = { amount: number | null; donor_id: string | null; project_id: string };
+  type DonationRow = {
+    amount: number | null;
+    donor_id: string | null;
+    project_id: string;
+  };
   const donationsByProject = new Map<string, DonationRow[]>();
-  for (const row of (donations as DonationRow[] | null ?? [])) {
+  for (const row of (donations as DonationRow[] | null) ?? []) {
     const list = donationsByProject.get(row.project_id) ?? [];
     list.push(row);
     donationsByProject.set(row.project_id, list);
@@ -238,7 +254,8 @@ export async function getProjects(
     uniqueDonors.delete("");
 
     const goal = Number(p.goal_amount ?? 0);
-    const percent = goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
+    const percent =
+      goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
 
     let project_background_image: string | null = "/placeholder.jpg";
     if (p.project_background_image) {

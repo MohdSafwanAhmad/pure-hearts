@@ -16,9 +16,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className="flex flex-col min-h-screen">
         <Navbar />
-        <main>{children}</main>
+        <main className="flex-1 min-h-[calc(100vh-4rem)]">{children}</main>
         <Footer />
         <Toaster position="top-center" richColors />
       </body>

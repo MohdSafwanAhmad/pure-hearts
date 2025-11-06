@@ -1,17 +1,10 @@
-import type { Database } from "@/src/types/database-types";
+import { fetchDonationsForUser } from "@/src/api/donor";
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { createAnonymousServerSupabaseClient } from "@/src/lib/supabase/server";
-
-// Narrow row type for our select
-type DonationSlim = Pick<
-  Database["public"]["Tables"]["donations"]["Row"],
-  "amount" | "project_id" | "created_at"
->;
 
 // Formatters
 const fmtCurrency = (n: number) =>
@@ -24,27 +17,6 @@ const fmtNumber = (n: number) =>
 // Windows for "active" logic
 const DAILY_MS = 24 * 60 * 60 * 1000;
 const MONTHLY_MS = 31 * DAILY_MS;
-
-async function fetchDonationsForUser(): Promise<DonationSlim[]> {
-  const supabase = await createAnonymousServerSupabaseClient();
-
-  const {
-    data: { user },
-    error: userErr,
-  } = await supabase.auth.getUser();
-  if (userErr || !user) return [];
-
-  const { data, error } = await supabase
-    .from("donations")
-    .select("amount, project_id, created_at")
-    .eq("donor_id", user.id);
-
-  if (error) {
-    console.error("SectionCards donations fetch error:", error.message);
-    return [];
-  }
-  return (data ?? []) as DonationSlim[];
-}
 
 /**
  * Server Component: fetches metrics for the current donor and renders the cards

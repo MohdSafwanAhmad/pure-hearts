@@ -65,6 +65,22 @@ export function EditableOverviewSection({
 
       <FormField
         control={form.control}
+        name="postalCode"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Postal Code
+            </FormLabel>
+            <FormControl>
+              <Input {...field} placeholder="Enter postal code" />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
         name="city"
         render={({ field }) => (
           <FormItem>

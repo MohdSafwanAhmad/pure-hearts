@@ -61,16 +61,10 @@ export const donorProfileSchema = z
       .trim(),
     phone: z
       .string()
-      .optional()
-      .nullable()
-      .refine(
-        (val) =>
-          !val ||
-          val.trim() === "" ||
-          /^\+?[\d\s\-\(\)]+$/.test(val.trim()),
-        {
-          message: "Please enter a valid phone number",
-        }
+      .min(1, "Contact phone number is required")
+      .regex(
+        /^\+\d+$/,
+        "Please enter a valid phone number in format +15554443333"
       ),
     address: z
       .string()
@@ -85,6 +79,13 @@ export const donorProfileSchema = z
       }),
     city: z.string().min(1, "City is required"),
     country: z.literal("Canada"),
+    postal_code: z
+      .string("Please enter a valid postal code")
+      .regex(
+        /^[A-Za-z]\d[A-Za-z][ ]?\d[A-Za-z]\d$/,
+        "Please enter a valid Canadian postal code (e.g., H3Z 2Y7)"
+      )
+      .transform((val) => val.toUpperCase().replace(/\s/g, " ").trim()),
   })
   .superRefine((val, ctx) => {
     // Ensure city belongs to chosen province

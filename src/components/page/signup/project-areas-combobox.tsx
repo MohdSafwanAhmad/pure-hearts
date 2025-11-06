@@ -47,8 +47,6 @@ export function ProjectAreasCombobox({
         shouldDirty: true,
       });
     }
-
-    console.log("Current Values:", form.getValues("projectAreas"));
   };
 
   const handleRemove = (value: number) => {

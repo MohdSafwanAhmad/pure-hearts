@@ -24,6 +24,7 @@ export function buildDonorInsertRow(
     state?: string | null;
     country?: string | null;
     profile_completed?: boolean | null;
+    postal_code?: string | null;
   }
 ): DonorInsert {
   return {
@@ -36,5 +37,6 @@ export function buildDonorInsertRow(
     state: payload.state ?? null,
     country: payload.country ?? null,
     profile_completed: payload.profile_completed ?? true,
+    postal_code: payload.postal_code ?? null,
   } as DonorInsert;
 }

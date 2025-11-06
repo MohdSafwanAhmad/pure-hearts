@@ -19,13 +19,14 @@ interface Props {
   organization: {
     organization_name: string;
     organization_phone: string;
-    contact_person_name: string;
-    contact_person_email: string;
-    contact_person_phone: string;
+    contact_person_name: string | null;
+    contact_person_email: string | null;
+    contact_person_phone: string | null;
     country: string;
     state: string;
     city: string;
     address: string;
+    postal_code: string;
     mission_statement: string;
     website_url: string | null;
     facebook_url: string | null;
@@ -80,6 +81,10 @@ export function EditableDetailsSection({
     {
       label: "Street Address",
       value: organization.address,
+    },
+    {
+      label: "Postal Code",
+      value: organization.postal_code,
     },
     {
       label: "Province/State",
