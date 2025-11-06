@@ -2,6 +2,8 @@
 
 ## Table of Contents
 
+- [Project Folder Structure](#project-folder-structure)
+- [Technologies Used](#technologies-used)
 - [Initial Setup](#initial-setup---steps-should-be-done-in-order)
   - [Linting and Formatting](#linting-and-formatting)
   - [Install Dependencies](#install-dependencies)
@@ -13,11 +15,63 @@
   - [Syncing with the Cloud Database](#syncing-with-the-cloud-database)
   - [Making change on Supabase/Edge functions](#making-change-on-supabaseedge-functions)
   - [How database Seeding works for Development](#how-database-seeding-works-for-development)
+  - [Good to know](#good-to-know)
 - [Testing Email Functionality with Resend](#testing-email-functionality-with-resend)
 - [Testing Stripe Payments](#testing-stripe-payments)
-- [Technologies Used](#technologies-used)
 
 ---
+
+## Project Folder Structure
+
+Understanding the folder structure will help you quickly locate files and understand how the project is organized. Here are the main directories and files:
+
+```text
+app/                       # Next.js App Router pages and layouts
+   (auth)/                  # Authentication flows (login, signup, otp)
+   (more)/                  # Public pages (about, contact, profile, etc.)
+   (protected)/             # Protected pages (dashboard, etc.)
+   admin/                   # Admin dashboard (public route, not protected)
+   campaigns/               # Campaign-related pages
+   donation/                # Donation flow pages
+   organizations/           # Organization profile pages
+   ...                      # Other feature folders
+src/                       # Source code
+   actions/                 # Server actions (business logic, mutations, etc.)
+                            # See: https://www.youtube.com/watch?v=FPJvlhee04E
+   api/                     # Data access layer (fetching, reading, writing data)
+                            # See: https://nextjs.org/docs/app/getting-started/fetching-data#server-components
+   components/              # Reusable React components
+      global/               # Global/shared components (used across the app)
+      ui/                   # UI primitives and Shadcn components
+      page/                 # Page-specific components
+      ...                   # Other domain-specific subfolders
+                            # Components are organized by domain, feature, or usage. Use subfolders to keep global, UI, and page-specific components separate for clarity and maintainability.
+   emails/                  # Email templates for Resend
+   hooks/                   # Custom React hooks
+   lib/                     # Utility functions, constants, Supabase clients
+   schemas/                 # Zod schemas for validation
+   types/                   # TypeScript types (database, actions, etc.)
+supabase/                  # Supabase local setup
+   config.toml              # Supabase configuration file (important for local setup)
+   migrations/              # Database migration files
+   seed.sql                 # SQL seed data for local development
+   ...
+public/                    # Static assets (images, etc.)
+.env.example               # Example environment variables
+README.md                  # Project documentation
+package.json               # Project dependencies and scripts
+
+```
+
+## Technologies Used
+
+- [Next.js](https://nextjs.org/) - The React framework for building server-side rendered applications.
+- [TypeScript](https://www.typescriptlang.org/) - A superset of JavaScript that adds static types.
+- [Tailwind CSS](https://tailwindcss.com/) - A utility-first CSS framework for styling.
+- [ShadCN](https://ui.shadcn.com/) - A UI component library built on top of Radix UI and Tailwind CSS.
+- [Supabase](https://supabase.com/) - An open-source Firebase alternative for backend services. It is the backend of this project, providing the database, authentication and storage.
+- [Stripe](https://stripe.com/) - A payment processing platform used to handle donations and payments.
+- [Resend](https://resend.com/) - An email sending service used to handle transactional emails such as donation receipts and account verification emails.
 
 ## Initial Setup - Steps should be done in order
 
@@ -135,6 +189,15 @@ Only when you are ready to deploy to the cloud:
 2. If you want to add more seed data, you can edit the `supabase/seed.sql` file and add your SQL insert statements.
 3. After editing the `supabase/seed.sql` file, you can run `npx supabase db reset` to reset the local database and apply the seed data again.
 
+### Good to know
+
+- After you make change to the local database schema using supabase local studio instance, you **must** run the custom command `npx supabase database generate-types` to update the types in `src/types/database-types.ts` file. This file is used to have type safety when using Supabase client in the app. And also if not generated the types might be out of date causing errors when compiling the app on production.
+- There is 2 types of supabase client used in the app.
+  - The one in `src/lib/supabase/client.ts` is used for client side operations. It is used in component that necessitate interaction with supabase from the browser. Generally you use it very rarely.
+  - On the server side `src/lib/supabase/server.ts` there 2 supabase clients.
+    - One with authentication that is similar to the client one called `createAnonymousServerSupabaseClient`. This one is used very rarely to fetch data. It is only used to determine if the donor/organization is logged in or not on the server side.
+    - One without authentication or cookies and has admin privileges called `createServerSupabaseClient`. This one is used for almost all server side operations. It is used in server components, API routes, and edge functions. This one should be used most of the time on the **server side only**. ⚠️ Never use this one on the client side ⚠️
+
 ## Testing Email Functionality with Resend
 
 To test email sending functionality in **development**:
@@ -232,11 +295,3 @@ Now you can pick any project under that organization and make a fake donation.
   - **ZIP Code**: Any valid zip code in canada
 
 - You can also test other scenarios using different payment methods, like affirm. that is easy to test.
-
-## Technologies Used
-
-- [Next.js](https://nextjs.org/) - The React framework for building server-side rendered applications.
-- [TypeScript](https://www.typescriptlang.org/) - A superset of JavaScript that adds static types.
-- [Tailwind CSS](https://tailwindcss.com/) - A utility-first CSS framework for styling.
-- [ShadCN](https://ui.shadcn.com/) - A UI component library built on top of Radix UI and Tailwind CSS.
-- [Supabase](https://supabase.com/) - An open-source Firebase alternative for backend services.
