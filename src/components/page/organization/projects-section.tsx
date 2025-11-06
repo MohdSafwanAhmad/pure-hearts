@@ -27,29 +27,29 @@ interface Props {
       name: string;
       organizationSlug: string;
     };
+    /** NEW: present if you include deleted_at in your server query */
+    deletedAt?: string | null;
   }[];
   addProjectButton?: React.ReactNode;
 }
 
 export function ProjectsSection({ projects, addProjectButton }: Props) {
-  const completedProjects = projects.filter((project) => {
+  // Filter out soft-deleted first (works whether parent selects deleted_at or not)
+  const activeProjects = projects.filter((p) => !p.deletedAt);
+
+  const completedProjects = activeProjects.filter((project) => {
     if (project.completionDate === undefined) return false;
-
-    if (project.completionDate < new Date()) return true;
-
-    return false;
+    return project.completionDate < new Date();
   });
 
-  const existingProjects = projects.filter((project) => {
+  const existingProjects = activeProjects.filter((project) => {
     if (project.completionDate === undefined) return true;
-    if (project.completionDate >= new Date()) return true;
-
-    return false;
+    return project.completionDate >= new Date();
   });
 
   const [activeProjectType, setActiveProjectType] =
     useState<ProjectType>("completed");
-  const projectsPerPage = 4; // Number of projects to show per "page"
+  const projectsPerPage = 4;
   const [displayCount, setDisplayCount] = useState<number>(projectsPerPage);
 
   const currentProjects =
@@ -58,7 +58,6 @@ export function ProjectsSection({ projects, addProjectButton }: Props) {
   const visibleProjects = currentProjects.slice(0, displayCount);
   const hasMoreProjects = currentProjects.length > displayCount;
 
-  // Reset display count when switching project types
   const handleProjectTypeChange = (type: ProjectType) => {
     setActiveProjectType(type);
     setDisplayCount(projectsPerPage);
@@ -74,7 +73,7 @@ export function ProjectsSection({ projects, addProjectButton }: Props) {
         Projects
       </Heading>
 
-      {/* Project Toggle */}
+      {/* Toggle + Add button */}
       <div className="flex mb-title items-center">
         <div className="rounded-lg border border-gray-200 bg-white p-1 flex">
           <button
@@ -109,7 +108,6 @@ export function ProjectsSection({ projects, addProjectButton }: Props) {
           </button>
         </div>
 
-        {/* Render the Add Project button if provided */}
         {addProjectButton && (
           <div className="m-2">
             <div className="px-4 py-2 text-sm font-medium rounded-md bg-primary text-white hover:bg-primary/90 transition-colors">
@@ -119,8 +117,7 @@ export function ProjectsSection({ projects, addProjectButton }: Props) {
         )}
       </div>
 
-
-      {/* Projects Grid or Empty State */}
+      {/* Grid / Empty */}
       {currentProjects.length === 0 ? (
         <div className="flex flex-col items-center justify-center mb-section text-gray-500">
           <FolderOpen className="h-16 w-16 mb-subtitle text-gray-300" />
@@ -154,10 +151,9 @@ export function ProjectsSection({ projects, addProjectButton }: Props) {
         </div>
       )}
 
-      {/* More Button - Only show if there are more projects to load */}
       {hasMoreProjects && (
         <div className="text-center">
-          <Button size={"lg"} onClick={handleShowMore}>
+          <Button size="lg" onClick={handleShowMore}>
             Show More
           </Button>
         </div>

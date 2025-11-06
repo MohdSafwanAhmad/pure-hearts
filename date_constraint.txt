@@ -1,5 +1,0 @@
-Getting a bunch of errors while fixing the Object literal may only specify known properties, and 'startDate' does not exist in type '(arg: { title: string; description: string; goalAmount: string; beneficiaryType: string; startDate?: string | undefined; endDate?: string | undefined; }) => unknown'.ts(2353)
-No value exists in scope for the shorthand property 'startDate'. Either declare one or provide an initializer.ts(18004)
-(property) startDate: any
-
-No value exists in scope for the shorthand property 'endDate'. Either declare one or provide an initializer.ts(18004)

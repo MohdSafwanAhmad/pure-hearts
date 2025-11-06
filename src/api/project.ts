@@ -25,28 +25,31 @@ export interface ProjectDetail {
     logo?: string | null;
     mission_statement?: string | null;
   };
+  /** Optional ISO dates */
+  start_date?: string | null;
+  end_date?: string | null;
 }
 
 /**
- * Fetch a project by org slug and project slug, including totals and full org info.
- * Returns null if not found or not verified.
+ * Fetch a project by org slug and project slug (excludes soft-deleted).
  */
 export async function getProjectBySlugs(
   orgSlug: string,
   projectSlug: string
 ): Promise<ProjectDetail | null> {
-  // 1. Get organization (with logo, description, etc)
+  // 1) Resolve org (with logo, description, etc.)
   const organization = await getOrganizationBySlug(orgSlug);
   if (!organization) return null;
 
   const supabase = await createAnonymousServerSupabaseClient();
 
-  // 2. Get project by org user id and slug
+  // 2) Project by org + slug, excluding soft-deleted
   const { data: project, error: projErr } = await supabase
     .from("projects")
     .select("*")
     .eq("organization_user_id", organization.user_id)
     .eq("slug", projectSlug)
+    .is("deleted_at", null)
     .maybeSingle();
 
   if (projErr || !project) {
@@ -54,7 +57,7 @@ export async function getProjectBySlugs(
     return null;
   }
 
-  // 3. Get donations for totals and beneficiary count
+  // 3) Donations for totals
   const { data: donations, error: dErr } = await supabase
     .from("donations")
     .select("amount, donor_id")
@@ -62,13 +65,15 @@ export async function getProjectBySlugs(
 
   if (dErr) console.error("donations fetch error:", dErr.message);
 
-  const collected = (donations ?? []).reduce((sum, r: any) => sum + Number(r?.amount ?? 0), 0);
-
+  const collected = (donations ?? []).reduce(
+    (sum, r: any) => sum + Number(r?.amount ?? 0),
+    0
+  );
   const goal = Number(project.goal_amount ?? 0);
   const remaining = Math.max(goal - collected, 0);
   const percent = goal > 0 ? Math.min(100, Math.round((collected / goal) * 100)) : 0;
 
-  // 4. Get public image URL for project background
+  // 4) Public image URL
   let project_background_image: string | null = null;
   if (project.project_background_image) {
     const { data } = supabase.storage
@@ -79,7 +84,7 @@ export async function getProjectBySlugs(
     project_background_image = "/placeholder.jpg";
   }
 
-  // 5. Return all details
+  // 5) Beneficiary type (optional)
   const beneficiary = project.beneficiary_type_id
     ? (await (async () => {
         const { data: bt } = await supabase
@@ -110,35 +115,13 @@ export async function getProjectBySlugs(
       logo: organization.logo ?? null,
       mission_statement: organization.mission_statement ?? null,
     },
+    start_date: project.start_date ? String(project.start_date) : null,
+    end_date: project.end_date ? String(project.end_date) : null,
   };
 }
 
-
-export async function getBeneficiaryTypes(): Promise<
-  { value: string; label: string }[]
-> {
-  const supabase = await createAnonymousServerSupabaseClient();
-  const { data, error } = await supabase
-    .from("beneficiary_types")
-    .select("id, code, label")
-    .order("code", { ascending: true });
-
-  if (error) {
-    console.error("Error fetching beneficiary types:", error);
-    return [];
-  }
-
-  return (
-    data?.map(({ id, code, label }) => ({
-      value: id,
-      label: label || code,
-    })) ?? []
-  );
-}
-
 /**
- * Fetch a small list of recent, verified projects for display sections.
- * Uses getProjectBySlugs to assemble full details per project.
+ * Recent projects (excludes soft-deleted).
  */
 export async function getRecentProjects(limit = 8): Promise<ProjectDetail[]> {
   const supabase = await createAnonymousServerSupabaseClient();
@@ -148,7 +131,7 @@ export async function getRecentProjects(limit = 8): Promise<ProjectDetail[]> {
     organization: { slug: string; is_verified: boolean | null } | null;
   };
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("projects")
     .select(
       `
@@ -156,27 +139,28 @@ export async function getRecentProjects(limit = 8): Promise<ProjectDetail[]> {
       organization:organizations!inner(slug, is_verified)
     `
     )
+    .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  const candidates = (data as Row[] | null ?? []).filter(
+  if (error) {
+    console.error("getRecentProjects: error", error.message);
+    return [];
+  }
+
+  const candidates = ((data as Row[] | null) ?? []).filter(
     (r) => r.organization?.is_verified
   );
 
   const details = await Promise.all(
-    candidates.map((r) =>
-      getProjectBySlugs(r.organization!.slug, r.slug)
-    )
+    candidates.map((r) => getProjectBySlugs(r.organization!.slug, r.slug))
   );
 
   return details.filter(Boolean) as ProjectDetail[];
 }
 
 /**
- * Fetch multiple projects (cards) with totals and org info.
- * - limit/offset for pagination
- * - Only returns projects for verified organizations
- * - Designed for campaigns listing and featured sections
+ * Paginated list (excludes soft-deleted).
  */
 export async function getProjects(
   limit = 24,
@@ -216,6 +200,7 @@ export async function getProjects(
       organization:organizations!inner(user_id, slug, organization_name, is_verified)
     `
     )
+    .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .range(offset, offset + Math.max(0, limit) - 1);
 
@@ -224,7 +209,7 @@ export async function getProjects(
     return [];
   }
 
-  const projects = (rows as ProjectRow[] | null ?? []).filter(
+  const projects = ((rows as ProjectRow[] | null) ?? []).filter(
     (r) => r.organization?.is_verified
   );
 
@@ -242,7 +227,7 @@ export async function getProjects(
 
   type DonationRow = { amount: number | null; donor_id: string | null; project_id: string };
   const donationsByProject = new Map<string, DonationRow[]>();
-  for (const row of (donations as DonationRow[] | null ?? [])) {
+  for (const row of ((donations as DonationRow[] | null) ?? [])) {
     const list = donationsByProject.get(row.project_id) ?? [];
     list.push(row);
     donationsByProject.set(row.project_id, list);
@@ -297,4 +282,29 @@ export async function getProjects(
   });
 
   return results;
+}
+
+/**
+ * Beneficiary types for selects.
+ */
+export async function getBeneficiaryTypes(): Promise<
+  { value: string; label: string }[]
+> {
+  const supabase = await createAnonymousServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("beneficiary_types")
+    .select("id, code, label")
+    .order("code", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching beneficiary types:", error);
+    return [];
+  }
+
+  return (
+    data?.map(({ id, code, label }) => ({
+      value: id,
+      label: label || code,
+    })) ?? []
+  );
 }

@@ -5,7 +5,9 @@ import { Button } from "@/src/components/ui/button";
 import { Progress } from "@/src/components/ui/progress";
 import { DonationBox } from "@/src/components/page/project/donationbox";
 import { getProjectBySlugs, getProjects } from "@/src/api/project";
+import { getOrganizationProfile } from "@/src/lib/supabase/server";
 import ProjectCard from "@/src/components/global/project-card";
+import EditProjectInline from "@/src/components/page/project/edit-inline";
 
 export const revalidate = 0;
 export const dynamic = "force-dynamic";
@@ -13,6 +15,12 @@ export const dynamic = "force-dynamic";
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n || 0);
 
+/**
+ * Displays a single project donation campaign page.  In addition to showing
+ * project details and statistics, owners of the project see an edit button
+ * that links to the project edit page.  Related projects are also shown
+ * below.
+ */
 export default async function ProjectBySlugsPage(props: {
   params: Promise<{ orgslug: string; projectslug: string }>;
 }) {
@@ -25,6 +33,11 @@ export default async function ProjectBySlugsPage(props: {
     console.error("project fetch error: not found");
     return <div className="container mx-auto px-4 py-20">Project not found.</div>;
   }
+
+  // Determine whether the currently authenticated organization owns this project
+  const currentOrg = await getOrganizationProfile();
+  const isOwner =
+    currentOrg && project.organization && currentOrg.user_id === project.organization.user_id;
 
   const cover = project.project_background_image || "/placeholder.jpg";
 
@@ -110,6 +123,19 @@ export default async function ProjectBySlugsPage(props: {
             </div>
 
             <div className="flex gap-3">
+              {isOwner && (
+                <EditProjectInline
+                  projectId={project.id}
+                  orgSlug={project.organization.slug}
+                  slug={project.slug}
+                  title={project.title}
+                  description={project.description}
+                  goalAmount={project.goal_amount}
+                  beneficiaryTypeId={project.beneficiary?.beneficiary_type_id ?? null}
+                  startDate={project.start_date ?? null}
+                  endDate={project.end_date ?? null}
+                />
+              )}
               <Button size="lg">Donate</Button>
             </div>
           </CardContent>
@@ -139,7 +165,9 @@ export default async function ProjectBySlugsPage(props: {
                   />
                 )}
                 <div>
-                  <CardTitle className="text-xl">{project.organization.name}</CardTitle>
+                  <CardTitle className="text-xl">
+                    {project.organization.name}
+                  </CardTitle>
                   {project.organization.mission_statement && (
                     <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                       {project.organization.mission_statement}

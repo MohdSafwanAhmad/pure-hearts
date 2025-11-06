@@ -170,6 +170,7 @@ export async function getOrganizationProjects(organizationUserId: string) {
     `
     )
     .eq("organization_user_id", organizationUserId)
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
   if (error) {

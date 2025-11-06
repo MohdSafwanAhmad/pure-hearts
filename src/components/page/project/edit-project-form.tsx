@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { createProject } from "@/src/actions/project";
+import { updateProject, deleteProject } from "@/src/actions/project";
 import {
   createProjectSchema,
   type TCreateProjectSchema,
@@ -31,47 +31,72 @@ import {
 } from "@/src/components/ui/select";
 import { Button } from "@/src/components/ui/button";
 
-interface CreateProjectFormProps {
+interface EditProjectFormProps {
   /**
-   * All available beneficiary types formatted for a select component.  Each
-   * element must have a `value` (UUID) and a `label` to display.
+   * Existing project details.  Contains all fields from ProjectDetail plus
+   * optional start_date and end_date strings.
+   */
+  project: {
+    id: string;
+    title: string;
+    description: string | null;
+    goal_amount: number;
+    collected: number;
+    remaining: number;
+    percent: number;
+    project_background_image: string | null;
+    organization_user_id: string;
+    beneficiary?: {
+      beneficiary_type_id: string;
+      label: string;
+    } | null;
+    slug: string;
+    organization: {
+      user_id: string;
+      slug: string;
+      name: string | null;
+      logo?: string | null;
+      mission_statement?: string | null;
+    };
+    start_date?: string | null;
+    end_date?: string | null;
+  };
+  /**
+   * Beneficiary types formatted for the Select component.
    */
   beneficiaryTypes: { value: string; label: string }[];
   /**
-   * The slug of the organization for which this project is being created.
-   * Used to redirect back after a successful creation.
+   * The slug of the organization owning this project, used for navigation.
    */
   organizationSlug: string;
 }
 
 /**
- * Renders a form that allows an organization to create a new project.  It
- * collects information such as title, description, goal amount, beneficiary
- * type, optional dates and an optional background image.  Upon submission
- * the form invokes the `createProject` server action and provides user
- * feedback via toast notifications.  Successful submissions redirect back
- * to the organization page.
+ * Renders a form that allows an organization to edit an existing project.  It
+ * prepopulates fields with the current project values and invokes the
+ * appropriate server actions to update or delete the project.  After
+ * success, it redirects to the project or organization page and displays
+ * toast notifications.
  */
-export default function CreateProjectForm({
+export default function EditProjectForm({
+  project,
   beneficiaryTypes,
   organizationSlug,
-}: CreateProjectFormProps) {
+}: EditProjectFormProps) {
   const router = useRouter();
   const form = useForm<TCreateProjectSchema>({
     resolver: zodResolver(createProjectSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      goalAmount: "",
-      beneficiaryType: "",
-      // default to empty strings so that date inputs are always controlled
-      startDate: "",
-      endDate: "",
+      title: project.title,
+      description: project.description ?? "",
+      goalAmount: project.goal_amount ? String(project.goal_amount) : "",
+      beneficiaryType: project.beneficiary?.beneficiary_type_id ?? "",
+      startDate: project.start_date ?? "",
+      endDate: project.end_date ?? "",
     },
   });
 
-  // Local state to handle file input since react-hook-form doesn't manage
-  // FileList types particularly well.
+  // Local state to handle file input since react-hook-form doesn't manage FileList well
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -80,7 +105,6 @@ export default function CreateProjectForm({
     const formData = new FormData();
     formData.append("title", values.title);
     formData.append("description", values.description);
-    // goalAmount is required so always append it
     formData.append("goalAmount", values.goalAmount);
     formData.append("beneficiaryType", values.beneficiaryType);
     if (values.startDate) {
@@ -93,10 +117,24 @@ export default function CreateProjectForm({
       formData.append("file", file);
     }
 
-    const res = await createProject(formData);
+    const res = await updateProject(project.id, formData);
     if (res.success) {
-      toast.success(res.message ?? "Project created successfully");
-      // Redirect back to organization page
+      toast.success(res.message ?? "Project updated successfully");
+      // Redirect back to the project detail page using the project's organization slug
+      router.push(`/campaigns/${project.organization.slug}/${project.slug}`);
+    } else if (res.error) {
+      toast.error(res.error);
+    }
+    setIsSubmitting(false);
+  }
+
+  async function handleDelete() {
+    if (!project || isSubmitting) return;
+    setIsSubmitting(true);
+    const res = await deleteProject(project.id);
+    if (res.success) {
+      toast.success(res.message ?? "Project deleted successfully");
+      // After deletion, redirect to the organization page
       router.push(`/organizations/${organizationSlug}`);
     } else if (res.error) {
       toast.error(res.error);
@@ -106,12 +144,9 @@ export default function CreateProjectForm({
 
   return (
     <div className="max-w-3xl mx-auto py-6">
-      <h1 className="text-2xl font-bold mb-4">Create New Project</h1>
+      <h1 className="text-2xl font-bold mb-4">Edit Project</h1>
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Title */}
           <FormField
             control={form.control}
@@ -157,7 +192,7 @@ export default function CreateProjectForm({
             name="goalAmount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Goal Amount (optional)</FormLabel>
+                <FormLabel>Goal Amount</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -210,7 +245,7 @@ export default function CreateProjectForm({
             name="startDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Start Date (optional)</FormLabel>
+                <FormLabel>Start Date</FormLabel>
                 <FormControl>
                   <Input
                     type="date"
@@ -229,7 +264,7 @@ export default function CreateProjectForm({
             name="endDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>End Date (optional)</FormLabel>
+                <FormLabel>End Date</FormLabel>
                 <FormControl>
                   <Input
                     type="date"
@@ -244,7 +279,10 @@ export default function CreateProjectForm({
 
           {/* Project Background Image */}
           <div>
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block" htmlFor="project-image-input">
+            <label
+              className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block"
+              htmlFor="project-image-input"
+            >
               Background Image (optional)
             </label>
             <input
@@ -263,10 +301,21 @@ export default function CreateProjectForm({
             />
           </div>
 
-          {/* Submit Button */}
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? "Creating Project..." : "Create Project"}
-          </Button>
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+              {isSubmitting ? "Saving changes..." : "Save Changes"}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isSubmitting}
+              className="w-full sm:w-auto"
+            >
+              Delete Project
+            </Button>
+          </div>
         </form>
       </Form>
     </div>

@@ -19,13 +19,9 @@ export const createProjectSchema = z.object({
     .max(2000, "Description must be less than 2000 characters"),
   goalAmount: z
     .string()
-    .refine(
-      (val) => 
-      !isNaN(Number(val)) && Number(val) > 0,
-      {
-        message: "Goal amount must be a valid number",
-      }
-    ),
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+      message: "Goal amount must be a valid number",
+    }),
   beneficiaryType: z
     .string()
     .min(1, "Please select a beneficiary type"),
@@ -36,15 +32,15 @@ export const createProjectSchema = z.object({
     .string()
     .optional(),
 })
-.refine(
+  // Cross-field validation: ensure end date is not before start date
+  .refine(
     ({ startDate, endDate }) => {
-      // If either date is missing, skip this check
       if (!startDate || !endDate) return true;
       return new Date(endDate) >= new Date(startDate);
     },
     {
-      message: 'End date cannot be before start date',
-      path: ['endDate'],
+      message: "End date cannot be before start date",
+      path: ["endDate"],
     }
   );
 
