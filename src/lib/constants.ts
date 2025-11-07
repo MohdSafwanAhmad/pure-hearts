@@ -1,4 +1,5 @@
 export const PUBLIC_IMAGE_BUCKET_NAME = "public-images";
+export const VERIFICATION_BUCKET = "organization-verification-documents";
 
 export const canadianProvinces = [
   { value: "Alberta", label: "Alberta" },

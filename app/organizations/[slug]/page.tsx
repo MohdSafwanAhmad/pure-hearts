@@ -7,6 +7,7 @@ import {
 } from "@/src/api/organization";
 import { OrganizationPageClient } from "@/src/components/page/organization/organization-page-client";
 import { getOrganizationProfile } from "@/src/lib/supabase/server";
+import { getVerificationStatus } from "@/src/api/verification";
 
 interface OrganizationPageProps {
   params: Promise<{
@@ -85,6 +86,9 @@ export default async function OrganizationPage({
   // Check if the logged-in user is the owner of this organization
   const isOwner = organizationProfile?.user_id === organization.user_id;
 
+  // Get verification status if user is the owner
+  const verificationStatus = isOwner ? await getVerificationStatus() : null;
+
   return (
     <OrganizationPageClient
       organization={organization}
@@ -92,6 +96,7 @@ export default async function OrganizationPage({
       stats={stats}
       projects={projects}
       projectAreas={projectAreas}
+      verificationStatus={verificationStatus}
     />
   );
 }

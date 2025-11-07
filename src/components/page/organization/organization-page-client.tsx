@@ -7,6 +7,7 @@ import { EditableHeaderSection } from "@/src/components/page/organization/editab
 import { ProjectsSection } from "@/src/components/page/organization/projects-section";
 import { OrganizationStats } from "@/src/components/page/organization/stats-section";
 import { StripeVerificationAlert } from "@/src/components/page/organization/stripe-verification-alert";
+import { OrganizationVerificationAlert } from "@/src/components/page/organization/organization-verification-alert";
 import { Button } from "@/src/components/ui/button";
 import {
   Carousel,
@@ -18,6 +19,7 @@ import {
   TUpdateOrganizationSchema,
   updateOrganizationSchema,
 } from "@/src/schemas/organization";
+import { VerificationStatus } from "@/src/api/verification";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreditCard, Edit2, Loader2, Save, X } from "lucide-react";
 import { useState } from "react";
@@ -51,6 +53,7 @@ interface OrganizationPageClientProps {
     slug: string | null;
     stripe_account_id: string | null;
     is_stripe_account_connected: boolean | null;
+    is_verified: boolean | null;
   };
   isOwner: boolean;
   stats: {
@@ -79,6 +82,7 @@ interface OrganizationPageClientProps {
     };
   }[];
   projectAreas: { value: number; label: string }[];
+  verificationStatus: VerificationStatus | null;
 }
 
 export function OrganizationPageClient({
@@ -87,6 +91,7 @@ export function OrganizationPageClient({
   stats,
   projects,
   projectAreas,
+  verificationStatus,
 }: OrganizationPageClientProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoadingPayment, setIsLoadingPayment] = useState(false);
@@ -165,6 +170,14 @@ export function OrganizationPageClient({
     <div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
+          {/* Organization Verification Alert - Only show if owner and not verified */}
+          {isOwner && !organization.is_verified && verificationStatus && (
+            <OrganizationVerificationAlert
+              organizationName={organization.organization_name}
+              verificationStatus={verificationStatus}
+            />
+          )}
+
           {/* Stripe Verification Alert - Only show if owner, has stripe account but not connected */}
           {isOwner &&
             organization.stripe_account_id &&

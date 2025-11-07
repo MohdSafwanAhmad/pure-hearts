@@ -43,4 +43,5 @@ next-env.d.ts
 
 # supabase
 /supabase/public-images
+/supabase/organization-verification-documents
 /public-schema.sql
