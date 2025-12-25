@@ -6,23 +6,34 @@ import { cn } from "@/src/lib/utils";
 import { Search } from "lucide-react";
 import { Input } from "@/src/components/ui/input";
 
-export default function SearchBox({ className }: { className?: string }) {
+interface SearchBoxProps {
+  className?: string;
+}
+
+/**
+ * Navbar/mobile search box.
+ * - Redirects to /campaigns/search?q=...
+ * - Clears its own input after redirect to avoid confusion with CampaignSearchPage
+ */
+export default function SearchBox({ className }: SearchBoxProps) {
   const router = useRouter();
   const [q, setQ] = React.useState("");
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const query = q.trim();
-    if (query) router.push(`/search?q=${encodeURIComponent(query)}`);
-  }
+    if (!query) return;
+
+    router.push(`/campaigns/search?q=${encodeURIComponent(query)}`);
+    setQ(""); // clear the navbar search input
+  };
 
   return (
-    <form onSubmit={onSubmit} className={cn("relative", className)}>
+    <form onSubmit={handleSubmit} className={cn("relative", className)}>
       <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       <Input
         type="search"
-        inputMode="search"
-        placeholder="Search"
+        placeholder="Search campaigns..."
         aria-label="Search"
         className="w-full pl-9"
         value={q}

@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export default async function CampaignsIndexPage(props: {
   searchParams: Promise<{ page?: string }>;
 }) {
-  // ✅ Treat searchParams as a Promise (Next 15 friendly)
+  // Treat searchParams as a Promise (Next 15 friendly)
   const { page: pageParam } = await props.searchParams;
 
   // Robust page parsing
