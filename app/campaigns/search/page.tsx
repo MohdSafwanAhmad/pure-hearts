@@ -1,213 +1,185 @@
-"use client";
-
-import { useEffect, useState, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Input } from "@/src/components/ui/input";
-import { Button } from "@/src/components/ui/button";
-import { Card, CardContent } from "@/src/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/components/ui/select";
-
 /**
- * Campaign/project type returned by the API
+ * app/campaigns/search/page.tsx
+ * Campaign Search Page (Server Component)
+ * ----------------------------------------------------
+ * - URL-based search, sorting, filtering, pagination
+ * - Calls server-side searchCampaigns()
+ * - No API route indirection
  */
-interface Campaign {
-  id: string;
-  title: string;
-  description: string;
-  projectslug: string;   // backend changed from 'slug' to 'projectslug'
-  image_url: string | null; // backend returns 'image_url'
-  orgslug: string;       // backend returns 'orgslug'
+
+import Link from "next/link";
+import { Suspense } from "react";
+
+import ProjectCard from "@/src/components/global/project-card";
+import { Button } from "@/src/components/ui/button";
+import { LoadingSpinner } from "@/src/components/common/LoadingSpinner";
+import { searchCampaigns, ProjectSearchRow } from "@/src/api/campaigns";
+import { getProjectAreas } from "@/src/api/organization";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+interface SearchParams {
+  q?: string;
+  page?: string;
+  sort?: "relevance" | "newest";
+  area?: string;
 }
 
-/** Number of campaigns per page for pagination */
-const CAMPAIGNS_PER_PAGE = 6;
+const buildQueryString = (params: Record<string, string | undefined>) => {
+  const search = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v) search.set(k, v);
+  });
+  return search.toString();
+};
 
-export default function CampaignSearchPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const searchInputRef = useRef<HTMLInputElement>(null); // ref for input focus
+export default async function CampaignSearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const { q = "", page = "1", sort = "relevance", area } =
+    await searchParams;
 
-  // Initialize state from URL params
-  const initialQuery = searchParams.get("q") || "";
-  const initialSort = searchParams.get("sort") || "relevance";
-  const initialCategory = searchParams.get("category") || "";
+  const pageNumber = Math.max(1, Number(page) || 1);
+  const pageSize = 24;
+  const offset = (pageNumber - 1) * pageSize;
 
-  const [query, setQuery] = useState(initialQuery);
-  const [sort, setSort] = useState(initialSort);
-  const [category, setCategory] = useState(initialCategory);
-  const [results, setResults] = useState<Campaign[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+    /**
+   * Convert area param to number (or undefined)
+   */
+  const areaId = area ? Number(area) : undefined;
 
-  /** Focus the main input on mount and place cursor at end */
-  useEffect(() => {
-    if (searchInputRef.current) {
-      searchInputRef.current.focus();
-      const len = searchInputRef.current.value.length;
-      searchInputRef.current.setSelectionRange(len, len);
-    }
-  }, []);
+  const campaigns: ProjectSearchRow[] = await searchCampaigns({
+    query: q,
+    areaId,
+    sortBy: sort,
+    limit: pageSize,
+    offset,
+  });
 
-  /** Update URL parameters without page reload */
-  const updateSearchParams = (newQuery: string, newSort: string, newCategory: string, page: number) => {
-    const params = new URLSearchParams();
-    if (newQuery) params.set("q", newQuery);
-    if (newSort) params.set("sort", newSort);
-    if (newCategory) params.set("category", newCategory);
-    if (page > 1) params.set("page", page.toString());
-    router.replace(`/campaigns/search?${params.toString()}`);
-  };
+  const projectAreas = await getProjectAreas();
 
-  /** Fetch campaigns from backend API */
-  const fetchCampaigns = async () => {
-    if (!query.trim() && !category) {
-      setResults([]);
-      setCategories([]);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const url = new URL("/api/campaigns/search", window.location.origin);
-      url.searchParams.set("q", query);
-      url.searchParams.set("sort", sort);
-      if (category) url.searchParams.set("category", category);
-
-      const res = await fetch(url.toString());
-      if (!res.ok) throw new Error("Failed to fetch campaigns");
-
-      const data = await res.json();
-      setResults(data.results || []);
-      setCategories(data.categories || []);
-      setCurrentPage(1); // reset pagination
-    } catch (err) {
-      console.error("Error fetching campaigns:", err);
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Refetch whenever query, sort, or category changes
-  useEffect(() => {
-    fetchCampaigns();
-  }, [query, sort, category]);
-
-  /** Handle clicking a campaign card */
-  const handleCardClick = (orgslug: string, projectslug: string) => {
-    router.push(`/campaigns/${orgslug}/${projectslug}`);
-  };
-
-  /** Clear filters */
-  const handleClear = () => {
-    setQuery("");
-    setCategory("");
-    setSort("relevance");
-    setResults([]);
-    setCurrentPage(1);
-    router.replace("/campaigns/search");
-  };
-
-  // Pagination calculations
-  const startIndex = (currentPage - 1) * CAMPAIGNS_PER_PAGE;
-  const endIndex = startIndex + CAMPAIGNS_PER_PAGE;
-  const paginatedResults = results.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(results.length / CAMPAIGNS_PER_PAGE);
 
   return (
-    <main className="p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Search Campaigns</h1>
+    <main className="container mx-auto px-4 py-10">
+      <h1 className="mb-6 text-3xl font-bold">Search Campaigns</h1>
 
-      {/* Search & Controls */}
-      <div className="flex flex-col md:flex-row gap-2 items-start md:items-center">
-        <Input
-          ref={searchInputRef} // <-- attach ref here
-          type="text"
-          placeholder="Enter a campaign title, description, or keyword"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="flex-1"
+      {/* Filters (GET only) */}
+      <form method="get" className="mb-8 grid gap-4 md:grid-cols-4">
+        <input
+          type="search"
+          name="q"
+          defaultValue={q}
+          autoFocus
+          placeholder="Search campaigns..."
+          className="rounded-md border px-3 py-2 text-sm"
         />
 
-        <Select value={sort} onValueChange={(val) => setSort(val)}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="relevance">Relevance (Default)</SelectItem>
-            <SelectItem value="newest">Published Date (Newest)</SelectItem>
-          </SelectContent>
-        </Select>
+        <select
+          name="sort"
+          defaultValue={sort}
+          className="rounded-md border px-3 py-2 text-sm"
+        >
+          <option value="relevance">Relevance</option>
+          <option value="newest">Newest</option>
+        </select>
 
-        {categories.length > 0 && (
-          <Select value={category} onValueChange={(val) => setCategory(val)}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filter by Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+                {/* Project Areas */}
+        <select
+          key={area ?? "all"}   // force remount when Clear button pressed
+          name="area"
+          defaultValue={area ?? ""}
+          className="rounded-md border px-3 py-2 text-sm"
+        >
+          <option value="">All categories</option>
 
-        <Button variant="secondary" onClick={handleClear}>
-          Clear
-        </Button>
-      </div>
-
-      {/* Campaign Results */}
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {loading && <p>Loading campaigns...</p>}
-        {!loading && paginatedResults.length === 0 && <p>No campaigns found.</p>}
-
-        {!loading &&
-          paginatedResults.map((c: Campaign) => (
-            <Card
-              key={c.id}
-              onClick={() => handleCardClick(c.orgslug, c.projectslug)}
-              className="cursor-pointer hover:shadow-lg transition-shadow"
-            >
-              <CardContent className="p-4">
-                {c.image_url && (
-                  <img
-                    src={c.image_url}
-                    alt={c.title}
-                    className="w-full h-40 object-cover rounded-lg mb-2"
-                  />
-                )}
-                <h2 className="text-lg font-semibold">{c.title}</h2>
-                <p className="text-sm text-muted-foreground line-clamp-2">{c.description}</p>
-              </CardContent>
-            </Card>
+          {projectAreas.map((area) => (
+            <option key={area.value} value={area.value}>
+              {area.label}
+            </option>
           ))}
-      </section>
+        </select>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex gap-2 justify-center mt-4">
-          <Button onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))} disabled={currentPage === 1}>
-            Prev
-          </Button>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <Button
-              key={i + 1}
-              variant={currentPage === i + 1 ? "default" : "outline"}
-              onClick={() => setCurrentPage(i + 1)}
-            >
-              {i + 1}
-            </Button>
-          ))}
-          <Button onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))} disabled={currentPage === totalPages}>
-            Next
+
+
+
+        <div className="flex gap-2">
+          <Button type="submit">Apply</Button>
+          <Button asChild variant="outline">
+            <Link href="/campaigns/search">Clear</Link>
           </Button>
         </div>
-      )}
+      </form>
+
+      <Suspense fallback={<LoadingSpinner />}>
+        {campaigns.length === 0 ? (
+          <p className="text-muted-foreground">No campaigns found.</p>
+        ) : (
+          <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {campaigns.map((p) => {
+              const href = p.organization
+                ? `/campaigns/${p.organization.slug}/${p.slug}`
+                : `/campaigns/_/${p.slug}`;
+
+              return (
+                <li key={p.id}>
+                  <ProjectCard
+                    href={href}
+                    title={p.title}
+                    description={p.description}
+                    imageUrl={p.project_background_image}
+                    organizationName={p.organization?.name ?? null}
+                    beneficiaryLabel={p.beneficiary?.label ?? null}
+                    collected={p.collected}
+                    goalAmount={p.goal_amount}
+                    percent={p.percent}
+                    ctaLabel="View Details"
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Suspense>
+
+      {/* Pagination */}
+      <nav className="mt-10 flex items-center justify-center gap-4">
+        {pageNumber > 1 && (
+          <Button asChild variant="outline">
+            <Link
+              href={`/campaigns/search?${buildQueryString({
+                q,
+                sort,
+                area,
+                page: String(pageNumber - 1),
+              })}`}
+            >
+              Previous
+            </Link>
+          </Button>
+        )}
+
+        <span className="text-sm text-muted-foreground">
+          Page {pageNumber}
+        </span>
+
+        {campaigns.length === pageSize && (
+          <Button asChild variant="outline">
+            <Link
+              href={`/campaigns/search?${buildQueryString({
+                q,
+                sort,
+                area,
+                page: String(pageNumber + 1),
+              })}`}
+            >
+              Next
+            </Link>
+          </Button>
+        )}
+      </nav>
     </main>
   );
 }
