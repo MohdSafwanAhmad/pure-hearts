@@ -1,15 +1,28 @@
+//src/components/global/navbar/index.tsx
+
+/**
+ * Server-side component.
+ * What changed:
+ * Navbar is now async server
+ * No Sign In / Quick Donation here
+ * No auth logic duplicated
+ * Campaigns link is first-class
+ */
+
 import Link from "next/link";
-import { Button } from "@/src/components/ui/button";
 import { HeartHandshake } from "lucide-react";
 import DesktopNav from "@/src/components/global/navbar/desktop-nav";
 import MobileMenu from "@/src/components/global/navbar/mobile-menu";
+import { getNavbarUser, type NavbarUser } from "@/src/lib/auth/get-navbar-user";
 
-export default function Navbar() {
+export default async function Navbar() {
+  const user: NavbarUser | null = await getNavbarUser();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        {/* Left: brand + desktop nav */}
-        <div className="flex items-center gap-4">
+        {/* Left: Brand + Campaigns */}
+        <div className="flex items-center gap-10">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <HeartHandshake className="h-5 w-5" />
@@ -19,29 +32,27 @@ export default function Navbar() {
             </span>
           </Link>
 
-          <div className="ml-6">
-            <DesktopNav />
+          {/* Campaigns link (desktop, tablet, and mobile) */}
+          <div className="">
+            <Link
+              href="/campaigns"
+              className="text-sm font-medium hover:text-primary"
+            >
+              Campaigns
+            </Link>
           </div>
         </div>
 
-        {/* Right (desktop) */}
-        <div className="hidden md:flex items-center gap-3">
-          <Button asChild variant="outline">
-            <Link href="/login">Sign In</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/quick-donation">Quick Donation</Link>
-          </Button>
-        </div>
+        {/* Right: Desktop auth-aware actions */}
+        <DesktopNav user={user} />
 
-        {/* Mobile */}
-        <div className="flex items-center gap-2 md:hidden">
-          <Button asChild size="sm" className="px-3">
-            <Link href="/quick-donation">Quick Donation</Link>
-          </Button>
-          <MobileMenu />
+        {/* Mobile Hamburger */}
+        <div className="md:hidden">
+          <MobileMenu user={user} />
         </div>
       </div>
     </header>
   );
 }
+
+
