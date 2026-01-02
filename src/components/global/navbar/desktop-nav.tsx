@@ -1,69 +1,61 @@
+//src/components/global/navbar/desktop-nav.tsx
+
+/**
+ * What’s gone:
+- Donate
+-  More
+- Quick Donation
+- auth guessing
+
+What was added:
+- Auth-aware
+- Profile links correct for donor/organization
+- Logout > / */
+
 "use client";
 
 import Link from "next/link";
 import { Button } from "@/src/components/ui/button";
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-} from "@/src/components/ui/navigation-menu";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/src/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
-import { cn } from "@/src/lib/utils";
-import { mainLinks, moreLinks } from "./links";
+import LogoutButton from "@/src/components/global/logout-button";
 import SearchBox from "./search-box";
 
-export default function DesktopNav() {
+type NavbarUser =
+  | {
+      type: "donor" | "organization";
+      profileHref: string;
+    }
+  | null;
+
+export default function DesktopNav({ user }: { user: NavbarUser }) {
   return (
-    <div className="hidden md:flex items-center gap-6">
-      <NavigationMenu>
-        <NavigationMenuList>
-          {mainLinks.map((l) => (
-            <NavigationMenuItem key={l.href}>
-              <NavigationMenuLink asChild>
-                <Link
-                  href={l.href}
-                  className={cn(
-                    "group inline-flex select-none items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  )}
-                >
-                  {l.label}
-                </Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-          ))}
+    <div className="hidden md:flex items-center gap-4">
+      <SearchBox className="w-60" />
 
-          <NavigationMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-1">
-                  More
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                {moreLinks.map((m) => (
-                  <DropdownMenuItem key={m.href} asChild>
-                    <Link href={m.href} className="w-full">
-                      {m.label}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
+      {!user && (
+        <>
+          <Button asChild variant="outline">
+            <Link href="/login">Sign In</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/signup">Sign Up</Link>
+          </Button>
+        </>
+      )}
 
-      <div className="ml-2">
-        <SearchBox className="w-60" />
-      </div>
+      {user && (
+        <>
+          <Button asChild variant="outline">
+            <Link href={user.profileHref}>Profile</Link>
+          </Button>
+
+                  {/* Right (desktop) */}
+           <Button asChild>
+             <Link href="/">Logout</Link>
+           </Button>
+
+        </>
+      )}
     </div>
   );
 }
+
